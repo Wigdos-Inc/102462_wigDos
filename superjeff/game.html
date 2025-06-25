@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Platformer - Jeff Loses His Marbles</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #gameover {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            color: red;
+            font-family: Arial, sans-serif;
+            display: none;
+        }
+    </style>
+    <audio id="jumpSound" src="assets/mp3/yippee-tbh.mp3" preload="auto"></audio>
+    <audio id="backgroundaudio" src="assets/mp3/themesong.mp3" preload="auto"></audio>
+</head>
+<body>
+    <div id="gameover">Game Over! Press R to Restart</div>
+    <div id="mainmenu">SUPER JEFFFFFFFFF!!!!!!! Made by ChatGPT PRE ALPHA 1.0</div>
+    <div id="loadingScreen" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; color: white; font-family: Arial, sans-serif; display: none;">
+        Loading...
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="java/setup.js"></script>
+    <script src="java/music.js"></script>
+    <script src="java/levels.js"></script>
+    <script src="java/collision.js"></script>
+    <script src="java/models.js"></script>
+    <script src="java/health.js"></script>
+    <script src="java/input.js"></script>
+    <script src="java/camera.js"></script>
+    <script src="java/main.js"></script>
+</body>
+</html>
