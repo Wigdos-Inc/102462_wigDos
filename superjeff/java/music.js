@@ -8,3 +8,8 @@ function playBackgroundMusic(){
         bg_music.play();
     }
 }
+
+function setMusic(source){
+    bg_music.src = source;
+    bg_music_playing = false;
+}

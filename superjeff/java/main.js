@@ -25,6 +25,7 @@ checkLevel(true);
 unloadLevel();
 // Update Function
 function update() {
+    updateInputs();
     playBackgroundMusic();
     if (gameOver) return;
 

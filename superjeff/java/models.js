@@ -134,7 +134,7 @@ scene.add(goombaGroup);
 function createMrMeatballHead() {
     // Create a larger sphere for the meatball body
     const meatballGeometry = new THREE.SphereGeometry(2, 32, 32); // Larger meatball (radius = 2)
-    const meatballMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 }); // Brown color for the meatball
+    const meatballMaterial = new THREE.MeshPhongMaterial({ color: 0xfd57ad }); // Brown color for the meatball
     const meatball = new THREE.Mesh(meatballGeometry, meatballMaterial);
 
     // Create a moustache using a torus geometry (to simulate the large moustache)
@@ -185,7 +185,7 @@ function createMrMeatballHead() {
 }
 
 // Create Mr. Meatball Head in the scene
-const mrMeatball = createMrMeatballHead();
+//const mrMeatball = createMrMeatballHead();
 
 // Floor (Platform)
 const floorGeometry = new THREE.BoxGeometry(20, 1, 20);

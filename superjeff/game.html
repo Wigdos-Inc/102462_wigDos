@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Platformer - Jeff Loses His Marbles</title>
+    <link rel="icon" href="assets/jpeg/jeff.jpeg">
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -16,6 +17,7 @@
             color: red;
             font-family: Arial, sans-serif;
             display: none;
+            z-index: 1000;
         }
     </style>
     <audio id="jumpSound" src="assets/mp3/yippee-tbh.mp3" preload="auto"></audio>
@@ -23,12 +25,54 @@
 </head>
 <body>
     <div id="gameover">Game Over! Press R to Restart</div>
-    <div id="mainmenu">SUPER JEFFFFFFFFF!!!!!!! Made by ChatGPT PRE ALPHA 1.0</div>
-    <div id="loadingScreen" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; color: white; font-family: Arial, sans-serif; display: none;">
+    <div id="mainmenu" style="z-index: 1000; position: absolute; top: 0; background-color: white;">SUPER JEFFFFFFFFF!!!!!!! Made by ChatGPT Pre Alpha 1.0.1</div>
+    <div id="loadingScreen" style="z-index: 1000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 30px; color: white; font-family: Arial, sans-serif; display: none;">
         Loading...
     </div>
+    <div id="levelname" style="z-index: 1000; position: absolute; top: 3vh; background-color: white;">LEVEL: None</div>
+
+    <div id="joystick-base" style="
+        position: fixed;
+        bottom: 50px;
+        left: 50px;
+        width: 120px;
+        height: 120px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 50%;
+        touch-action: none;
+        user-select: none;
+        z-index: 1000;
+        touch-action: none;">
+        <div id="joystick-thumb" style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: 0.1s;">
+        </div>
+    </div>
+
+    <button id="jumpMobile" style="position: fixed;
+        bottom: 50px;
+        right: 50px;
+        width: 120px;
+        height: 120px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 50%;
+        touch-action: none;
+        user-select: none;
+        z-index: 1000;
+        touch-action: none;">JUMP!
+    </button>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="./libs/global.js"></script>
+
+    <script defer src="java/loadModel.js"></script>
     <script src="java/setup.js"></script>
     <script src="java/music.js"></script>
     <script src="java/levels.js"></script>

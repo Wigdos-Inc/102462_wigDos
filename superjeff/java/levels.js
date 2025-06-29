@@ -1,6 +1,46 @@
 let currentLevel = 0; // Track the current level
 let levelCompleted = false;
 
+let activeLevelCollisions = [{ xMin: -10, xMax: 10, zMin: -10, zMax: 10, y: 0, width: 10, depth: 6 }];
+
+const level1 = {
+  name: "Forest Start",
+  geometry: [
+    // Type, position, size, rotation, materialType
+    { type: "cube", pos: [0, 0, 0], size: [200, 1, 200], rot: [0, 0, 0], material: "grass" },
+    { type: "cube", pos: [5, 1, 5], size: [2, 2, 2], rot: [0, 0.5, 0], material: "lava" },
+    { type: "cube", pos: [-7, 2, -5], size: [3, 1, 3], rot: [0, 0, 0], material: "water" },
+    { type: "cube", pos: [-15, 5, -5], size: [3, 1, 3], rot: [0, 0, 0], material: "grass" }
+  ],
+  entities: [
+    { type: "playerStart", pos: [0, 2, 0] },
+    { type: "enemy", pos: [5, 2, 5], behavior: "patrol" },
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] }
+  ],
+  skybox: "assets/jpeg/bg1.jpeg",
+  music: "assets/mp3/themesong.mp3"
+};
+
+const wilwest_level = {
+  name: "Wild West",
+  geometry: [
+    // Type, position, size, rotation, materialType
+    { type: "cube", pos: [0, 0, 0], size: [200, 1, 200], rot: [0, 0, 0], material: "dirt" },
+    { type: "cube", pos: [55, 1, 5], size: [2, 2, 2], rot: [0, 0.5, 0], material: "lava" },
+    { type: "cube", pos: [7, 2, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "water" },
+    { type: "cube", pos: [-15, 5, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "dirt" }
+  ],
+  entities: [
+    { type: "playerStart", pos: [0, 2, 0] },
+    { type: "enemy", pos: [4, 1, -10], behavior: "patrol" },
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] }
+  ],
+  skybox: "assets/jpeg/bg3.jpeg",
+  music: "assets/mp3/WildWest.mp3"
+};
+
+const levels = [level1, wilwest_level];
+
 function loadAndResizeImage(imageUrl, size) {
     const image = new Image();
     image.src = imageUrl;
@@ -53,208 +93,88 @@ function unloadLevel() {
     // Example: if you have any loaded assets or sounds, stop them and clear references
 }
 
-// Function to load the Jungle level (Easy)
-function loadJungleLevel() {
-    // Remove all existing objects in the scene
+function loadlevel(){
+    map = levels[currentLevel -1];
+
+    document.getElementById('levelname').textContent = "LEVEL: " + map.name;
     unloadLevel();
-    
-    // Set up the skybox
-    // Example usage: Resize the images to 1024x1024
-    const size = 1024;
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size),
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size),
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size),
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size),
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size),
-        loadAndResizeImage('https://upload.wikimedia.org/wikipedia/commons/b/be/Bliss_location%2C_Sonoma_Valley_in_2006.jpg', size)
+        map.skybox,
+        map.skybox,
+        map.skybox,
+        map.skybox,
+        map.skybox,
+        map.skybox
     ]);
 
-    // Disable mipmaps
     texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
 
-    // Set the skybox background
     scene.background = texture;
 
-    // Create ground and multiple platforms with varying heights
-    createTerrain();
+    activeLevelCollisions = [];
+    for (let i = 0; i < map.geometry.length; i++){
+        let pos = map.geometry[i].pos;
+        let size = map.geometry[i].size;
 
-    // Add jungle-themed obstacles and environment (trees, plants, waterfalls, etc.)
-    addJungleObstacles();
+        let col = [
+            (-size[0] / 2) + pos[0],
+            (size[0] / 2) + pos[0],
+            (-size[2] / 2) + pos[2],
+            (size[2] / 2) + pos[2],
+            (-size[1] / 2) + pos[1],
+            (size[1] / 2) + pos[1]
+        ];
+        activeLevelCollisions[i] = { xMin: col[0], xMax: col[1], zMin: col[2], zMax: col[3], y: col[4] +1.5, width: 10, depth: 6 };
 
-    // Set player speed and other difficulty-related parameters for the Jungle level
-    playerSpeed = 0.1;  // Easy speed
-    goombaSpeed = 0.05; // Slow enemies
+        let type = map.geometry[i].material;
+        let color = 0xFFFFFF;
+        switch(type){
+            case 'grass':{
+                color = 0x228B22;
+                break;
+            }
+            case 'dirt':{
+                color = 0xf1d275;
+                break;
+            }
+        }
 
-    // Set up Jeff and other entities in the Jungle environment
-    mascotGroup.position.set(0, 1, 0); // Starting on the first platform
-    goombaGroup.position.set(5, 1, 0); // Positioned on the second platform
+        const floorGeometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: color });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.x = pos[0];
+        floor.position.y = pos[1];
+        floor.position.z = pos[2];
+        scene.add(floor);
+    }
 
-    scene.add(mascotGroup);  // Add mascot to the scene
-    scene.add(goombaGroup);  // Add goomba to the scene
-}
-
-// Function to create terrain with multiple floors and platforms
-function createTerrain() {
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 }); // Jungle green
-    const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Wood brown
-
-    // Create a large base floor (main ground)
-    const largeFloorGeometry = new THREE.BoxGeometry(40, 1, 40);
-    const largeFloor = new THREE.Mesh(largeFloorGeometry, floorMaterial);
-    largeFloor.position.y = -1;
-    scene.add(largeFloor);
-
-    // Platform 1 (ground level)
-    const platform1 = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 6), platformMaterial);
-    platform1.position.set(0, 1, 0);
-    scene.add(platform1);
-
-    // Platform 2 (slightly elevated)
-    const platform2 = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 6), platformMaterial);
-    platform2.position.set(5, 3, 5);
-    scene.add(platform2);
-
-    // Platform 3 (higher up)
-    const platform3 = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 6), platformMaterial);
-    platform3.position.set(-5, 5, -5);
-    scene.add(platform3);
-
-    // A raised platform in the far distance
-    const platform4 = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 6), platformMaterial);
-    platform4.position.set(10, 7, -10);
-    scene.add(platform4);
-
-    // Bridge or Ramp (from platform1 to platform2)
-    const rampGeometry = new THREE.BoxGeometry(1, 0.5, 3);
-    const ramp = new THREE.Mesh(rampGeometry, platformMaterial);
-    ramp.position.set(2.5, 2, 2.5);
-    ramp.rotation.x = Math.PI / 4;
-    scene.add(ramp);
-}
-
-// Function to add jungle obstacles (trees, rocks, waterfalls, etc.)
-function addJungleObstacles() {
-    // Trees
-    const treeGeometry = new THREE.CylinderGeometry(0.5, 1, 5, 8);
-    const treeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-    
-    // Add trees at various points
-    const tree1 = new THREE.Mesh(treeGeometry, treeMaterial);
-    tree1.position.set(4, 2.5, 4);
-    scene.add(tree1);
-
-    const tree2 = new THREE.Mesh(treeGeometry, treeMaterial);
-    tree2.position.set(-4, 2.5, -4);
-    scene.add(tree2);
-
-    // Add bushes or smaller plants
-    const plantGeometry = new THREE.CylinderGeometry(0.3, 0.5, 1, 8);
-    const plantMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-    const plant = new THREE.Mesh(plantGeometry, plantMaterial);
-    plant.position.set(-6, 1, 6);
-    scene.add(plant);
-
-    // Waterfall (with flowing water effect)
-    const waterfallGeometry = new THREE.CylinderGeometry(1, 1, 10, 32);
-    const waterfallMaterial = new THREE.MeshStandardMaterial({ color: 0x1E90FF, transparent: true, opacity: 0.6 });
-    const waterfall = new THREE.Mesh(waterfallGeometry, waterfallMaterial);
-    waterfall.position.set(8, 5, -8);
-    waterfall.rotation.x = Math.PI / 2;
-    scene.add(waterfall);
-
-    // Rocks (as obstacles or environmental objects)
-    const rockGeometry = new THREE.SphereGeometry(1, 8, 8);
-    const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-    rock.position.set(6, 1, -3);
-    scene.add(rock);
-
-    const rock2 = new THREE.Mesh(rockGeometry, rockMaterial);
-    rock2.position.set(-8, 1, 8);
-    scene.add(rock2);
-}
-
-// Function to load the Wild West level (Medium)
-function loadWildWestLevel() {
-    // Remove all existing objects in the scene
-    unloadLevel();
-
-    // Set up the floor
-    const floorGeometry = new THREE.BoxGeometry(20, 1, 20);
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 }); // Desert-like ground
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.position.y = -1;
-    scene.add(floor);
-
-    // Add Wild West-themed obstacles (cacti, rocks, etc.)
-    const cactusGeometry = new THREE.CylinderGeometry(0.2, 0.5, 3, 8);
-    const cactusMaterial = new THREE.MeshStandardMaterial({ color: 0x006400 });
-    const cactus = new THREE.Mesh(cactusGeometry, cactusMaterial);
-    cactus.position.set(2, 1.5, 3);
-    scene.add(cactus);
-
-    // Set player speed and enemy speed for the Wild West level
-    playerSpeed = 0.15;  // Medium speed
-    goombaSpeed = 0.1;   // Medium speed for enemies
-
-    // Set up Jeff and other entities in the Wild West environment
-    mascotGroup.position.set(0, 1, 0);
-    goombaGroup.position.set(5, 1, 0);
+    playerSpeed = 0.1;
+    goombaSpeed = 0.05;
 
     mascotGroup.position.set(0, 1, 0);
-    goombaGroup.position.set(5, 1, 0);
-    scene.add(mascotGroup);  // Ensure mascot is added
-    scene.add(goombaGroup);  // Ensure goomba is added
-}
 
-// Function to load the Toy level (Hard)
-function loadToyLevel() {
-    // Remove all existing objects in the scene
-    unloadLevel();
+    for (let i = 0; i < map.entities.length; i++){
+        let cur_entity = map.entities[i];
+        let pos = cur_entity.pos;
+        if (cur_entity.type == 'enemy'){
+            goombaGroup.position.set(pos[0], pos[1], pos[2]);
+            scene.add(goombaGroup);
+        }
+    }
 
-    // Set up the floor
-    const floorGeometry = new THREE.BoxGeometry(20, 1, 20);
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700 }); // Toy-like ground
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.position.y = -1;
-    scene.add(floor);
-
-    // Add Toy-themed obstacles (giant toys, building blocks, etc.)
-    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xFF6347 });
-    const block = new THREE.Mesh(blockGeometry, blockMaterial);
-    block.position.set(3, 0.5, 3);
-    scene.add(block);
-
-    // Set player speed and enemy speed for the Toy level
-    playerSpeed = 0.2;  // Fast player speed
-    goombaSpeed = 0.2;  // Fast enemies
-
-    // Set up Jeff and other entities in the Toy environment
-    mascotGroup.position.set(0, 1, 0);
-    goombaGroup.position.set(5, 1, 0);
-
-    mascotGroup.position.set(0, 1, 0);
-    goombaGroup.position.set(5, 1, 0);
-    scene.add(mascotGroup);  // Ensure mascot is added
-    scene.add(goombaGroup);  // Ensure goomba is added
+    scene.add(mascotGroup);
+    setMusic(map.music);
 }
 
 function changeLevel(level) {
-    showLoadingScreen(); // Show loading screen
-    setTimeout(() => {  // Wait for a brief moment before loading the next level
-        if (level === 1) {
-            loadJungleLevel();
-        } else if (level === 2) {
-            loadWildWestLevel();
-        } else if (level === 3) {
-            loadToyLevel();
-        }
-
-        hideLoadingScreen(); // Hide loading screen after level setup
-    }, 1000); // Simulate loading delay (1 second)
+    showLoadingScreen();
+    setTimeout(() => {
+        loadlevel();
+        hideLoadingScreen();
+    }, 1000);
 }
 
 function checkLevel(force){
@@ -265,7 +185,7 @@ function checkLevel(force){
     } else if(levelCompleted || force){
         levelCompleted = false;
         currentLevel++;  // Move to the next level
-        if (currentLevel > 3) {
+        if (currentLevel > levels.length) {
             currentLevel = 1; // Restart from level 1
         }
         changeLevel(currentLevel);
