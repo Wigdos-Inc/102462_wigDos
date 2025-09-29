@@ -1,4 +1,5 @@
 const jumpSound = document.getElementById('jumpSound');
+const gameover_audio = document.getElementById('gameover_aud');
 // Movement Variables
 let playerSpeed = 0.1;
 let playerVelocity = new THREE.Vector3();
@@ -118,8 +119,18 @@ function update() {
         if (lives <= 0) {
             gameOver = true;
             document.getElementById('gameover').style.display = 'block';
+            gameover_audio.play();
         } else {
             mascotGroup.position.set(0, 1, 0); // Reset position to start point
+        }
+    }
+
+    if(flagGroup.children[0] && !levelCompleted){
+        if (mascotGroup.position.x < flagGroup.children[0].position.x + 0.5 &&
+            mascotGroup.position.x > flagGroup.children[0].position.x - 0.5 &&
+            mascotGroup.position.y < flagGroup.children[0].position.y + 1 &&
+            mascotGroup.position.y + 5 > flagGroup.children[0].position.y - 1) {
+            levelCompleted = true;
         }
     }
 

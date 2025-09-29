@@ -7,7 +7,7 @@
   <style>
     body {
       background-color: #1e1e1e;
-      background-image: url('assets/jpeg/sky.jpg');
+      background-image: url('assets/jpeg/jeff2.jpeg');
       background-size: cover;
       background-position: 0 50%;
       color: #ffffff;
@@ -20,14 +20,14 @@
       margin-bottom: 20px;
     }
     img {
-      width: 200px;
+      width: 300px;
       height: auto;
       margin-bottom: 20px;
     }
     .version {
       font-size: 1em;
       margin-bottom: 40px;
-      color: #aaaaaa;
+      color: #d9d9d9;
     }
     .start-button {
       padding: 15px 30px;
@@ -47,18 +47,28 @@
 <body>
   <h1>Super Jeff!</h1>
   
-  <img src="assets/jpeg/jeff2.jpeg" alt="Game Logo">
+  <img src="assets/jpeg/Logo.jpeg" alt="Game Logo">
   
-  <div class="version">Pre Alpha 1.0.1</div>
+  <div class="version">Pre Alpha 1.0.2</div>
   
   <button class="start-button" onclick="startGame()">Start Game</button>
 
   <script>
-    function startGame() {
-      alert("Ready for JEFFFFFFFFFertson!");
-      window.location.href = "game.html";
-      // Add your game initialization code here
-    }
+      let timer = 0;
+      function startGame() {
+        const audio = new Audio("assets/mp3/Soup_Sound.mp3");
+        audio.play();
+        loop();
+      }
+
+      function loop(){
+        if (timer >= 50){
+          window.location.href = "game.html";
+          alert("Ready for JEFFFFFFFFFertson!");
+        }
+        timer++;
+        requestAnimationFrame(loop);
+      }
   </script>
 </body>
 </html>

@@ -15,7 +15,8 @@ const level1 = {
   entities: [
     { type: "playerStart", pos: [0, 2, 0] },
     { type: "enemy", pos: [5, 2, 5], behavior: "patrol" },
-    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] }
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] },
+    { type: "playerfinish", pos: [-5,3,0] }
   ],
   skybox: "assets/jpeg/bg1.jpeg",
   music: "assets/mp3/themesong.mp3"
@@ -33,28 +34,71 @@ const wilwest_level = {
   entities: [
     { type: "playerStart", pos: [0, 2, 0] },
     { type: "enemy", pos: [4, 1, -10], behavior: "patrol" },
-    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] }
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] },
+    { type: "playerfinish", pos: [-5,3,0] }
   ],
   skybox: "assets/jpeg/bg3.jpeg",
   music: "assets/mp3/WildWest.mp3"
 };
 
-const levels = [level1, wilwest_level];
+const Spooky_level = {
+  name: "Spooky jEfF",
+  geometry: [
+    // Type, position, size, rotation, materialType
+    { type: "cube", pos: [0, 0, 0], size: [200, 1, 200], rot: [0, 0, 0], material: "grass_dark" },
+    { type: "cube", pos: [55, 1, 5], size: [2, 2, 2], rot: [0, 0.5, 0], material: "lava" },
+    { type: "cube", pos: [7, 2, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "water" },
+    { type: "cube", pos: [-15, 5, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "grass_dark" }
+  ],
+  entities: [
+    { type: "playerStart", pos: [0, 2, 0] },
+    { type: "enemy", pos: [4, 1, -10], behavior: "patrol" },
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] },
+    { type: "playerfinish", pos: [-5,3,0] }
+  ],
+  skybox: "assets/jpeg/bg_4_1.jpg",
+  music: "assets/mp3/SpookyJeff.mp3"
+};
+
+const chicken_bonus = {
+  name: "Bonus Level chicken",
+  geometry: [
+    // Type, position, size, rotation, materialType
+    { type: "cube", pos: [0, 0, 0], size: [200, 1, 200], rot: [0, 0, 0], material: "grass" },
+    { type: "cube", pos: [55, 1, 5], size: [2, 2, 2], rot: [0, 0.5, 0], material: "lava" },
+    { type: "cube", pos: [7, 2, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "water" },
+    { type: "cube", pos: [-15, 5, -20], size: [3, 1, 3], rot: [0, 0, 0], material: "grass" }
+  ],
+  entities: [
+    { type: "playerStart", pos: [0, 2, 0] },
+    { type: "enemy", pos: [4, 1, -10], behavior: "patrol" },
+    { type: "tree", pos: [-3, 1, 4], size: [1, 5, 1] },
+    { type: "playerfinish", pos: [-5,3,0] }
+  ],
+  skybox: "assets/jpeg/bg_5_1.jpg",
+  music: "assets/mp3/chickenshack.mp3"
+};
+
+const levels = [level1, wilwest_level, Spooky_level, chicken_bonus];
 
 function loadAndResizeImage(imageUrl, size) {
-    const image = new Image();
-    image.src = imageUrl;
-
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.crossOrigin = 'anonymous'; // Important if loading from a different domain
         image.onload = () => {
             const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
             canvas.width = size;
             canvas.height = size;
-            // Draw the image onto the canvas (this will scale it to fit the square canvas)
-            context.drawImage(image, 0, 0, size, size);
-            resolve(canvas);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, 0, 0, size, size);
+
+            // Convert canvas back to Image
+            const resizedImage = new Image();
+            resizedImage.onload = () => resolve(resizedImage);
+            resizedImage.src = canvas.toDataURL();
         };
+        image.onerror = reject;
+        image.src = imageUrl;
     });
 }
 
@@ -98,14 +142,17 @@ function loadlevel(){
 
     document.getElementById('levelname').textContent = "LEVEL: " + map.name;
     unloadLevel();
+
+    let skyTex = map.skybox//loadAndResizeImage(map.skybox, 512);
+
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        map.skybox,
-        map.skybox,
-        map.skybox,
-        map.skybox,
-        map.skybox,
-        map.skybox
+        skyTex,
+        skyTex,
+        skyTex,
+        skyTex,
+        skyTex,
+        skyTex
     ]);
 
     texture.generateMipmaps = false;
@@ -140,6 +187,10 @@ function loadlevel(){
                 color = 0xf1d275;
                 break;
             }
+            case 'grass_dark':{
+                color = 0x185f35;
+                break;
+            }
         }
 
         const floorGeometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
@@ -163,10 +214,25 @@ function loadlevel(){
             goombaGroup.position.set(pos[0], pos[1], pos[2]);
             scene.add(goombaGroup);
         }
+        else if(cur_entity.type == 'playerfinish'){
+            const flag_tex = new THREE.TextureLoader().load('assets/jpeg/soup_awsome_tp.png');
+            const flag_material = new THREE.MeshBasicMaterial({
+                map: flag_tex,
+                transparent: true
+            });
+            const flag_geo = new THREE.PlaneGeometry(7,7);
+            const flag_mesh = new THREE.Mesh(flag_geo, flag_material);
+            flag_mesh.position.x = pos[0];
+            flag_mesh.position.y = pos[1];
+            flag_mesh.position.z = pos[2];
+            flagGroup.add(flag_mesh);
+        }
     }
 
     scene.add(mascotGroup);
+    scene.add(flagGroup);
     setMusic(map.music);
+    levelCompleted = false;
 }
 
 function changeLevel(level) {
@@ -183,7 +249,7 @@ function checkLevel(force){
         gameOver = true;
         document.getElementById('gameover').style.display = 'block';
     } else if(levelCompleted || force){
-        levelCompleted = false;
+        //levelCompleted = false;
         currentLevel++;  // Move to the next level
         if (currentLevel > levels.length) {
             currentLevel = 1; // Restart from level 1

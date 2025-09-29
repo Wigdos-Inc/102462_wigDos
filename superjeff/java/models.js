@@ -193,3 +193,5 @@ const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.position.y = -1;
 scene.add(floor);
+
+const flagGroup = new THREE.Group();
