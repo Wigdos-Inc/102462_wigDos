@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Jeff 2 Galaxy - Main Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .menu-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 60px 80px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(193, 215, 47, 0.3);
+            border: 3px solid rgba(193, 215, 47, 0.5);
+        }
+        
+        h1 {
+            font-size: 4em;
+            color: #c1d72f;
+            text-shadow: 0 0 20px rgba(193, 215, 47, 0.8);
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(193, 215, 47, 0.8); }
+            50% { text-shadow: 0 0 30px rgba(193, 215, 47, 1); }
+        }
+        
+        .subtitle {
+            font-size: 1.5em;
+            color: #fff;
+            margin-bottom: 50px;
+            opacity: 0.9;
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .menu-button {
+            padding: 20px 60px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1a1a2e;
+            background: linear-gradient(135deg, #c1d72f 0%, #a8c024 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(193, 215, 47, 0.4);
+        }
+        
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(193, 215, 47, 0.6);
+            background: linear-gradient(135deg, #d4ea3a 0%, #c1d72f 100%);
+        }
+        
+        .menu-button:active {
+            transform: translateY(-2px);
+        }
+        
+        .controls-info {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        
+        .jeff-character {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .jeff-head {
+            width: 80px;
+            height: 80px;
+            background: #f4d03f;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 5px 20px rgba(244, 208, 63, 0.5);
+        }
+        
+        .jeff-hair {
+            width: 8px;
+            height: 30px;
+            background: #2c3e50;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 4px;
+        }
+        
+        .jeff-body {
+            width: 60px;
+            height: 70px;
+            background: #3498db;
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+        }
+        
+        .version {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="starfield"></div>
+    
+    <div class="menu-container">
+        <div class="jeff-character">
+            <div class="jeff-head">
+                <div class="jeff-hair"></div>
+            </div>
+            <div class="jeff-body"></div>
+        </div>
+        
+        <h1>SUPER JEFF 2 GALAXY</h1>
+        <p class="subtitle">Explore the Stars, Collect the Power!</p>
+        
+        <div class="menu-buttons">
+            <a href="game.html" class="menu-button">START GAME</a>
+            <a href="game.html?level=2" class="menu-button">LEVEL 2</a>
+            <a href="game.html?level=3" class="menu-button">LEVEL 3</a>
+        </div>
+        
+        <div class="controls-info">
+            <strong>Controls:</strong><br>
+            WASD / Arrow Keys - Move<br>
+            Space - Jump<br>
+            Mouse - Look Around<br>
+            Scroll Wheel - Zoom<br>
+            1-3 - Change Level | R - Reset
+        </div>
+    </div>
+    
+    <div class="version">v1.0.0</div>
+    
+    <script>
+        // Generate starfield
+        const starfield = document.getElementById('starfield');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = (Math.random() * 3 + 1) + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starfield.appendChild(star);
+        }
+    </script>
+</body>
+</html>

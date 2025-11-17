@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Jeff2 - 3D Edition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        #hud h2 { margin: 0 0 10px 0; color: #c1d72f; }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #aaa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        #back-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: rgba(193, 215, 47, 0.8);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            z-index: 100;
+        }
+        #back-button:hover {
+            background: rgba(193, 215, 47, 1);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" id="back-button">← MENU</a>
+    
+    <div id="hud">
+        <h2>Super Jeff2 Galaxy</h2>
+        <div>Stars: <span id="stars">0</span>/<span id="totalStars">100</span></div>
+        <div>Level: <span id="level">1</span></div>
+        <div id="message" style="color: #ffcc00; margin-top: 5px;"></div>
+    </div>
+    <div id="controls">
+        WASD: Move | Space: Jump | Shift+Space: Long Jump | Q: Attack | E: Summersault | Wheel: Zoom | 1-3: Level | R: Reset
+    </div>
+    <canvas id="gameCanvas"></canvas>
+
+    <script type="module" src="game.js"></script>
+    <script type="module">
+        import { vec3 } from './vec3.js';
+        
+        // Check URL parameters for starting level
+        const urlParams = new URLSearchParams(window.location.search);
+        const startLevel = parseInt(urlParams.get('level')) || 1;
+        
+        // Wait for game to load then set level
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const event = new KeyboardEvent('keydown', { key: startLevel.toString() });
+                window.dispatchEvent(event);
+            }, 500);
+        });
+    </script>
+    <script>
+        const mainTheme = new Audio();
+        mainTheme.src = "assets/sound/superGalaxyJeffTheme_1.mp3";
+        mainTheme.loop = true;
+        mainTheme.playbackRate = 1.4;
+        mainTheme.play();
+    </script>
+</body>
+</html>
