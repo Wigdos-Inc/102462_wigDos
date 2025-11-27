@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineDOS</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="screen_container">
+        <div style="white-space: pre; font: 14px monospace; line-height: 4.2vh; font-size: 2.5vw; user-select: none;"></div>
+        <canvas style="display: none"></canvas>
+    </div>
+
+    <script src="libv86.js"></script>
+    <script>
+        const hdaBuffer = new Uint8Array(100 * 1024 * 1024);
+        const hdbBuffer = new Uint8Array(100 * 1024 * 1024);
+        hdaBuffer.fill(0);
+        hdbBuffer.fill(0);
+
+        var emulator = new V86({
+            wasm_path: "v86.wasm",
+            memory_size: 32 * 1024 * 1024,
+            vga_memory_size: 2 * 1024 * 1024,
+            screen_container: document.getElementById("screen_container"),
+            bios: { url: "bochs-bios.bin" },
+            vga_bios: { url: "bochs-vgabios.bin" },
+            hda: { url: "os.img" },
+            hdb: hdbBuffer,
+            //cdrom: {url: "disk.iso"},
+            autostart: true,
+            debug: true,
+        });
+
+        let mem8 = null;
+        const MEM_L = 8;
+        const MEM_W = 4;
+        const MEM_S = 2;
+        const MEM_B = 1;
+
+        function waitRam(){
+            return new Promise((resolve) => {
+                const check = () => {
+                    setTimeout(() => {
+                        mem8 = emulator.v86.cpu.mem8;
+                        if(mem8){
+                            //console.log("Ram is loaded!");
+                            resolve(mem8);
+                        }
+                        else{
+                            requestAnimationFrame(check);
+                        }
+                    }, 1000);
+                };
+                check();
+            });
+        }
+
+        async function SaveHDD(){
+            const hdb = emulator.disk_images.hdb;
+            if(!hdb){return;}
+
+            if(hdb.async){await hdb.async;}
+
+            const data = new Uint8Array(hdb.buffer);
+            const blob = new Blob([data], {type: "application/octet-stream"});
+            
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "hdb.img";
+            a.click();
+        }
+
+        function Peek(adrs, len, bit){
+            let result = [];
+            for(let j = 0; j < len; j++){
+                let curval = 0;
+                for(let i = 0; i < bit; i++){
+                    curval = (curval << 8) | mem8[(adrs +i) + (j * bit)];
+                }
+                result[j] = curval;
+            }
+            return result;
+        }
+        function Poke(adrs, val, bit){
+            let parsedval = [];
+            switch(bit){
+                case MEM_B:parsedval[0] = val;break;
+                case MEM_S:{
+                    parsedval[0] = val & 0x00FF;
+                    parsedval[1] = (val >> 8) & 0x00FF;
+                    break;
+                }
+                case MEM_W:{
+                    parsedval[0] = val & 0x000000FF;
+                    parsedval[1] = (val >> 8) & 0x000000FF;
+                    parsedval[2] = (val >> 16) & 0x000000FF;
+                    parsedval[3] = (val >> 24) & 0x000000FF;
+                    break;
+                }
+            }
+            for(let i = 0; i < bit; i++){
+                mem8[adrs +i] = parsedval[i];
+            }
+        }
+
+        window.addEventListener('message', (e) => {
+            const pack = e.data;
+            if(e.source !== window.parent){return;}
+            if(!pack.data){return;}
+
+            waitRam().then(() => {
+                switch(pack.type){
+                    case "CMD_PEEK":{
+                        const PeekDat = Peek(pack.data[0], pack.data[1], pack.data[2]);
+                        window.parent.postMessage({type: "PEEK", data: PeekDat});
+                        break;
+                    }
+                    case "CMD_POKE":{
+                        Poke(pack.data[0], pack.data[1], pack.data[2]);
+                        break;
+                    }
+                }
+            });
+        });
+
+        waitRam().then(() => {
+            //console.log(emulator);
+        });
+
+        //window.parent.postMessage({type: "reply", data: hdbBuffer}, '*');
+    </script>
+</body>
+</html>
