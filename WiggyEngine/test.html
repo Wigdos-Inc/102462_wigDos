@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiggyEngine Frontend Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: white;
+        }
+        
+        .test-area {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #666;
+        }
+        
+        #hierarchy, #inspector {
+            background-color: #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WiggyEngine Frontend Test</h1>
+    <p>Test van alleen de editor interface zonder 3D engine.</p>
+    
+    <div class="test-area">
+        <h3>GameObject Management</h3>
+        <button onclick="GameObjectManager.createGameObject('Test Object')">Create GameObject</button>
+        <button onclick="GameObjectManager.createCube()">Create Cube</button>
+        <button onclick="GameObjectManager.createSphere()">Create Sphere</button>
+        <button onclick="GameObjectManager.createCamera()">Create Camera</button>
+        
+        <h4>Scene Hierarchy:</h4>
+        <div id="hierarchy"></div>
+    </div>
+    
+    <div class="test-area">
+        <h3>Inspector</h3>
+        <div id="inspector">
+            <p>Select a GameObject to see properties</p>
+        </div>
+    </div>
+    
+    <div class="test-area">
+        <h3>Project Management</h3>
+        <button onclick="EditorUI.newProject()">New Project</button>
+        <button onclick="EditorUI.saveProject()">Save Project</button>
+        <button onclick="testEditor()">Test Editor Functions</button>
+    </div>
+
+    <!-- Frontend Editor Scripts -->
+    <script src="src/editor/ProjectManager.js"></script>
+    <script src="src/editor/EditorUI.js"></script>
+    <script src="src/editor/GameObjectManager.js"></script>
+    <script src="src/editor/ScriptEditor.js"></script>
+    <script src="src/editor/Inspector.js"></script>
+
+    <script>
+        // Test function
+        function testEditor() {
+            console.log('Testing editor functions...');
+            
+            // Test creating a project via ProjectManager
+            ProjectManager.createNewProject();
+            console.log('Project created:', EditorUI.currentProject);
+            
+            // Test creating objects
+            const obj1 = GameObjectManager.createGameObject('TestObject1');
+            const obj2 = GameObjectManager.createCube();
+            
+            console.log('Objects created:', obj1, obj2);
+            
+            // Update display
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            const hierarchy = document.getElementById('hierarchy');
+            const inspector = document.getElementById('inspector');
+            
+            // Show hierarchy
+            if (EditorUI.currentProject && EditorUI.currentProject.scenes[0]) {
+                const objects = EditorUI.currentProject.scenes[0].gameObjects;
+                hierarchy.innerHTML = '<ul>' + 
+                    objects.map(obj => `<li onclick="selectObject('${obj.id}')" style="cursor:pointer;padding:5px;border:1px solid #666;margin:2px;">${obj.name}</li>`).join('') + 
+                '</ul>';
+            }
+            
+            // Show selected object in inspector
+            if (GameObjectManager.selectedGameObject) {
+                inspector.innerHTML = '<pre>' + JSON.stringify(GameObjectManager.selectedGameObject, null, 2) + '</pre>';
+            }
+        }
+        
+        function selectObject(id) {
+            const objects = EditorUI.currentProject.scenes[0].gameObjects;
+            const obj = objects.find(o => o.id === id);
+            if (obj) {
+                GameObjectManager.selectedGameObject = obj;
+                updateDisplay();
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            EditorUI.initialize();
+            testEditor();
+        });
+    </script>
+</body>
+</html>

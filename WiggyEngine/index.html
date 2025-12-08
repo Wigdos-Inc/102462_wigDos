@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiggyEngine - 3D Game Engine Editor</title>
+    <link rel="stylesheet" href="src/editor/styles.css">
+</head>
+<body>
+    <div id="wiggy-engine">
+        <!-- Main Menu Bar -->
+        <div id="menu-bar">
+            <div class="menu-brand">
+                <img src="images/logo.png" alt="WiggyEngine" class="menu-logo">
+                <span class="menu-title">WiggyEngine</span>
+            </div>
+            <div class="menu-group">
+                <button class="menu-item" onclick="EditorUI.newProject()">Nieuw Project</button>
+                <button class="menu-item" onclick="EditorUI.openProject()">Project Openen</button>
+                <button class="menu-item" onclick="EditorUI.saveProject()">Opslaan</button>
+            </div>
+            <div class="menu-group">
+                <button class="menu-item" onclick="EditorUI.playProject()">▶ Afspelen</button>
+                <button class="menu-item" onclick="EditorUI.buildProject()">🔧 Bouwen</button>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div id="main-layout">
+            <!-- Hierarchy Panel -->
+            <div id="hierarchy-panel" class="panel">
+                <h3>Scene Hiërarchie</h3>
+                <div id="scene-tree"></div>
+                <button onclick="GameObjectManager.createGameObject('GameObject')">+ GameObject</button>
+            </div>
+
+            <!-- Viewport -->
+            <div id="viewport-container">
+                <canvas id="webgl-canvas" width="800" height="600"></canvas>
+                <div id="viewport-controls">
+                    <button id="move-tool" class="tool-btn active">Verplaatsen</button>
+                    <button id="rotate-tool" class="tool-btn">Roteren</button>
+                    <button id="scale-tool" class="tool-btn">Schalen</button>
+                </div>
+            </div>
+
+            <!-- Inspector Panel -->
+            <div id="inspector-panel" class="panel">
+                <h3>Inspector</h3>
+                <div id="inspector-content">
+                    <p>Selecteer een object om eigenschappen te bekijken</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asset Browser -->
+        <div id="asset-browser" class="panel">
+            <h3>Asset Browser</h3>
+            <div id="asset-grid"></div>
+            <div class="asset-controls">
+                <input type="file" id="import-asset" multiple accept=".obj,.png,.jpg,.jpeg,.wigc">
+                <button onclick="console.log('Asset import not implemented')">Importeren</button>
+                <button onclick="ScriptEditor.newScript()">+ Script</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Editor Modal -->
+    <div id="script-editor-modal" class="modal">
+        <div class="modal-content">
+            <h3>Script Editor</h3>
+            <textarea id="script-code" rows="20" cols="80"></textarea>
+            <div class="modal-controls">
+                <button onclick="ScriptEditor.compileScript()">Compileren</button>
+                <button onclick="ScriptEditor.saveScript()">Opslaan</button>
+                <button onclick="ScriptEditor.closeEditor()">Sluiten</button>
+            </div>
+            <div id="compile-output"></div>
+        </div>
+    </div>
+
+    <!-- Engine Math -->
+    <script src="src/engine/math/Vector3.js"></script>
+    <script src="src/engine/math/Matrix4.js"></script>
+    
+    <!-- Engine Rendering -->
+    <script src="src/engine/rendering/Camera.js"></script>
+    <script src="src/engine/rendering/Renderer2.js"></script>
+    <script src="src/engine/SceneEditor.js"></script>
+    
+    <!-- WigLang Compiler -->
+    <script src="src/compiler/WigLangLexer.js"></script>
+    <script src="src/compiler/WigLangParser.js"></script>
+    <script src="src/compiler/WASMGenerator.js"></script>
+    <script src="src/compiler/WigLangCompiler.js"></script>
+    
+    <!-- Frontend Editor Scripts -->
+    <script src="src/editor/ProjectBuilder.js"></script>
+    <script src="src/editor/ProjectManager.js"></script>
+    <script src="src/editor/EditorUI.js"></script>
+    <script src="src/editor/GameObjectManager.js"></script>
+    <script src="src/editor/ScriptEditor.js"></script>
+    <script src="src/editor/Inspector.js"></script>
+
+    <script>
+        // Initialize project manager when page loads
+        window.addEventListener('load', () => {
+            ProjectManager.initialize();
+        });
+    </script>
+</body>
+</html>
