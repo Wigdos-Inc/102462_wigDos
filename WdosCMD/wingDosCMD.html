@@ -82,7 +82,7 @@
                 screen_container: document.getElementById("screen_container"),
                 bios: { url: "bochs-bios.bin" },
                 vga_bios: { url: "bochs-vgabios.bin" },
-                hda: { url: "os.img" },
+                hda: { url: "customunix.img" },
                 hdb: hdbBuffer,
                 //cdrom: {url: "disk.iso"},
                 autostart: true,
@@ -190,7 +190,7 @@
         });
 
         setTimeout(() => {
-            SetupPC();
+            SetupPC(false);
             waitRam().then(() => {
                 //console.log(emulator);
             });
