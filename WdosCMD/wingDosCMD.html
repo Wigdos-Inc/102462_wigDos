@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MineDOS</title>
+    <title>WingDOS</title>
     <style>
         *{
             margin: 0;
             padding: 0;
             overflow: hidden;
         }
+
+        body{
+            background-color: black;
+        }
+
         .cursor{
             width: 1.5vw !important;
             height: 2px !important;
@@ -46,6 +51,7 @@
         let running = false;
 
         let mem8 = null;
+        let mem32 = null;
         const MEM_L = 8;
         const MEM_W = 4;
         const MEM_S = 2;
@@ -56,7 +62,7 @@
             running = true;
 
             if(!noFetch){
-                fetch("fat32_disk.img")
+                fetch("fat32disk.img")
                 .then(res => res.arrayBuffer())
                 .then(buf => {
                     hdbBuffer = new Uint8Array(buf);
@@ -96,6 +102,7 @@
                 const check = () => {
                     setTimeout(() => {
                         mem8 = emulator.v86.cpu.mem8;
+                        mem32 = emulator.v86.cpu.mem32s;
                         if(mem8){
                             //console.log("Ram is loaded!");
                             resolve(mem8);
@@ -136,24 +143,28 @@
             return result;
         }
         function Poke(adrs, val, bit, source){
-            let parsedval = [];
-            switch(bit){
-                case MEM_B:parsedval[0] = val;break;
-                case MEM_S:{
-                    parsedval[0] = val & 0x00FF;
-                    parsedval[1] = (val >> 8) & 0x00FF;
-                    break;
+            for(let j = 0; j < val.length; j++){
+                let parsedval = [];
+
+                switch(bit){
+                    case MEM_B:parsedval[0] = val[j];break;
+                    case MEM_S:{
+                        parsedval[0] = val[j] & 0x00FF;
+                        parsedval[1] = (val[j] >> 8) & 0x00FF;
+                        break;
+                    }
+                    case MEM_W:{
+                        parsedval[0] = val[j] & 0x000000FF;
+                        parsedval[1] = (val[j] >> 8) & 0x000000FF;
+                        parsedval[2] = (val[j] >> 16) & 0x000000FF;
+                        parsedval[3] = (val[j] >> 24) & 0x000000FF;
+                        break;
+                    }
                 }
-                case MEM_W:{
-                    parsedval[0] = val & 0x000000FF;
-                    parsedval[1] = (val >> 8) & 0x000000FF;
-                    parsedval[2] = (val >> 16) & 0x000000FF;
-                    parsedval[3] = (val >> 24) & 0x000000FF;
-                    break;
+
+                for(let i = 0; i < bit; i++){
+                    source[adrs +i +j] = parsedval[i];
                 }
-            }
-            for(let i = 0; i < bit; i++){
-                source[adrs +i] = parsedval[i];
             }
         }
 
@@ -170,6 +181,7 @@
                 let source = null;
                 switch(pack.src){
                     case "mem8":source = mem8;break;
+                    case "mem32":source = mem32;break;
                     case "hdb":source = hdbBuffer;break;
                 }
 
@@ -189,14 +201,14 @@
             });
         });
 
-        setTimeout(() => {
-            SetupPC(false);
-            waitRam().then(() => {
-                //console.log(emulator);
-            });
-        }, 1000);
+        const url = new URL(window.location.href);
 
-        //window.parent.postMessage({type: "reply", data: hdbBuffer}, '*');
+        if (!url.searchParams.has("autostart")) {
+            SetupPC();
+            waitRam().then(() => {
+                console.log("CMD has auto started ...");
+            });
+        }
     </script>
 </body>
 </html>
