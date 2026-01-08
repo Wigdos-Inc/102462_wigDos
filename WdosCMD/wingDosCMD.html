@@ -116,6 +116,48 @@
             });
         }
 
+        function waitDir(){
+            return new Promise((resolve) => {
+                const check = () => {
+                    setTimeout(() => {
+                        if(Peek(0x120000, 1, MEM_B, mem8) == 1){
+                            Poke(0x120000, 0, MEM_B, mem8);
+                            const DirData = Peek(0x120001, 256, MEM_B, mem8);
+
+                            let cleaned_data = [];
+                            for (let j = 0; j < DirData.length / 18; j++){
+                                let ofst = j * 18;
+                                if (DirData[ofst] == 16) break;
+
+                                let name = [];
+                                for (let i = 0; i < 13; i++){
+                                    name[i] = DirData[ofst +i];
+                                }
+
+                                let attribute = "FILE";
+                                if (DirData[ofst +14] == 16) {attribute = "DIR"}
+
+                                name = new TextDecoder("ascii").decode(new Uint8Array(name));
+
+                                cleaned_data.push ({
+                                    name: name.split('\0')[0],
+                                    attr: attribute,
+                                    size: DirData[ofst +15],
+                                });
+                            }
+
+                            window.parent.postMessage({type: "FOUND_DIR", data: cleaned_data});
+                            resolve();
+                        }
+                        else {
+                            requestAnimationFrame(check);
+                        }
+                    }, 1000);
+                };
+                check();
+            });
+        }
+
         async function SaveHDD(){
             const hdb = emulator.disk_images.hdb;
             if(!hdb){return;}
@@ -197,6 +239,15 @@
                         Poke(pack.data[0], pack.data[1], pack.data[2], source);
                         break;
                     }
+                    case "GET_DIR":{
+                        if(pack.data.length <= 0){window.parent.postMessage({type: "ERROR", data: "**No valid source was given**"});return;}
+                        Poke(0x110000, pack.data, MEM_B, mem8);
+                        waitDir();
+                        break;
+                    }
+                    case "GET_FILE":{
+                        break;
+                    }
                 }
             });
         });
@@ -209,6 +260,15 @@
                 console.log("CMD has auto started ...");
             });
         }
+
+        //setTimeout(() => {
+            //SetupPC();
+            //waitRam().then(() => {
+                //console.log(emulator);
+            //});
+        //}, 1000);
+
+        //window.parent.postMessage({type: "reply", data: hdbBuffer}, '*');
     </script>
 </body>
 </html>
