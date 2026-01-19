@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperJeff Cart Racing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+            font-size: 18px;
+        }
+        #speedometer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 3px solid #ffd700;
+        }
+        #lap-info {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 3px solid #ffd700;
+        }
+        #position-info {
+            position: absolute;
+            top: 140px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 3px solid #ffd700;
+            font-size: 24px;
+        }
+        #item-display {
+            position: absolute;
+            bottom: 120px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #ffd700;
+            font-size: 48px;
+            display: none;
+        }
+        #controls {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .key {
+            display: inline-block;
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 1px solid #666;
+            margin: 0 2px;
+        }
+        #character-select {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            text-align: center;
+            z-index: 1000;
+            min-width: 400px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        #character-select h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #ffd700;
+        }
+        #character-select .character-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        #character-select button {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: 2px solid #ffd700;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        #character-select button:hover {
+            background: #ffd700;
+            color: #000;
+            transform: scale(1.05);
+        }
+        #character-select button.selected {
+            background: #ffd700;
+            color: #000;
+        }
+        #character-select .character-info {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+        .menu-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            text-align: center;
+            z-index: 1000;
+            min-width: 400px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        .track-buttons, .pause-buttons, .results-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .track-buttons button, .pause-buttons button, .results-buttons button {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: 2px solid #ffd700;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        .track-buttons button:hover, .pause-buttons button:hover, .results-buttons button:hover {
+            background: #ffd700;
+            color: #000;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="character-select">
+        <h1>🏎️ Select Your Character</h1>
+        <div class="character-buttons">
+            <button id="btn-superjeff" class="selected">SuperJeff</button>
+            <button id="btn-carl">Carl</button>
+            <button id="btn-wally">Wally</button>
+        </div>
+        <div class="character-info">
+            <div id="character-desc">
+                <strong>SuperJeff</strong><br>
+                The original champion with blue shirt and distinctive hair!
+            </div>
+        </div>
+    </div>
+    <div id="ui" style="display: none;">
+        <div id="controls">
+            <strong>🎮 CONTROLS</strong><br>
+            <span class="key">↑</span> <span class="key">W</span> Vooruit<br>
+            <span class="key">↓</span> <span class="key">S</span> Achteruit/Rem<br>
+            <span class="key">←</span> <span class="key">D</span> Links<br>
+            <span class="key">→</span> <span class="key">A</span> Rechts<br>
+            <span class="key">Shift</span> Drift<br>
+            <span class="key">Space</span> Item gebruiken<br>
+            <span class="key">C</span> Camera wisselen
+        </div>
+        <div id="lap-info">
+            <div><strong>🏁 LAP:</strong> <span id="current-lap">1</span> / 3</div>
+            <div><strong>⏱️ TIME:</strong> <span id="time">0:00.0</span></div>
+        </div>
+        <div id="position-info">
+            <strong>📍 POS:</strong> <span id="position">1</span>/<span id="total-racers">6</span>
+        </div>
+        <div id="item-display">
+            <span id="current-item">❓</span>
+        </div>
+        <div id="speedometer">
+            <strong>💨 SPEED:</strong> <span id="speed">0</span> km/h
+        </div>
+    </div>
+    <script type="module">
+        // Character selection logic
+        const characterSelect = document.getElementById('character-select');
+        const charDesc = document.getElementById('character-desc');
+        let selectedCharacter = 'superjeff';
+
+        const characters = {
+            superjeff: {
+                name: 'SuperJeff',
+                desc: 'The original champion with blue shirt and distinctive hair!'
+            },
+            carl: {
+                name: 'Carl',
+                desc: 'A friendly purple octopus with 8 tentacles, big green eyes, and a cheeky smile! 🐙'
+            },
+            wally: {
+                name: 'Wally',
+                desc: 'A tough biker with a yellow helmet, big mustache, and muscular build. Ready to dominate! 💪'
+            }
+        };
+
+        // Set up character buttons
+        document.getElementById('btn-superjeff').addEventListener('click', () => {
+            selectCharacter('superjeff');
+        });
+        document.getElementById('btn-carl').addEventListener('click', () => {
+            selectCharacter('carl');
+        });
+        document.getElementById('btn-wally').addEventListener('click', () => {
+            selectCharacter('wally');
+        });
+
+        function selectCharacter(name) {
+            selectedCharacter = name;
+            
+            // Update button states
+            document.getElementById('btn-superjeff').classList.remove('selected');
+            document.getElementById('btn-carl').classList.remove('selected');
+            document.getElementById('btn-wally').classList.remove('selected');
+            document.getElementById(`btn-${name}`).classList.add('selected');
+            
+            // Update description
+            const char = characters[name];
+            charDesc.innerHTML = `<strong>${char.name}</strong><br>${char.desc}`;
+        }
+
+        // Start game on button click or Enter key
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        // Add start button
+        const startBtn = document.createElement('button');
+        startBtn.textContent = 'START RACE! 🚀';
+        startBtn.style.marginTop = '20px';
+        startBtn.style.fontSize = '18px';
+        startBtn.style.padding = '12px 40px';
+        characterSelect.appendChild(startBtn);
+        
+        startBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            // Hide selection and show game
+            characterSelect.style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            
+            // Start game with selected character
+            if (window.gameInstance) {
+                window.gameInstance = null;
+            }
+            
+            // Import and start game
+            import('/src/main.js').then(module => {
+                // Game will auto-start with URL params
+            });
+            
+            // Reload with character parameter
+            window.location.href = `?character=${selectedCharacter}`;
+        }
+
+        // Check if a character was selected via URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('character')) {
+            characterSelect.style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            
+            // Set total racers
+            const totalRacersSpan = document.getElementById('total-racers');
+            if (totalRacersSpan) {
+                totalRacersSpan.textContent = '6';
+            }
+        }
+    </script>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
