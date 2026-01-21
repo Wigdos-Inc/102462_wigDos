@@ -154,7 +154,7 @@ class KartRacingGame {
         this.backgroundMusic = new THREE.Audio(listener);
         const audioLoader = new THREE.AudioLoader();
         
-        audioLoader.load('/assets/sounds/JeffCart_Theme.mp3', (buffer) => {
+        audioLoader.load('assets/sounds/JeffCart_Theme.mp3', (buffer) => {
             this.backgroundMusic.setBuffer(buffer);
             this.backgroundMusic.setLoop(true);
             this.backgroundMusic.setVolume(0.5);
