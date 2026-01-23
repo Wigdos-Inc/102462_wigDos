@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container ">
+		<div class="">
+			<div style="width:100vw;height:100vh;max-width:none;position:absolute;top:0px;left:0px;">
+				<div id="game"></div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		const value = new URLSearchParams(window.location.search).get('game');
+		console.log(value);
+
+		EJS_player = '#game';
+
+		switch(value) {
+			case 'bk': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Banjo-Kazooie%20%28USA%29%20%28Rev%20A%29.n64.zip/Banjo-Kazooie%20%28Europe%29%20%28En%2CFr%2CDe%29.z64';break;
+			case 'bt': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Banjo-Tooie%20%28USA%29.n64.zip/Banjo-Tooie%20%28Europe%29%20%28En%2CFr%2CDe%2CEs%29.z64';break;
+			case 'cbfd': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Conker%27s%20Bad%20Fur%20Day%20%28USA%29.n64.zip/Conker%27s%20Bad%20Fur%20Day%20%28U%29%20%5BTrad-FR%5D.z64';break;
+			case 'dk': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Donkey%20Kong%2064%20%28USA%29.n64.zip/Donkey%20Kong%2064%20%28Europe%29%20%28En%2CFr%2CDe%2CEs%29.z64';break;
+			case 'dkr': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Diddy%20Kong%20Racing%20%28USA%29%20%28En%2CFr%29%20%28Rev%20A%29.n64.zip/Diddy%20Kong%20Racing%20%28USA%29%20%28En%2CFr%29%20%28Rev%20A%29.z64';break;
+			case 'zoot': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Legend%20of%20Zelda%2C%20The%20-%20Ocarina%20of%20Time%20%28USA%29%20%28Rev%20B%29.n64.zip/Legend%20of%20Zelda%2C%20The%20-%20Ocarina%20of%20Time%20%28Europe%29%20%28En%2CFr%2CDe%29%20%28Rev%20A%29.z64';break;
+			case 'mp3': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Mario%20Party%203%20%28USA%29.n64.zip/Mario%20Party%203%20%28Europe%29%20%28En%2CFr%2CDe%2CEs%29.z64';break;
+			case 'ys': EJS_gameUrl = 'https://archive.org/download/roms-bestset-nintendo-64/Yoshi%27s%20Story%20%28USA%29%20%28En%2CJa%29.n64.zip/Yoshi%27s%20Story%20%28Europe%29%20%28En%2CFr%2CDe%29.z64';break;
+			default: EJS_gameUrl = '';
+		}
+
+		EJS_core = 'n64';
+		EJS_pathtodata = 'js/';
+	</script>
+	<script src="js/loader.js"></script>
+</body>
+</html>
