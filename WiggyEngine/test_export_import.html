@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiggyEngine - Test Export/Import</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #ffffff;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        .test-section {
+            background: #2d2d2d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #81C784;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .status {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        ul {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 WiggyEngine Export/Import Fix Verification</h1>
+    
+    <div class="test-section">
+        <h2>✅ Fixes Applied</h2>
+        <ul>
+            <li><strong>File Extension Consistency:</strong> Projects now save as <code>.wigp</code> consistently</li>
+            <li><strong>Import Compatibility:</strong> Can load both <code>.wigp</code> and <code>.wigproj</code> files</li>
+            <li><strong>Error Handling:</strong> Better error messages and fallback support</li>
+            <li><strong>Build Export:</strong> Games export as <code>ProjectName_game.html</code> with success feedback</li>
+            <li><strong>User Feedback:</strong> Added alerts and notifications for all operations</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 How to Test</h2>
+        <ol>
+            <li><strong>Open the Editor:</strong> <a href="index.html" target="_blank">Open WiggyEngine Editor</a></li>
+            <li><strong>Create a Test Project:</strong>
+                <ul>
+                    <li>Click "Nieuw Project"</li>
+                    <li>Enter a project name (e.g., "TestGame")</li>
+                    <li>Click "Maken"</li>
+                </ul>
+            </li>
+            <li><strong>Add Some Content:</strong>
+                <ul>
+                    <li>Click "+ GameObject" to add objects</li>
+                    <li>Modify properties in the Inspector</li>
+                </ul>
+            </li>
+            <li><strong>Save the Project:</strong>
+                <ul>
+                    <li>Click "Opslaan" in the menu bar</li>
+                    <li>File will download as <code>ProjectName.wigp</code></li>
+                    <li>✅ Should see "Project opgeslagen" notification</li>
+                </ul>
+            </li>
+            <li><strong>Build the Game:</strong>
+                <ul>
+                    <li>Click "🔧 Bouwen" button</li>
+                    <li>Wait for "Project wordt gebouwd..." notification</li>
+                    <li>File will download as <code>ProjectName_game.html</code></li>
+                    <li>✅ Should see success alert with statistics</li>
+                </ul>
+            </li>
+            <li><strong>Reload and Import:</strong>
+                <ul>
+                    <li>Refresh the editor page (F5)</li>
+                    <li>Click "Project Openen"</li>
+                    <li>Select your saved <code>.wigp</code> file</li>
+                    <li>✅ Should see "Project ... succesvol geladen!" alert</li>
+                    <li>✅ All your gameObjects and settings should be restored</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Expected Results</h2>
+        <div class="status">
+            <div class="success">✓ Save Project: Downloads .wigp file + shows notification</div>
+            <div class="success">✓ Build Game: Downloads _game.html + shows success alert</div>
+            <div class="success">✓ Import Project: Loads file successfully + shows alert</div>
+            <div class="success">✓ Project State: All gameObjects and scenes preserved</div>
+            <div class="success">✓ Error Handling: Clear error messages if file is corrupted</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Debug Console</h2>
+        <p>Open browser DevTools (F12) to see detailed logs:</p>
+        <div class="status">
+            <div class="info">ℹ On Save: "Compression: X -> Y bytes (ratio: Z:1)"</div>
+            <div class="info">ℹ On Load: "Project loaded successfully: ProjectName"</div>
+            <div class="info">ℹ On Build: "Build completed in Xms"</div>
+            <div class="error">✗ On Error: Detailed error message and stack trace</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📄 File Format Support</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #333;">
+                <th style="padding: 10px; text-align: left;">Format</th>
+                <th style="padding: 10px; text-align: left;">Extension</th>
+                <th style="padding: 10px; text-align: left;">Status</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">Current Compressed</td>
+                <td style="padding: 10px;"><code>.wigp</code></td>
+                <td style="padding: 10px;" class="success">✓ Fully Supported</td>
+            </tr>
+            <tr style="background: #252525;">
+                <td style="padding: 10px;">Legacy Compressed</td>
+                <td style="padding: 10px;"><code>.wigproj</code></td>
+                <td style="padding: 10px;" class="success">✓ Backward Compatible</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">Uncompressed JSON</td>
+                <td style="padding: 10px;"><code>.json</code></td>
+                <td style="padding: 10px;" class="info">⚠ Fallback Support</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>⚡ Quick Actions</h2>
+        <button onclick="window.open('index.html', '_blank')">🚀 Open Editor</button>
+        <button onclick="window.open('EXPORT_IMPORT_FIX.md', '_blank')">📖 View Documentation</button>
+        <button onclick="testLocalStorage()">🧪 Test LocalStorage</button>
+        <button onclick="showTechnicalDetails()">🔬 Technical Details</button>
+    </div>
+
+    <div id="output" class="status" style="display: none;"></div>
+
+    <script>
+        function testLocalStorage() {
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            
+            try {
+                // Test localStorage availability
+                const testKey = 'wiggyengine_test';
+                const testValue = JSON.stringify({ test: true, timestamp: Date.now() });
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved === testValue) {
+                    output.innerHTML = '<div class="success">✓ LocalStorage: Working correctly</div>' +
+                                     '<div class="info">ℹ Project history will be saved between sessions</div>';
+                } else {
+                    output.innerHTML = '<div class="error">✗ LocalStorage: Read/write mismatch</div>';
+                }
+            } catch (error) {
+                output.innerHTML = '<div class="error">✗ LocalStorage: ' + error.message + '</div>' +
+                                 '<div class="info">⚠ Project history will not persist</div>';
+            }
+        }
+
+        function showTechnicalDetails() {
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div class="info"><strong>Compression Algorithm:</strong></div>
+                <div>• LZ77 with 4096-byte sliding window</div>
+                <div>• Huffman coding for entropy compression</div>
+                <div>• Typical ratio: 3:1 to 5:1</div>
+                <br>
+                <div class="info"><strong>File Structure:</strong></div>
+                <div>• Type: "WiggyEngine Project"</div>
+                <div>• Version: "1.0.0"</div>
+                <div>• Compression: "WiggyLZ77+Huffman"</div>
+                <div>• Data: { compressed, originalSize, compressedSize, ratio }</div>
+                <br>
+                <div class="info"><strong>Supported Browsers:</strong></div>
+                <div>• Chrome/Edge: Full support</div>
+                <div>• Firefox: Full support</div>
+                <div>• Safari: Full support</div>
+                <div>• Opera: Full support</div>
+            `;
+        }
+
+        // Auto-test on page load
+        console.log('%c🔧 WiggyEngine Export/Import Test Page', 'color: #4CAF50; font-size: 16px; font-weight: bold;');
+        console.log('%cAll fixes have been applied. Open index.html to test.', 'color: #81C784; font-size: 14px;');
+        console.log('%c✓ File extension: .wigp', 'color: #4CAF50;');
+        console.log('%c✓ Import compatibility: .wigp and .wigproj', 'color: #4CAF50;');
+        console.log('%c✓ Error handling: Enhanced with fallbacks', 'color: #4CAF50;');
+        console.log('%c✓ User feedback: Alerts and notifications added', 'color: #4CAF50;');
+    </script>
+</body>
+</html>

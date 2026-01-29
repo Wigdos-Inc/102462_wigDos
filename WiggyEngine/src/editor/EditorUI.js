@@ -167,13 +167,15 @@ class EditorUI {
                     
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `${this.currentProject.name}.html`;
+                    link.download = `${this.currentProject.name}_game.html`;
                     link.click();
                     
                     URL.revokeObjectURL(url);
                     this.showNotification(`Project succesvol gebouwd! ${buildResult.stats}`, 'success');
+                    alert(`Game geëxporteerd als "${this.currentProject.name}_game.html"\n${buildResult.stats}`);
                 } else {
                     this.showNotification(`Build mislukt: ${buildResult.error}`, 'error');
+                    alert('Build mislukt: ' + buildResult.error);
                 }
             } catch (error) {
                 console.error('Build error:', error);

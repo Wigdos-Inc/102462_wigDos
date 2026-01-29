@@ -58,8 +58,8 @@
             <h3>Asset Browser</h3>
             <div id="asset-grid"></div>
             <div class="asset-controls">
-                <input type="file" id="import-asset" multiple accept=".obj,.png,.jpg,.jpeg,.wigc">
-                <button onclick="console.log('Asset import not implemented')">Importeren</button>
+                <input type="file" id="import-asset" multiple accept=".obj,.png,.jpg,.jpeg,.wigc,.wigp,.wigproj">
+                <button onclick="ProjectManager.showLoadProjectDialog()">Project Importeren</button>
                 <button onclick="ScriptEditor.newScript()">+ Script</button>
             </div>
         </div>
