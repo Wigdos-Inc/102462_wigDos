@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Donkey Kong Rap - 3D Intro</title>
+  <link rel="icon" href="assets/img/detailed_jugnlyKong.png">
+  <style>
+    :root{--stage-height:100vh}
+    html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:#000;color:#fff;overflow:hidden}
+    .wrap{height:100vh;max-width:100%;margin:0;padding:0} 
+    .controls{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+    .btn{background:#ffcb05;color:#000;padding:10px 16px;border-radius:6px;border:none;font-weight:700;cursor:pointer}
+    .btn.secondary{background:#222;color:#fff;border:1px solid rgba(255,255,255,.06)}
+    .info{opacity:.95;font-size:14px}
+
+    /* stage container */
+    .stage3d{position:relative;height:var(--stage-height);background:linear-gradient(180deg,#0b0502 0%, #120606 60%);box-shadow:0 30px 80px rgba(0,0,0,.85);overflow:hidden;border-radius:0}
+    #threeContainer{position:absolute;left:0;right:0;top:0;bottom:0}
+    .three-overlay{position:absolute;left:0;right:0;bottom:10px;text-align:center;pointer-events:auto}
+
+    /* small fallback placeholders */
+    .placeholder{width:160px;height:160px;border-radius:8px;background:linear-gradient(180deg,#ffd79b,#ffb347);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700}
+
+    /* Lyrics display */
+    #lyrics-container{
+      position:absolute;
+      bottom:80px;
+      left:50%;
+      transform:translateX(-50%);
+      width:90%;
+      max-width:800px;
+      text-align:center;
+      z-index:20;
+      pointer-events:none;
+    }
+    .lyric-line{
+      font-size:32px;
+      font-weight:900;
+      color:#ffeb3b;
+      text-shadow:4px 4px 8px rgba(0,0,0,0.9),
+                  0 0 20px rgba(255,200,0,0.6);
+      margin:8px 0;
+      opacity:0;
+      transform:translateY(20px) scale(0.9);
+      transition:all 0.3s ease-out;
+      font-family:'Comic Sans MS',cursive,sans-serif;
+      letter-spacing:2px;
+    }
+    .lyric-line.active{
+      opacity:1;
+      transform:translateY(0) scale(1);
+      animation:pulse 0.5s ease-in-out;
+    }
+    .lyric-line.fade-out{
+      opacity:0;
+      transform:translateY(-20px) scale(0.95);
+    }
+    @keyframes pulse{
+      0%,100%{transform:translateY(0) scale(1);}
+      50%{transform:translateY(0) scale(1.05);}
+    }
+
+    h1{margin:8px 0}
+    .info small{opacity:.8;display:block;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Donkey Kong Rap — 3D</h1>
+    <div class="controls">
+      <button class="btn secondary" id="skipBtn">Skip Intro</button>
+      <button class="btn secondary" id="muteBtn">Mute</button>
+      <div class="info" id="status">Paused</div>
+    </div>
+
+    <div class="stage3d" id="stage3d">
+      <div id="threeContainer"></div>
+      <div id="lyrics-container">
+        <div class="lyric-line" id="lyric1"></div>
+        <div class="lyric-line" id="lyric2"></div>
+      </div>
+      <div class="three-overlay">
+        <div class="info">Audio: <code>assets/music/BananaRap (2).mp3</code> — This scene attempts to autoplay visuals and audio. Use the controls to pause/unmute or skip.</div>
+        <div style="margin-top:14px">
+          <button class="btn" id="playBtn">Pause</button>
+        </div>
+      </div>
+    </div>
+
+    <audio id="track" src="assets/music/junglyKongRap_2.mp3" autoplay playsinline crossorigin="anonymous"></audio>
+    <p style="color:#ccc;font-size:13px;margin-top:12px">Tip: This uses procedural 3D models — no additional images required. Some browsers require a user gesture to start audio and 3D context.</p>
+  </div>
+
+  <script>
+    // controls
+    const playBtn = document.getElementById('playBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const status = document.getElementById('status');
+    const track = document.getElementById('track');
+
+    // audio + analyser setup
+    let audioCtx, analyser, srcNode, dataArray;
+    function setupAudio(){
+      if(audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024;
+      const bufferLength = analyser.frequencyBinCount; dataArray = new Uint8Array(bufferLength);
+      srcNode = audioCtx.createMediaElementSource(track); srcNode.connect(analyser); analyser.connect(audioCtx.destination);
+    }
+
+    // lazy load scripts
+    function loadScript(url){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=url; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+
+    // 3D state
+    let threeReady=false; let glScene, glCamera, glRenderer; let anchors=[], apes=[], shadows=[]; let containerEl;
+    let animating = false;
+    let clock = null;
+    let djGroup = null; // simple DJ turntable group
+    let particleSystem = null;
+    let spotlights = [];
+    
+    // Lyrics timing (original parody lyrics)
+    const lyrics = [
+      {time: 0.5, text: "J-U-N-G-L-Y KONGS!"},
+      {time: 2.5, text: "They're the leaders of the bunch"},
+      {time: 4.5, text: "You know them well, they're finally here"},
+      {time: 6.5, text: "Performing for you!"},
+      {time: 8.0, text: "If you know the words, you can join in too!"},
+      {time: 11.0, text: "Put your hands together"},
+      {time: 12.5, text: "If you want to clap"},
+      {time: 14.0, text: "As we take you through"},
+      {time: 15.5, text: "This JUNGLY RAP!"},
+      {time: 17.0, text: "HUH!"},
+      {time: 18.5, text: "J-K! JunglyKong!"},
+      {time: 21.0, text: "He's the leader of the crew!"},
+      {time: 23.5, text: "He's finally back to kick some tail"},
+      {time: 26.0, text: "His coconut gun can fire in spurts"},
+      {time: 28.5, text: "If he shoots ya, it's gonna hurt!"},
+      {time: 31.0, text: "He's bigger, faster, and stronger too"},
+      {time: 33.5, text: "He's the first member of the JUNGLY CREW!"},
+      {time: 36.0, text: "HUH!"},
+      {time: 37.5, text: "D-K! DiddyApe!"},
+      {time: 40.0, text: "He's quick and nimble when he needs to be"},
+      {time: 42.5, text: "He can fly real high with his jetpack on"},
+      {time: 45.0, text: "With his pistols out, he's one tough Kong!"},
+      {time: 47.5, text: "He can leap through the air with the greatest of ease"},
+      {time: 50.0, text: "This crazy Kong just digs this tune!"},
+      {time: 52.5, text: "HUH!"},
+      {time: 54.0, text: "They're here for you!"},
+      {time: 56.0, text: "It's the JUNGLY CREW!"},
+      {time: 58.0, text: "Come on!"},
+      {time: 59.0, text: "Let's go bananas!"},
+    ];
+    
+    let currentLyricIndex = 0;
+    const lyricLine1 = document.getElementById('lyric1');
+    const lyricLine2 = document.getElementById('lyric2');
+    
+
+    function updateLyrics(currentTime){
+      if(currentLyricIndex >= lyrics.length) return;
+      
+      const currentLyric = lyrics[currentLyricIndex];
+      if(currentTime >= currentLyric.time){
+        // Fade out previous
+        if(lyricLine2.textContent){
+          lyricLine2.classList.remove('active');
+          lyricLine2.classList.add('fade-out');
+          setTimeout(() => {
+            lyricLine2.textContent = '';
+            lyricLine2.classList.remove('fade-out');
+          }, 300);
+        }
+        
+        // Move line1 to line2
+        lyricLine2.textContent = lyricLine1.textContent;
+        lyricLine2.className = 'lyric-line';
+        if(lyricLine1.textContent) lyricLine2.classList.add('active');
+        
+        // Show new line
+        lyricLine1.textContent = currentLyric.text;
+        lyricLine1.className = 'lyric-line';
+        setTimeout(() => lyricLine1.classList.add('active'), 10);
+        
+        currentLyricIndex++;
+        
+        // Trigger particle burst on beat
+        if(particleSystem && (currentLyric.text.includes('HUH') || currentLyric.text.includes('!'))){
+          spawnParticleBurst(300);
+        }
+      }
+    }
+    
+    function spawnParticleBurst(count = 200){
+      if(!particleSystem) return;
+      for(let i = 0; i < count; i++){
+        const particle = particleSystem.geometry.attributes.position;
+        const idx = Math.floor(Math.random() * (particle.count / 3)) * 3;
+        const vel = particleSystem.geometry.attributes.velocity;
+        vel.array[idx] = (Math.random() - 0.5) * 30;
+        vel.array[idx + 1] = Math.random() * 25 + 10;
+        vel.array[idx + 2] = (Math.random() - 0.5) * 30;
+      }
+    }
+    
+    function createShadowTexture(size=256){
+      const c=document.createElement('canvas'); c.width=c.height=size; const ctx=c.getContext('2d');
+      const g=ctx.createRadialGradient(size/2,size/2,1,size/2,size/2,size/1.6);
+      g.addColorStop(0,'rgba(0,0,0,0.95)'); g.addColorStop(0.3,'rgba(0,0,0,0.5)'); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+      return new THREE.CanvasTexture(c);
+    }
+
+    async function init3D(){
+      if(threeReady) return;
+      await loadScript('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js');
+      // initialize clock for animation timing
+      clock = new THREE.Clock();
+
+      containerEl = document.getElementById('threeContainer');
+
+      // WebGL
+      glScene = new THREE.Scene();
+      glCamera = new THREE.PerspectiveCamera(50, containerEl.clientWidth/containerEl.clientHeight, 1, 4000); glCamera.position.set(0,180,900);
+      glRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true}); glRenderer.setPixelRatio(window.devicePixelRatio); glRenderer.setSize(containerEl.clientWidth, containerEl.clientHeight); glRenderer.shadowMap.enabled=true; containerEl.appendChild(glRenderer.domElement);
+
+      const amb = new THREE.AmbientLight(0xffffff, 0.45); glScene.add(amb);
+      const key = new THREE.DirectionalLight(0xfff0d6, 1.02); key.position.set(300,700,200); key.castShadow=true; key.shadow.mapSize.set(2048,2048); glScene.add(key);
+
+      const floorGeo = new THREE.PlaneGeometry(3000,1500);
+      const floorMat = new THREE.MeshStandardMaterial({color:0x6a3a18, roughness:0.9});
+      const floor = new THREE.Mesh(floorGeo,floorMat); floor.rotation.x=-Math.PI/2; floor.position.y=-20; floor.receiveShadow=true; glScene.add(floor);
+
+      // Procedural low‑poly apes (no external models)
+      // small palette and poses for each kong-like character
+      const poses = [ {x:-320,y:110,z:130,s:1.05, color:0x8b5a2b, name:'Donkey'}, {x:-60,y:90,z:-70,s:0.9, color:0x5a8b2b, name:'Diddy'}, {x:160,y:96,z:-40,s:0.95, color:0x8b2b5a, name:'Tiny'}, {x:380,y:120,z:70,s:1.05, color:0x3b2a1a, name:'DJ'} ];
+
+      function makeApe(spec){
+        const anchor = new THREE.Object3D(); anchor.position.set(spec.x, spec.y, spec.z); glScene.add(anchor); anchors.push(anchor);
+
+        const ape = new THREE.Group(); ape.name = spec.name || 'ape';
+        const mat = new THREE.MeshStandardMaterial({color:spec.color, roughness:0.85, metalness:0.02, flatShading:true});
+        const dark = new THREE.MeshStandardMaterial({color:0x352216, roughness:0.95, flatShading:true});
+        const eyeMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.9, flatShading:true});
+        const pupilMat = new THREE.MeshStandardMaterial({color:0x000000});
+
+        // torso
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(120,100,80), mat); torso.position.set(0,20,0); torso.castShadow=true; ape.add(torso);
+
+        // head
+        const head = new THREE.Mesh(new THREE.IcosahedronGeometry(46,0), mat); head.position.set(0,78,6); head.castShadow=true; ape.add(head);
+
+        // muzzle
+        const muzzle = new THREE.Mesh(new THREE.BoxGeometry(64,30,34), dark); muzzle.position.set(0,66,40); muzzle.castShadow=true; ape.add(muzzle);
+
+        // eyes
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(6,6,6), eyeMat); eyeL.position.set(-14,86,58); ape.add(eyeL);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(6,6,6), eyeMat); eyeR.position.set(14,86,58); ape.add(eyeR);
+        const pL = new THREE.Mesh(new THREE.SphereGeometry(2.5,6,6), pupilMat); pL.position.set(-14,86,64); ape.add(pL);
+        const pR = new THREE.Mesh(new THREE.SphereGeometry(2.5,6,6), pupilMat); pR.position.set(14,86,64); ape.add(pR);
+
+        // arms (groups for rotation)
+        const armL = new THREE.Group(); const upperL = new THREE.Mesh(new THREE.BoxGeometry(20,80,20), mat); upperL.position.set(-50,-10,0); upperL.castShadow=true; upperL.rotation.z = -0.2; armL.add(upperL); armL.position.set(-76,40,0); ape.add(armL);
+        const armR = new THREE.Group(); const upperR = new THREE.Mesh(new THREE.BoxGeometry(20,80,20), mat); upperR.position.set(50,-10,0); upperR.castShadow=true; upperR.rotation.z = 0.2; armR.add(upperR); armR.position.set(76,40,0); ape.add(armR);
+
+        // legs
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(28,70,28), dark); legL.position.set(-28,-40,10); legL.castShadow=true; ape.add(legL);
+        const legR = new THREE.Mesh(new THREE.BoxGeometry(28,70,28), dark); legR.position.set(28,-40,10); legR.castShadow=true; ape.add(legR);
+
+        // belly
+        const belly = new THREE.Mesh(new THREE.BoxGeometry(60,40,44), new THREE.MeshStandardMaterial({color:0xf2d7a6, roughness:0.9, flatShading:true})); belly.position.set(0,12,38); belly.castShadow=true; ape.add(belly);
+
+        ape.userData = {head, armL, armR, legL, legR, torso};
+        ape.scale.setScalar(spec.s*0.9);
+        anchor.add(ape);
+        apes.push(ape);
+
+        // shadow plane (attached to anchor so it follows position)
+        const shTex = createShadowTexture(512);
+        const shMat = new THREE.MeshBasicMaterial({map:shTex,transparent:true,depthWrite:false});
+        const shGeo = new THREE.PlaneGeometry(420,220);
+        const sh = new THREE.Mesh(shGeo, shMat); sh.rotation.x=-Math.PI/2; sh.position.y=-18; anchor.add(sh); shadows.push(sh);
+      }
+
+      // create apes
+      makeApe(poses[0]);
+      makeApe(poses[1]);
+      makeApe(poses[2]);
+      makeApe(poses[3]);
+
+      // add a simple DJ turntable to the right
+      djGroup = new THREE.Group(); djGroup.position.set(420, 70, 80); glScene.add(djGroup);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(140,20,140), new THREE.MeshStandardMaterial({color:0x2b2b2b,roughness:0.8})); base.position.y = 0; base.castShadow=true; djGroup.add(base);
+      const vinyl = new THREE.Mesh(new THREE.CylinderGeometry(60,60,8,32), new THREE.MeshStandardMaterial({color:0x111,metalness:0.3,roughness:0.4})); vinyl.rotation.x = Math.PI/2; vinyl.position.y=12; vinyl.castShadow=true; djGroup.add(vinyl);
+      djGroup.userData = {vinyl};
+
+      // add simple particles for drops and clap bursts
+      const particleCount = 300; const particlesGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount*3);
+      const velocities = new Float32Array(particleCount*3);
+      const colors = new Float32Array(particleCount*3);
+      for(let i=0;i<particleCount;i++){
+        positions[i*3]=0; positions[i*3+1]= -1000; positions[i*3+2]=0;
+        velocities[i*3]=0; velocities[i*3+1]=0; velocities[i*3+2]=0;
+        colors[i*3]=1; colors[i*3+1]=0.8; colors[i*3+2]=0.2;
+      }
+      particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+      particlesGeo.setAttribute('velocity', new THREE.BufferAttribute(velocities,3));
+      particlesGeo.setAttribute('color', new THREE.BufferAttribute(colors,3));
+      const pMat = new THREE.PointsMaterial({size:15, vertexColors:true, transparent:true, opacity:0.95, blending:THREE.AdditiveBlending});
+      const particles = new THREE.Points(particlesGeo, pMat);
+      particles.frustumCulled=false;
+      glScene.add(particles);
+      particleSystem = particles;
+      glScene.userData.particles = {mesh:particles, lifetimes: new Float32Array(particleCount)};
+      
+      // Add colored spotlights
+      const spotlight1 = new THREE.SpotLight(0xff00ff, 1.5, 0, Math.PI/6, 0.5);
+      spotlight1.position.set(-400, 400, 200);
+      spotlight1.target.position.set(-320, 0, 130);
+      glScene.add(spotlight1);
+      glScene.add(spotlight1.target);
+      spotlights.push(spotlight1);
+      
+      const spotlight2 = new THREE.SpotLight(0x00ffff, 1.5, 0, Math.PI/6, 0.5);
+      spotlight2.position.set(400, 400, 200);
+      spotlight2.target.position.set(380, 0, 70);
+      glScene.add(spotlight2);
+      glScene.add(spotlight2.target);
+      spotlights.push(spotlight2);
+      
+      const spotlight3 = new THREE.SpotLight(0xffff00, 1.5, 0, Math.PI/6, 0.5);
+      spotlight3.position.set(0, 400, -300);
+      spotlight3.target.position.set(-60, 0, -70);
+      glScene.add(spotlight3);
+      glScene.add(spotlight3.target);
+      spotlights.push(spotlight3);
+
+      // Dynamic camera choreography synchronized with lyrics
+      cues.push({t:0.5, id:'intro-zoom', fn:()=>{ setCameraTarget(0, 160, 700); }});
+      cues.push({t:2.0, id:'crowd-wave', fn:()=>{ apes.forEach((ape,i)=>{ setTimeout(()=>{ ape.userData.armL.rotation.z = -0.2; ape.userData.armR.rotation.z = 0.2; setTimeout(()=>{ ape.userData.armL.rotation.z = -0.6; ape.userData.armR.rotation.z = 0.6; }, 420); }, i*120); }); }});
+      cues.push({t:4.5, id:'pan-left', fn:()=>{ setCameraTarget(-200, 150, 750); }});
+      cues.push({t:8.5, id:'dj-flick', fn:()=>{ const v = djGroup.userData.vinyl; let t0 = performance.now(); const dur=900; (function spin(){ const dt=performance.now()-t0; if(dt<dur){ v.rotation.z += 0.08; requestAnimationFrame(spin); }})(); setCameraTarget(300, 140, 650); }});
+      cues.push({t:11.0, id:'wide-shot', fn:()=>{ setCameraTarget(0, 180, 900); }});
+      cues.push({t:15.2, id:'big-drop', fn:()=>{ spawnParticleBurst(300); setCameraTarget(0, 120, 600); apes.forEach((ape,i)=>{ const scale = 1.25; if(window.TWEEN){ new TWEEN.Tween(ape.scale).to({x:scale,y:scale,z:scale}, 320).easing(TWEEN.Easing.Back.Out).yoyo(true).repeat(1).start(); } else { const orig = ape.scale.clone(); ape.scale.setScalar(scale); setTimeout(()=>{ ape.scale.copy(orig); }, 420);} }); }});
+      cues.push({t:18.5, id:'focus-donkey', fn:()=>{ setCameraTarget(-320, 130, 500); spotlights[0].intensity = 2.5; setTimeout(()=>spotlights[0].intensity=1.5, 3000); }});
+      cues.push({t:26.0, id:'circle-cam', fn:()=>{ setCameraTarget(150, 160, 700); }});
+      cues.push({t:33.5, id:'burst', fn:()=>{ spawnParticleBurst(250); }});
+      cues.push({t:37.5, id:'focus-diddy', fn:()=>{ setCameraTarget(-60, 120, 450); spotlights[2].intensity = 2.5; setTimeout(()=>spotlights[2].intensity=1.5, 3000); }});
+      cues.push({t:42.5, id:'aerial', fn:()=>{ setCameraTarget(0, 280, 850); }});
+      cues.push({t:47.5, id:'low-angle', fn:()=>{ setCameraTarget(100, 80, 600); }});
+      cues.push({t:52.5, id:'final-huh', fn:()=>{ spawnParticleBurst(350); setCameraTarget(0, 150, 750); }});
+      cues.push({t:54.0, id:'group-shot', fn:()=>{ setCameraTarget(0, 170, 850); spotlights.forEach(s => s.intensity = 2.0); }});
+      cues.push({t:58.0, id:'finale', fn:()=>{ spawnParticleBurst(400); apes.forEach(ape=>{ ape.userData.armL.rotation.z = -1.5; ape.userData.armR.rotation.z = 1.5; }); }});
+
+      
+
+      // camera control target
+      glScene.userData.cameraTarget = new THREE.Vector3(0,140,820);
+
+      window.addEventListener('resize', ()=>{ const w=containerEl.clientWidth, h=containerEl.clientHeight; glCamera.aspect=w/h; glCamera.updateProjectionMatrix(); glRenderer.setSize(w,h); });
+
+      threeReady=true; animating=true; animate();
+    }
+
+    function setCameraTarget(x,y,z){ if(glScene) glScene.userData.cameraTarget.set(x,y,z); }
+
+    function animate(){
+      if(!animating) return;
+      requestAnimationFrame(animate);
+
+      // Update lyrics based on track time
+      if(!track.paused){
+        updateLyrics(track.currentTime);
+      }
+      
+      // Animate spotlights
+      const t = Date.now() * 0.001;
+      spotlights.forEach((spot, i) => {
+        spot.position.y = 400 + Math.sin(t * 0.5 + i * 2) * 50;
+        spot.angle = Math.PI/6 + Math.sin(t * 0.8 + i) * 0.05;
+      });
+
+      if(analyser){
+        // update tweens (if included)
+        if(window.TWEEN) TWEEN.update();
+        analyser.getByteFrequencyData(dataArray);
+        const bass = dataArray.slice(0,20).reduce((a,b)=>a+b,0)/20; const norm = Math.min(1, bass/240);
+        anchors.forEach((a,i)=>{
+          const ape = apes[i]; if(!ape) return;
+          const t = Date.now()*0.002;
+          const s = 1 + norm*(0.08 + i*0.02);
+          a.scale.setScalar(s);
+          a.position.y = 96 + Math.sin(t + i) * (6 + norm*10);
+
+          // animate parts
+          const head = ape.userData.head;
+          const armL = ape.userData.armL;
+          const armR = ape.userData.armR;
+          const armSwing = Math.sin(t*3 + i) * (0.4 + norm*1.2);
+          if(armL) armL.rotation.z = -0.6 + armSwing;
+          if(armR) armR.rotation.z = 0.6 - armSwing;
+          if(head) head.rotation.y = Math.sin(t*0.6 + i) * 0.12 * (1 + norm);
+
+          // update shadow under the anchor
+          const sh = shadows[i]; sh.position.x = a.position.x; sh.position.z = a.position.z; sh.scale.set(1 + norm*0.8, 1 + norm*0.3, 1); sh.material.opacity = 0.6 + norm*0.3;
+        });
+
+        // DJ vinyl spin
+        if(djGroup && djGroup.userData && djGroup.userData.vinyl){ djGroup.userData.vinyl.rotation.z += 0.02 + norm * 0.25; }
+
+        // Enhanced particle update with velocity
+        const ps = glScene.userData.particles;
+        if(ps && particleSystem){
+          const pos = particleSystem.geometry.attributes.position.array;
+          const vel = particleSystem.geometry.attributes.velocity.array;
+          const life = ps.lifetimes;
+          for(let i=0;i<life.length;i++){
+            if(life[i]>0){
+              life[i] -= 0.016;
+              vel[i*3+1] -= 0.5; // gravity
+              pos[i*3] += vel[i*3];
+              pos[i*3+1] += vel[i*3+1];
+              pos[i*3+2] += vel[i*3+2];
+              vel[i*3] *= 0.98;
+              vel[i*3+2] *= 0.98;
+            } else {
+              pos[i*3]=0; pos[i*3+1]=-1000; pos[i*3+2]=0;
+            }
+          }
+          particleSystem.geometry.attributes.position.needsUpdate=true;
+        }
+
+        // smooth camera
+        const tgt = glScene.userData.cameraTarget; glCamera.position.x += (tgt.x - glCamera.position.x) * 0.06; glCamera.position.y += (tgt.y - glCamera.position.y) * 0.06; glCamera.position.z += (tgt.z - glCamera.position.z) * 0.06; glCamera.lookAt(0,100,0);
+      } else {
+        // idle visuals when audio analysis isn't available
+        anchors.forEach((a,i)=>{
+          const t = Date.now()*0.0015;
+          a.position.y = 96 + Math.sin(t + i) * 4;
+          const ape = apes[i]; if(ape && ape.userData && ape.userData.head) ape.userData.head.rotation.y = Math.sin(t*0.5 + i) * 0.06;
+        });
+        if(djGroup && djGroup.userData && djGroup.userData.vinyl){ djGroup.userData.vinyl.rotation.z += 0.002; }
+        const ps = glScene.userData.particles; if(ps){ const pos = ps.mesh.geometry.attributes.position.array; for(let i=0;i<pos.length/3;i++){ pos[i*3+1] = -1000; } ps.mesh.geometry.attributes.position.needsUpdate=true; }
+
+        // small camera breathing
+        const tct = glScene.userData.cameraTarget; glCamera.position.x += (tct.x - glCamera.position.x) * 0.03; glCamera.position.y += (tct.y - glCamera.position.y) * 0.03; glCamera.position.z += (tct.z - glCamera.position.z) * 0.03; glCamera.lookAt(0,100,0);
+      }
+
+      glRenderer.render(glScene, glCamera);
+    }
+
+    // cues & integration
+    const cues = [];
+    const triggered = new Set();
+    function checkCues(){ const t=track.currentTime; cues.forEach(c=>{ if(!triggered.has(c.id) && t>=c.t){ try{ c.fn(); }catch(e){} triggered.add(c.id); }}); }
+    track.addEventListener('timeupdate', checkCues);
+
+    cues.push({t:0.1,id:'cam-intro',fn:()=>setCameraTarget(0,150,760)});
+    cues.push({t:4.0,id:'cam-to-dj',fn:()=>setCameraTarget(240,120,560)});
+    cues.push({t:11.0,id:'cam-wide',fn:()=>setCameraTarget(0,140,880)});
+
+    // helper: particle burst
+    function spawnParticleBurst(particleData, count=30){ const pos = particleData.mesh.geometry.attributes.position.array; const life = particleData.lifetimes; for(let i=0;i<pos.length/3 && count>0;i++){ if(life[i]<=0){ pos[i*3] = (Math.random()-0.5)*320; pos[i*3+1] = 120; pos[i*3+2] = (Math.random()-0.5)*160; life[i] = 0.6 + Math.random()*0.8; count--; } } particleData.mesh.geometry.attributes.position.needsUpdate=true; }
+
+    // load TWEEN for small smooth transitions
+    (function(){ loadScript('https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.6.4/dist/tween.umd.js').catch(()=>{}); })();
+
+    // when the track ends, navigate to the cinematic intro
+    track.addEventListener('ended', ()=>{ try{ document.exitFullscreen().catch(()=>{}); }catch(e){} setTimeout(()=>{ window.location.href = 'intro_cinematic.html'; }, 300); });
+
+    // control handlers
+    playBtn.addEventListener('click', async ()=>{
+      // try to go fullscreen on user gesture
+      try{ if(document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen(); }catch(e){}
+
+      if(track.paused){
+        setupAudio(); if(audioCtx.state==='suspended') await audioCtx.resume();
+        // ensure 3D initialized before playing for smooth start
+        await init3D();
+        await track.play().catch(e=>console.warn('Play blocked',e));
+        try{ track.muted = false; }catch(e){}
+        playBtn.textContent='Pause'; status.textContent='Playing'; triggered.clear(); animating=true;
+      } else {
+        track.pause(); playBtn.textContent='Play'; status.textContent='Paused'; animating=false;
+      }
+    });
+
+    // Attempt autoplay muted on load; initialize 3D visuals and speed up audio
+    window.addEventListener('load', async ()=>{
+      try{
+        // init visuals immediately
+        await init3D().catch(()=>{});
+        // set up audio analyser early (may require gesture to resume)
+        setupAudio();
+        // speed up playback by 50%
+        try{ track.playbackRate = 1.5; }catch(e){}
+        // try muted autoplay then unmute if allowed
+        track.muted = true;
+        await track.play().then(()=>{ track.muted = false; status.textContent = 'Playing'; if(document.getElementById('playBtn')) document.getElementById('playBtn').textContent = 'Pause'; }).catch(()=>{});
+      }catch(e){}
+    }); 
+
+    // skip button handler
+    const skipBtnEl = document.getElementById('skipBtn');
+    if(skipBtnEl){
+      skipBtnEl.addEventListener('click', ()=>{
+        try{ track.pause(); animating=false; document.exitFullscreen().catch(()=>{}); }catch(e){}
+        window.location.href = 'intro_cinematic.html';
+      });
+    }
+
+    // update status on play/pause
+    track.addEventListener('play', ()=>{ status.textContent = 'Playing'; if(playBtn) playBtn.textContent = 'Pause'; animating = true; });
+    track.addEventListener('pause', ()=>{ status.textContent = 'Paused'; if(playBtn) playBtn.textContent = 'Play'; animating = false; });
+
+    muteBtn.addEventListener('click', ()=>{ track.muted = !track.muted; muteBtn.textContent = track.muted ? 'Unmute' : 'Mute'; });
+
+    // resume audio context on user gesture
+    document.body.addEventListener('click', function resumeOnce(){ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); document.body.removeEventListener('click', resumeOnce); });
+
+    // fallback: if WebGL is not available, show placeholders
+    window.addEventListener('load', ()=>{ if(!window.WebGLRenderingContext){ document.querySelectorAll('.placeholder').forEach(p=>p.style.display='flex'); }});
+
+    // keyboard toggle
+    window.addEventListener('keydown', e=>{ if(e.code==='Space'){ e.preventDefault(); playBtn.click(); } });
+  </script>
+
+  <!-- three.js will be loaded dynamically by script above -->
+</body>
+</html>

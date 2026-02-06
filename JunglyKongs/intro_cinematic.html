@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JunglyKongs - Intro</title>
+  <link rel="icon" href="assets/img/detailed_jugnlyKong.png">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: #000;
+    }
+    #scene-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+    }
+    
+    /* Banjo-Kazooie style dialogue box */
+    #dialogue-box {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 85%;
+      max-width: 900px;
+      background: linear-gradient(135deg, #2d1810 0%, #4a2818 100%);
+      border: 6px solid #ffcf2f;
+      border-radius: 20px;
+      padding: 25px 35px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.2);
+      display: none;
+      z-index: 100;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+    
+    #dialogue-box.visible {
+      display: block;
+    }
+    
+    #dialogue-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    #character-portrait {
+      width: 80px;
+      height: 80px;
+      border: 4px solid #ffcf2f;
+      border-radius: 50%;
+      margin-right: 20px;
+      background: radial-gradient(circle, #666, #333);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    }
+    
+    #character-name {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffeb3b;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+      letter-spacing: 1px;
+    }
+    
+    #dialogue-text {
+      font-size: 22px;
+      line-height: 1.6;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+      min-height: 80px;
+    }
+    
+    #continue-prompt {
+      position: absolute;
+      bottom: 15px;
+      right: 25px;
+      font-size: 18px;
+      color: #ffeb3b;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+    
+    #skip-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: rgba(255, 200, 50, 0.9);
+      border: 3px solid #8b4513;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 101;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: all 0.2s;
+    }
+    
+    #skip-btn:hover {
+      background: rgba(255, 220, 70, 1);
+      transform: scale(1.05);
+    }
+    
+    /* Typewriter effect */
+    .typing::after {
+      content: '|';
+      animation: cursor-blink 0.5s infinite;
+    }
+    
+    @keyframes cursor-blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scene-container"></div>
+  
+  <button id="skip-btn">Skip Intro →</button>
+  
+  <div id="dialogue-box">
+    <div id="dialogue-header">
+      <div id="character-portrait">🐊</div>
+      <div id="character-name">King Croc</div>
+    </div>
+    <div id="dialogue-text"></div>
+    <div id="continue-prompt">▼ Press Space or Click ▼</div>
+  </div>
+  
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
+    
+    // Scene setup
+    const container = document.getElementById('scene-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb);
+    scene.fog = new THREE.Fog(0x87ceeb, 1000, 4000);
+    
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
+    camera.position.set(0, 800, 2000);
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+    
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xfff5e6, 0.6);
+    scene.add(ambient);
+    
+    const sun = new THREE.DirectionalLight(0xffdd88, 1.5);
+    sun.position.set(2000, 3000, 1500);
+    sun.castShadow = true;
+    scene.add(sun);
+    
+    // Create island terrain
+    function createIsland() {
+      const size = 2000;
+      const segments = 40;
+      const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
+      geometry.rotateX(-Math.PI / 2);
+      
+      const vertices = geometry.attributes.position.array;
+      for (let i = 0; i < vertices.length; i += 3) {
+        const x = vertices[i];
+        const z = vertices[i + 2];
+        const dist = Math.sqrt(x*x + z*z);
+        const centerHeight = Math.max(0, 300 - dist * 0.2);
+        const noise = Math.sin(x * 0.01) * Math.cos(z * 0.01) * 50;
+        vertices[i + 1] = centerHeight + noise;
+      }
+      geometry.computeVertexNormals();
+      
+      const material = new THREE.MeshStandardMaterial({ 
+        color: 0x4a7c3f,
+        roughness: 0.9
+      });
+      const island = new THREE.Mesh(geometry, material);
+      island.receiveShadow = true;
+      scene.add(island);
+      
+      return island;
+    }
+    
+    // Create water
+    function createWater() {
+      const water = new THREE.Mesh(
+        new THREE.PlaneGeometry(5000, 5000),
+        new THREE.MeshStandardMaterial({ 
+          color: 0x1e90ff,
+          transparent: true,
+          opacity: 0.7,
+          roughness: 0.3,
+          metalness: 0.2
+        })
+      );
+      water.rotation.x = -Math.PI / 2;
+      water.position.y = -50;
+      water.receiveShadow = true;
+      scene.add(water);
+      
+      return water;
+    }
+    
+    // Create palm tree
+    function createPalmTree(x, y, z) {
+      const group = new THREE.Group();
+      
+      // Trunk
+      for (let i = 0; i < 5; i++) {
+        const segment = new THREE.Mesh(
+          new THREE.CylinderGeometry(25, 28, 120, 6),
+          new THREE.MeshStandardMaterial({ color: 0x8b6f47, roughness: 0.9 })
+        );
+        segment.position.y = i * 110;
+        segment.rotation.y = i * 0.3;
+        segment.castShadow = true;
+        group.add(segment);
+      }
+      
+      // Leaves
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const leafGroup = new THREE.Group();
+        
+        for (let j = 0; j < 4; j++) {
+          const leaf = new THREE.Mesh(
+            new THREE.BoxGeometry(40, 5, 150),
+            new THREE.MeshStandardMaterial({ color: 0x228b22, side: THREE.DoubleSide })
+          );
+          leaf.position.z = j * 130;
+          leaf.rotation.x = -j * 0.15;
+          leaf.castShadow = true;
+          leafGroup.add(leaf);
+        }
+        
+        leafGroup.rotation.y = angle;
+        leafGroup.rotation.z = -0.3;
+        leafGroup.position.y = 550;
+        group.add(leafGroup);
+      }
+      
+      group.position.set(x, y, z);
+      scene.add(group);
+      return group;
+    }
+    
+    // Create mountain peak
+    function createMountain() {
+      const mountain = new THREE.Mesh(
+        new THREE.ConeGeometry(400, 800, 8),
+        new THREE.MeshStandardMaterial({ color: 0x8b7355, roughness: 0.95 })
+      );
+      mountain.position.set(0, 200, -300);
+      mountain.castShadow = true;
+      scene.add(mountain);
+      
+      // Snow cap
+      const snow = new THREE.Mesh(
+        new THREE.ConeGeometry(180, 300, 8),
+        new THREE.MeshStandardMaterial({ color: 0xffffff })
+      );
+      snow.position.set(0, 500, -300);
+      scene.add(snow);
+      
+      return mountain;
+    }
+    
+    // Populate island
+    const island = createIsland();
+    const water = createWater();
+    const mountain = createMountain();
+    
+    // Add palm trees
+    const treePositions = [
+      [300, 80, 200], [-300, 80, 150], [400, 50, -200],
+      [-400, 50, -150], [200, 90, 400], [-250, 90, 380],
+      [500, 40, 100], [-480, 40, 80]
+    ];
+    treePositions.forEach(([x, y, z]) => createPalmTree(x, y, z));
+    
+    // Audio
+    const introMusic = new Audio('assets/music/gameIntro.mp3');
+    introMusic.volume = 0.5;
+    
+    // Dialogue system
+    const dialogues = [
+      {
+        character: '🏝️',
+        name: 'Narrator',
+        text: 'Welcome to JunglyKong Island, a tropical paradise where bananas grow in abundance and apes live in harmony...'
+      },
+      {
+        character: '🏝️',
+        name: 'Narrator',
+        text: 'But peace was not to last. A villainous crocodile has set his sights on the island\'s legendary Golden Banana hoard!'
+      },
+      {
+        character: '🐊',
+        name: 'King Croc',
+        text: 'Mwahahaha! Those foolish apes have no idea what\'s coming! Soon, ALL the bananas will be MINE!'
+      },
+      {
+        character: '🐊',
+        name: 'King Croc',
+        text: 'I\'ve scattered the Golden Bananas across the island. Let\'s see those primates try to collect them all! Gahahaha!'
+      },
+      {
+        character: '🦍',
+        name: 'JunglyKong',
+        text: 'Not on my watch! I\'ll collect every single banana and send that croc packing! Let\'s go!'
+      }
+    ];
+    
+    let currentDialogue = 0;
+    let isTyping = false;
+    let canAdvance = false;
+    
+    const dialogueBox = document.getElementById('dialogue-box');
+    const portraitEl = document.getElementById('character-portrait');
+    const nameEl = document.getElementById('character-name');
+    const textEl = document.getElementById('dialogue-text');
+    
+    function typeText(text, callback) {
+      isTyping = true;
+      canAdvance = false;
+      textEl.textContent = '';
+      textEl.classList.add('typing');
+      
+      let index = 0;
+      const speed = 30;
+      
+      function type() {
+        if (index < text.length) {
+          textEl.textContent += text[index];
+          index++;
+          setTimeout(type, speed);
+        } else {
+          textEl.classList.remove('typing');
+          isTyping = false;
+          canAdvance = true;
+          if (callback) callback();
+        }
+      }
+      type();
+    }
+    
+    function showDialogue(index) {
+      if (index >= dialogues.length) {
+        // End of intro
+        setTimeout(() => {
+          window.location.href = 'game.html';
+        }, 1000);
+        return;
+      }
+      
+      const dialogue = dialogues[index];
+      portraitEl.textContent = dialogue.character;
+      nameEl.textContent = dialogue.name;
+      
+      if (index === 0) {
+        dialogueBox.classList.add('visible');
+      }
+      
+      typeText(dialogue.text);
+    }
+    
+    function nextDialogue() {
+      if (!canAdvance) {
+        // Skip typing
+        if (isTyping) {
+          textEl.textContent = dialogues[currentDialogue].text;
+          textEl.classList.remove('typing');
+          isTyping = false;
+          canAdvance = true;
+        }
+        return;
+      }
+      
+      currentDialogue++;
+      showDialogue(currentDialogue);
+    }
+    
+    // Input handlers
+    document.addEventListener('click', nextDialogue);
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        nextDialogue();
+      }
+    });
+    
+    document.getElementById('skip-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = 'game.html';
+    });
+    
+    // Camera animation sequence
+    const cameraPath = [
+      { pos: [0, 800, 2000], look: [0, 200, 0], duration: 3 },
+      { pos: [1200, 600, 1200], look: [0, 200, -300], duration: 4 },
+      { pos: [-1000, 700, 800], look: [0, 300, -300], duration: 4 },
+      { pos: [600, 500, -1000], look: [0, 200, 0], duration: 4 },
+      { pos: [0, 1200, 1500], look: [0, 200, 0], duration: 3 }
+    ];
+    
+    let pathIndex = 0;
+    let pathProgress = 0;
+    let startPos = new THREE.Vector3();
+    let startLook = new THREE.Vector3();
+    let targetPos = new THREE.Vector3();
+    let targetLook = new THREE.Vector3();
+    
+    function updateCameraPath(dt) {
+      if (pathIndex >= cameraPath.length) {
+        pathIndex = 0;
+      }
+      
+      const current = cameraPath[pathIndex];
+      const speed = 1 / current.duration;
+      
+      if (pathProgress === 0) {
+        startPos.copy(camera.position);
+        startLook.set(...(pathIndex > 0 ? cameraPath[pathIndex - 1].look : [0, 200, 0]));
+        targetPos.set(...current.pos);
+        targetLook.set(...current.look);
+      }
+      
+      pathProgress += dt * speed;
+      
+      if (pathProgress >= 1) {
+        pathProgress = 0;
+        pathIndex++;
+        if (pathIndex >= cameraPath.length) pathIndex = 0;
+      } else {
+        // Smooth easing
+        const t = pathProgress < 0.5 
+          ? 2 * pathProgress * pathProgress 
+          : 1 - Math.pow(-2 * pathProgress + 2, 2) / 2;
+        
+        camera.position.lerpVectors(startPos, targetPos, t);
+        const lookTarget = new THREE.Vector3().lerpVectors(startLook, targetLook, t);
+        camera.lookAt(lookTarget);
+      }
+    }
+    
+    // Animation loop
+    let lastTime = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+      
+      updateCameraPath(dt);
+      
+      // Animate water
+      water.material.opacity = 0.7 + Math.sin(now * 0.001) * 0.1;
+      
+      renderer.render(scene, camera);
+    }
+    
+    // Start
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // Start after a brief delay
+    setTimeout(() => {
+      introMusic.play().catch(e => console.log('Audio autoplay blocked'));
+      setTimeout(() => showDialogue(0), 1000);
+    }, 500);
+    
+    animate(performance.now());
+  </script>
+</body>
+</html>
