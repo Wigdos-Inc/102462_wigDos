@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player - The Super Jeff 3 Odyssey Jeff</title>
+    <link rel="icon" href="../assets/images/jeff_pose_1.png">
+    <style>
+        body {
+            margin: 0;
+            background-image: url("../assets/images/jeff_and_penutface.png");
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        #player {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        select, button {
+            margin: 4px;
+            padding: 6px 10px;
+            font-size: 1em;
+            min-height: 44px;
+            min-width: 60px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        a.back {
+            display: inline-block;
+            margin-top: 15px;
+            color: #FFD700;
+            text-decoration: none;
+        }
+        #record-canvas {
+            display: block;
+            margin: 0 auto 10px;
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #player { padding: 15px; }
+            #player h2 { font-size: 1.5em; }
+            select, button { font-size: 0.9em; padding: 5px 8px; }
+            #record-canvas { max-width: 150px; }
+        }
+        @media (max-width: 480px) {
+            #player { padding: 12px; }
+            #player h2 { font-size: 1.2em; }
+            select, button { font-size: 0.85em; padding: 4px 6px; }
+            a.back { font-size: 0.9em; }
+            #record-canvas { max-width: 120px; }
+        }
+        @media (max-width: 320px) {
+            #player { padding: 10px; }
+            #player h2 { font-size: 1em; }
+            select, button { font-size: 0.8em; padding: 3px 5px; }
+            a.back { font-size: 0.85em; }
+            #record-canvas { max-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="player">
+        <h2>Soundtrack Browser</h2>
+        <!-- spinning record display -->
+        <canvas id="record-canvas" style="display:block;margin:0 auto 10px"></canvas>
+        <select id="track-select"></select><br>
+        <button id="play-btn">Play</button>
+        <button id="pause-btn">Pause</button><br>
+        <a href="../index.html" class="back">← Back to Menu</a>
+    </div>
+
+    <script>
+        const musicFiles = [
+            'superGalaxyJeffTheme_1.mp3',
+            'superGalaxyJeffTheme_2.mp3',
+            'JeffOddeseyTheme2.mp3',
+            'JeffOddeseyTheme.mp3',
+            'themesong_old.mp3',
+            'themesong.mp3',
+            'themesong (1).mp3',
+            "jeff's song (1).mp3",
+            "jeff's song.mp3",
+            "jeff's song (2).mp3",
+            "jeff's song2.mp3",
+            "jeff's song (5).mp3",
+            "jeff's song (4).mp3",
+            "jeff's song (3).mp3",
+            "penutfacefinalfury2.mp3",
+            "penutfacefinalfury.mp3",
+            "PenutFace's fury (1).mp3",
+            "PenutFace's fury.mp3",
+            "bonustheme.mp3",
+            "bonustheme2.mp3"
+        ];
+        const base = '../assets/sound/';
+        const audio = new Audio();
+        audio.volume = 0.6;
+
+        const select = document.getElementById('track-select');
+        musicFiles.forEach((f,i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = f;
+            select.appendChild(opt);
+        });
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+
+        playBtn.addEventListener('click', () => {
+            const idx = parseInt(select.value);
+            if (!isNaN(idx)) {
+                audio.src = base + encodeURIComponent(musicFiles[idx]);
+                audio.loop = true;
+                audio.play().catch(() => {});
+            }
+        });
+        pauseBtn.addEventListener('click', () => {
+            audio.pause();
+        });
+
+        // record drawing and animation
+        const recordCanvas = document.getElementById('record-canvas');
+        const rctx = recordCanvas.getContext('2d');
+        
+        // Make canvas responsive
+        function resizeCanvas() {
+            const size = Math.min(200, window.innerWidth * 0.4);
+            recordCanvas.width = size;
+            recordCanvas.height = size;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        let spinAngle = 0;
+        function drawRecord() {
+            const size = recordCanvas.width;
+            rctx.clearRect(0,0,size,size);
+            // black vinyl
+            rctx.fillStyle = '#000';
+            rctx.beginPath();
+            rctx.arc(size/2, size/2, size/2-2,0,Math.PI*2);
+            rctx.fill();
+            // label
+            rctx.fillStyle = '#FFD700';
+            rctx.beginPath();
+            rctx.arc(size/2, size/2, size/6,0,Math.PI*2);
+            rctx.fill();
+            // grooves rotated
+            rctx.save();
+            rctx.translate(size/2,size/2);
+            rctx.rotate(spinAngle);
+            rctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            for (let i=0;i<60;i++){
+                rctx.beginPath();
+                const angle = i*(Math.PI*2/60);
+                const r1 = size/6+6;
+                const r2 = size/2-4;
+                rctx.moveTo(Math.cos(angle)*r1, Math.sin(angle)*r1);
+                rctx.lineTo(Math.cos(angle)*r2, Math.sin(angle)*r2);
+                rctx.stroke();
+            }
+            rctx.restore();
+        }
+        function animateRecord() {
+            if (!audio.paused && audio.src) {
+                spinAngle += 0.03;
+            }
+            drawRecord();
+            requestAnimationFrame(animateRecord);
+        }
+        animateRecord();
+
+        // allow user interaction to start audio if blocked
+        document.addEventListener('click', () => {
+            if (audio.src && audio.paused) {
+                audio.play().catch(() => {});
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Super Jeff 3 Odyssey Jeff - Opening</title>
+    <link rel="icon" href="../assets/images/jeff_pose_1.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .intro-container {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+        }
+
+        /* Scene container */
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .scene.active {
+            animation: sceneIn 2s forwards;
+        }
+
+        .scene.fade-out {
+            animation: sceneOut 1s forwards;
+        }
+
+        @keyframes sceneIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes sceneOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+        /* Image styles */
+        .scene-image {
+            max-width: 80%;
+            max-height: 60%;
+            object-fit: contain;
+            filter: brightness(1.2) contrast(1.1);
+            animation: imageFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes imageFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Title animations */
+        .title {
+            position: absolute;
+            font-size: 6em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 40px rgba(255, 215, 0, 0.6),
+                5px 5px 15px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            transform: translateX(-100px);
+        }
+
+        .title.show {
+            animation: titleSlide 1s forwards;
+        }
+
+        @keyframes titleSlide {
+            0% { opacity: 0; transform: translateX(-100px) rotate(-5deg); }
+            100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+        }
+
+        .subtitle {
+            position: absolute;
+            bottom: 150px;
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.8),
+                3px 3px 10px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .subtitle.show {
+            animation: subtitleUp 1s 0.5s forwards;
+        }
+
+        @keyframes subtitleUp {
+            0% { opacity: 0; transform: translateY(50px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Character name overlay */
+        .character-name {
+            position: absolute;
+            top: 100px;
+            font-size: 4em;
+            font-weight: bold;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            text-shadow: 
+                0 0 30px rgba(255, 215, 0, 1),
+                0 0 60px rgba(255, 215, 0, 0.6),
+                5px 5px 20px rgba(0, 0, 0, 1);
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .character-name.show {
+            animation: nameExplode 1s forwards;
+        }
+
+        @keyframes nameExplode {
+            0% { opacity: 0; transform: scale(0) rotate(-180deg); }
+            60% { opacity: 1; transform: scale(1.2) rotate(10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* Light rays effect */
+        .light-rays {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.1) 50%, transparent 60%),
+                linear-gradient(-45deg, transparent 40%, rgba(255, 215, 0, 0.1) 50%, transparent 60%);
+            animation: raysRotate 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes raysRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: particleFloat 8s linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+
+        /* Final logo */
+        .final-logo {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .final-logo.show {
+            animation: logoGrow 2s forwards;
+        }
+
+        @keyframes logoGrow {
+            0% { opacity: 0; transform: scale(0) rotate(-180deg); }
+            70% { opacity: 1; transform: scale(1.1) rotate(5deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        .logo-text {
+            font-size: 8em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 
+                0 0 40px rgba(255, 215, 0, 1),
+                0 0 80px rgba(255, 215, 0, 0.8),
+                10px 10px 30px rgba(0, 0, 0, 1);
+            animation: logoGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { 
+                text-shadow: 
+                    0 0 40px rgba(255, 215, 0, 1),
+                    0 0 80px rgba(255, 215, 0, 0.8),
+                    10px 10px 30px rgba(0, 0, 0, 1);
+            }
+            50% { 
+                text-shadow: 
+                    0 0 60px rgba(255, 215, 0, 1),
+                    0 0 120px rgba(255, 215, 0, 1),
+                    10px 10px 40px rgba(0, 0, 0, 1);
+            }
+        }
+
+        .logo-subtitle {
+            font-size: 3em;
+            color: #fff;
+            margin-top: 20px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            animation: subtitlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes subtitlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Skip button */
+        .skip-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            z-index: 1001;
+            animation: skipPulse 2s ease-in-out infinite;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 100px;
+            min-height: 44px;
+        }
+
+        @keyframes skipPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 1); }
+        }
+
+        .skip-button:hover {
+            background: rgba(255, 215, 0, 0.6);
+            transform: scale(1.1);
+        }
+
+        /* Flash effect */
+        .flash {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1002;
+        }
+
+        .flash.active {
+            animation: flashEffect 0.5s;
+        }
+
+        @keyframes flashEffect {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .title { font-size: 5em; }
+            .subtitle { font-size: 2em; bottom: 120px; }
+            .character-name { font-size: 3.5em; top: 80px; letter-spacing: 8px; }
+            .logo-text { font-size: 6em; }
+            .logo-subtitle { font-size: 2.5em; }
+            .scene-image { max-width: 85%; max-height: 65%; }
+        }
+        @media (max-width: 768px) {
+            .title { font-size: 4em; }
+            .subtitle { font-size: 1.8em; bottom: 100px; }
+            .character-name { font-size: 3em; top: 60px; letter-spacing: 6px; }
+            .logo-text { font-size: 5em; }
+            .logo-subtitle { font-size: 2em; }
+            .scene-image { max-width: 90%; max-height: 70%; }
+            .skip-button { font-size: 1em; padding: 12px 24px; bottom: 20px; right: 20px; }
+        }
+        @media (max-width: 480px) {
+            .title { font-size: 3em; }
+            .subtitle { font-size: 1.5em; bottom: 80px; }
+            .character-name { font-size: 2.5em; top: 50px; letter-spacing: 4px; }
+            .logo-text { font-size: 4em; }
+            .logo-subtitle { font-size: 1.8em; }
+            .scene-image { max-width: 95%; max-height: 50%; }
+            .skip-button { font-size: 0.9em; padding: 10px 20px; bottom: 15px; right: 15px; }
+        }
+        @media (max-width: 320px) {
+            .title { font-size: 2.5em; }
+            .subtitle { font-size: 1.2em; bottom: 60px; }
+            .character-name { font-size: 2em; top: 40px; letter-spacing: 3px; }
+            .logo-text { font-size: 3em; }
+            .logo-subtitle { font-size: 1.5em; }
+            .scene-image { max-width: 95%; max-height: 45%; }
+            .skip-button { font-size: 0.8em; padding: 8px 16px; bottom: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="intro-container">
+        <div class="particles" id="particles"></div>
+        <div class="light-rays"></div>
+        
+        <!-- Scene 1: Opening -->
+        <div class="scene" id="scene1">
+            <div class="title">A NEW ADVENTURE</div>
+            <div class="subtitle">Beyond the Stars</div>
+        </div>
+
+        <!-- Scene 2: Jeff - The Hero -->
+        <div class="scene" id="scene2">
+            <img class="scene-image" src="../assets/images/jeff_new.png" alt="Jeff" onerror="this.style.display='none'" />
+            <div class="character-name">JEFF</div>
+            <div class="subtitle">The Yellow Hero</div>
+        </div>
+
+        <!-- Scene 3: Jakey - The Brother -->
+        <div class="scene" id="scene3">
+            <img class="scene-image" src="../assets/images/jakey_new.png" alt="Jakey" onerror="this.style.display='none'" />
+            <div class="character-name">JAKEY</div>
+            <div class="subtitle">Jeff's Brother & Ally</div>
+        </div>
+
+        <!-- Scene 4: Random Latina - Love Interest -->
+        <div class="scene" id="scene4">
+            <img class="scene-image" src="../assets/images/latina.jpg" alt="Random Latina" onerror="this.style.display='none'" />
+            <div class="character-name">RANDOM LATINA</div>
+            <div class="subtitle">Jeff's Love Interest</div>
+        </div>
+
+        <!-- Scene 5: Penut Face - The Villain -->
+        <div class="scene" id="scene5">
+            <img class="scene-image" src="../assets/images/penutface_flying.png" alt="Penut Face" onerror="this.style.display='none'" />
+            <div class="character-name">PENUT FACE</div>
+            <div class="subtitle">The Main Villain</div>
+        </div>
+
+        <div class="scene" id="scene6">
+            <img class="scene-image" src="https://raw.githubusercontent.com/Wigdos-Inc/SloppyCarlGames/refs/heads/main/engine/v1/assets/carlStudios/sloppyCarl.png" alt="Jeff" onerror="this.style.display='none'" />
+            <div class="character-name">CARL</div>
+            <div class="subtitle">Just no.. we don't talk about him.</div>
+        </div>
+
+        <!-- Scene 6: Kingdom Showcase -->
+        <div class="scene" id="scene7">
+            <img class="scene-image" src="../assets/images/jeff3.jpg" alt="Kingdom" onerror="this.style.display='none'" />
+            <div class="title">EXPLORE KINGDOMS</div>
+            <div class="subtitle">Discover New Worlds</div>
+        </div>
+
+        <!-- Scene 7: Power Moons -->
+        <div class="scene" id="scene8">
+            <img class="scene-image" src="../assets/images/soup_awsome_tp.png" alt="Power Moon" onerror="this.style.display='none'" />
+            <div class="title">COLLECT POWER SOUPS</div>
+            <div class="subtitle">Unlock Your Potential</div>
+        </div>
+
+        <!-- Scene 8: Final Logo -->
+        <div class="scene" id="scene9">
+            <div class="final-logo">
+                <div class="logo-text">THE SUPER JEFF 3 ODYESSY JEFF</div>
+                <div class="logo-subtitle">An Epic Journey Awaits</div>
+            </div>
+        </div>
+
+        <div class="flash" id="flash"></div>
+    </div>
+
+    <button class="skip-button" id="skipBtn">SKIP INTRO →</button>
+
+    <audio id="introMusic" src="../assets/sound/jeff's song (2).mp3" preload="auto"></audio>
+
+    <script>
+        const scenes = ['scene1', 'scene2', 'scene3', 'scene4', 'scene5', 'scene6', 'scene7', 'scene8', 'scene9'];
+        let currentScene = 0;
+        const music = document.getElementById('introMusic');
+        const flash = document.getElementById('flash');
+        
+        // Generate particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 8 + 6) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        function showFlash() {
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 500);
+        }
+
+        function showScene(index) {
+            if (index >= scenes.length) {
+                finishIntro();
+                return;
+            }
+
+            if (currentScene > 0) {
+                const prev = document.getElementById(scenes[currentScene - 1]);
+                prev.classList.remove('active');
+                prev.classList.add('fade-out');
+            }
+
+            const scene = document.getElementById(scenes[index]);
+            showFlash();
+            
+            setTimeout(() => {
+                scene.classList.add('active');
+                
+                const title = scene.querySelector('.title');
+                const subtitle = scene.querySelector('.subtitle');
+                const charName = scene.querySelector('.character-name');
+                const finalLogo = scene.querySelector('.final-logo');
+                
+                if (title) setTimeout(() => title.classList.add('show'), 300);
+                if (subtitle) setTimeout(() => subtitle.classList.add('show'), 600);
+                if (charName) setTimeout(() => charName.classList.add('show'), 500);
+                if (finalLogo) setTimeout(() => finalLogo.classList.add('show'), 300);
+            }, 100);
+
+            currentScene = index + 1;
+        }
+
+        function finishIntro() {
+            setTimeout(() => {
+                window.location.href = 'game.html';
+            }, 2000);
+        }
+
+        // Updated scene timing for 8 scenes (~48s total)
+        function startIntro() {
+            music.play();
+            
+            showScene(0); // Scene 1: 0s
+            setTimeout(() => showScene(1), 5000); // Jeff: 5s
+            setTimeout(() => showScene(2), 11000); // Jakey: 11s
+            setTimeout(() => showScene(3), 17000); // Random Latina: 17s
+            setTimeout(() => showScene(4), 23000); // Penut Face: 23s
+            setTimeout(() => showScene(5), 29000); // Kingdoms: 29s
+            setTimeout(() => showScene(6), 35000); // Moons: 35s
+            setTimeout(() => showScene(7), 41000); // Final Logo: 41s
+            setTimeout(() => showScene(8), 47000); // Final Logo: 47s
+            setTimeout(() => finishIntro(), 55000); // Finish: 55s
+        }
+
+        document.getElementById('skipBtn').addEventListener('click', () => {
+            music.pause();
+            window.location.href = 'game.html';
+        });
+
+        window.addEventListener('load', () => {
+            setTimeout(startIntro, 500);
+        });
+
+        music.addEventListener('ended', finishIntro);
+    </script>
+</body>
+</html>
