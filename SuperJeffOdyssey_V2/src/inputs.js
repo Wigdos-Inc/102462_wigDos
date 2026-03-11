@@ -1,5 +1,3 @@
-import { vec3 } from './vec3.js';
-
 // central input handler: populates game.keys and provides touch UI
 export function initInput(game) {
     game.keys = game.keys || {};

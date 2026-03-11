@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "name": "Cap Kingdom Placeholder",
+  "kingdom": "cap",
+  "config": {
+    "size": { "x": 150, "z": 150 },
+    "voxelSize": 6,
+    "baseHeight": 0,
+    "volumeHeight": 80,
+    "seed": 1031,
+    "isoLevel": -0.1,
+    "baseLayerScale": 0.018,
+    "elevationLayerScale": 0.024,
+    "detailLayerScale": 0.06,
+    "structureLayerScale": 0.015,
+    "persistence": 0.5,
+    "lacunarity": 2.0,
+    "octaves": 5,
+    "caveThreshold": 0.55,
+    "smoothingPasses": 2,
+    "islandRadiusFactor": 0.55,
+    "structureStrength": 1.35,
+    "collisionCellSize": 12,
+    "platformCount": 15,
+    "moons": 22,
+    "soupCount": 2,
+    "walkerDensity": 7
+  },
+  "objects": [
+    { "type": "entrance", "x": 0, "y": 4, "z": 0 },
+    { "type": "platform", "x": -18, "y": 16, "z": 22 },
+    { "type": "moon", "x": 12, "y": 12, "z": -14 },
+    { "type": "soup", "x": -8, "y": 6, "z": -6 },
+    { "type": "walker", "x": 22, "y": 5, "z": 18 }
+  ]
+}

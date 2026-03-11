@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "name": "Hub Island Placeholder",
+  "kingdom": "hub",
+  "config": {
+    "size": {
+      "x": 1000,
+      "z": 1000
+    },
+    "voxelSize": 6,
+    "baseHeight": 0,
+    "volumeHeight": 40,
+    "seed": 1337,
+    "isoLevel": -0.1,
+    "baseLayerScale": 0.018,
+    "elevationLayerScale": 0.024,
+    "detailLayerScale": 0.06,
+    "structureLayerScale": 0.015,
+    "persistence": 0.5,
+    "lacunarity": 2,
+    "octaves": 5,
+    "caveThreshold": 0.55,
+    "smoothingPasses": 2,
+    "islandRadiusFactor": 0.55,
+    "structureStrength": 1.35,
+    "collisionCellSize": 12,
+    "platformCount": 15,
+    "moons": 20,
+    "soupCount": 1,
+    "walkerDensity": 6
+  },
+  "objects": [
+    {
+      "type": "platform",
+      "x": -334.83,
+      "z": -173.97,
+      "y": 0
+    },
+    {
+      "type": "platform",
+      "x": 228.77,
+      "z": -354.01,
+      "y": 0
+    },
+    {
+      "type": "platform",
+      "x": 232.68,
+      "z": 98.04,
+      "y": 0
+    },
+    {
+      "type": "walker",
+      "x": -334.83,
+      "z": -170.06,
+      "y": 0
+    },
+    {
+      "type": "walker",
+      "x": -182.19,
+      "z": -275.73,
+      "y": 0
+    },
+    {
+      "type": "walker",
+      "x": 111.35,
+      "z": -68.3,
+      "y": 0
+    },
+    {
+      "type": "entrance",
+      "x": 21.33,
+      "z": -322.7,
+      "y": 0
+    },
+    {
+      "type": "entrance",
+      "x": -186.11,
+      "z": 64.77,
+      "y": 0
+    },
+    {
+      "type": "entrance",
+      "x": 314.87,
+      "z": -128.96,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -101.96,
+      "z": -119.18,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -303.52,
+      "z": 115.66,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 354.01,
+      "z": -322.7,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -154.79,
+      "z": -395.11,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 91.78,
+      "z": 269.47,
+      "y": 0
+    }
+  ]
+}

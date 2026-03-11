@@ -1,0 +1,95 @@
+.audio-ui{
+  position:fixed;
+  bottom:30px;
+  left:30px;
+
+  background:#ffd92c;
+  border:6px solid black;
+  border-radius:25px;
+  padding:15px 20px;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  box-shadow:5px 5px 0 black;
+}
+
+.audio-ui label{
+  font-size:24px;
+}
+
+#volume{
+  appearance:none;
+  width:200px;
+  height:12px;
+  background:#fff3a0;
+  border:3px solid black;
+  border-radius:10px;
+  outline:none;
+}
+
+/* slider thumb */
+#volume::-webkit-slider-thumb{
+  appearance:none;
+  width:26px;
+  height:26px;
+
+  background:#ffd92c;
+  border:4px solid black;
+  border-radius:50%;
+
+  cursor:pointer;
+}
+
+#volume::-moz-range-thumb{
+  width:26px;
+  height:26px;
+
+  background:#ffd92c;
+  border:4px solid black;
+  border-radius:50%;
+  cursor:pointer;
+}
+
+.health-ui{
+  position:fixed;
+  top:30px;
+  left:30px;
+
+  background:#ffd92c;
+  border:6px solid black;
+  border-radius:25px;
+
+  padding:12px 20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  box-shadow:5px 5px 0 black;
+}
+
+/* text */
+.health-label{
+  font-size:22px;
+}
+
+/* bar background */
+.health-bar{
+  width:220px;
+  height:22px;
+
+  background:white;
+  border:4px solid black;
+  border-radius:15px;
+  overflow:hidden;
+}
+
+/* actual health */
+.health-fill{
+  height:100%;
+  width:100%;
+
+  background:linear-gradient(#ff5a5a,#c40000);
+  transition:width 0.25s ease;
+}

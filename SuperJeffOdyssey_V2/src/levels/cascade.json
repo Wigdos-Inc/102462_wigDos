@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "name": "Cascade Kingdom Placeholder",
+  "kingdom": "cascade",
+  "config": {
+    "size": { "x": 140, "z": 140 },
+    "voxelSize": 6,
+    "baseHeight": 2,
+    "volumeHeight": 80,
+    "seed": 2645,
+    "isoLevel": -0.1,
+    "baseLayerScale": 0.018,
+    "elevationLayerScale": 0.024,
+    "detailLayerScale": 0.06,
+    "structureLayerScale": 0.015,
+    "persistence": 0.5,
+    "lacunarity": 2.0,
+    "octaves": 6,
+    "caveThreshold": 0.55,
+    "smoothingPasses": 2,
+    "islandRadiusFactor": 0.55,
+    "structureStrength": 1.35,
+    "collisionCellSize": 12,
+    "platformCount": 14,
+    "moons": 24,
+    "soupCount": 2,
+    "walkerDensity": 8
+  },
+  "objects": [
+    { "type": "entrance", "x": 0, "y": 5, "z": 0 },
+    { "type": "platform", "x": 24, "y": 18, "z": -20 },
+    { "type": "moon", "x": -10, "y": 10, "z": 18 },
+    { "type": "soup", "x": 14, "y": 7, "z": 8 },
+    { "type": "walker", "x": -22, "y": 6, "z": -12 }
+  ]
+}

@@ -1,3 +1,5 @@
+import { game, engine } from './globals.js';
+
 // Themed structures and decorations for each kingdom
 export function generateCapStructures(rng, width, depth) {
     const structures = [];
@@ -124,4 +126,63 @@ export function createPyramidInterior() {
     });
 
     return { platforms, moons, spawnPoint: { x: 0, y: 1, z: 15 } };
+}
+
+export function drawStructures() {
+    if (!game.structures) return;
+        
+    const getHeight = (x, z) => {
+        if (game.sampleTerrainHeight) {
+            const h = game.sampleTerrainHeight(x, z, Infinity);
+            if (h !== null) return h;
+        }
+        const ix = Math.round(x / (game.gridSize || 1));
+        const iz = Math.round(z / (game.gridSize || 1));
+        return game.heightMap ? (game.heightMap[`${ix},${iz}`] ?? 0) : 0;
+    };
+        
+    game.structures.forEach(structure => {
+        const { type, x, z } = structure;
+        const groundY = getHeight(x, z);
+            
+        if (type === 'tophat') {
+            // Draw top hat as cylinder with rim
+            const h = structure.size || 4;
+            const r = structure.size * 0.4 || 1.5;
+            engine.drawCylinder(x, groundY + h/2, z, r, h, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+            // Rim
+            engine.drawCylinder(x, groundY + 0.3, z, r * 1.6, 0.6, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'building') {
+            // Draw as cube
+            const { width, height, depth, color } = structure;
+            engine.drawCube(x, groundY + height/2, z, width, height, depth, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'boulder') {
+            // Draw as sphere
+            const r = structure.size || 3;
+            engine.drawSphere(x, groundY + r, z, r, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'pillar') {
+            // Draw as tall thin cylinder
+            const { height, radius, color } = structure;
+            engine.drawCylinder(x, groundY + height/2, z, radius || 1, height || 8, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'pyramid') {
+            // Draw as cube for now (pyramids would need custom geometry)
+            const { size, height, color } = structure;
+            engine.drawCube(x, groundY + height/2, z, size, height, size, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'palm') {
+            // trunk
+            const h = structure.height || 6;
+            engine.drawCylinder(x, groundY + h/2, z, 0.4, h, {x: 0.4, y: 0.3, z: 0.2});
+            // leaves  
+            engine.drawSphere(x, groundY + h + 1, z, 2, {x: 0.2, y: 0.6, z: 0.3});
+        } else if (type === 'dune') {
+            // Draw as flattened sphere
+            const r = structure.size || 4;
+            engine.drawSphere(x, groundY + r * 0.3, z, r, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'entrance') {
+            // simple glowing archway
+            engine.drawCube(x, groundY + 2, z, structure.width || 4, structure.height || 4, structure.depth || 2, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'cave') {
+            engine.drawCube(x, groundY + (structure.height||6)/2, z, structure.width || 10, structure.height || 6, structure.depth || 6, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        }
+    });
 }

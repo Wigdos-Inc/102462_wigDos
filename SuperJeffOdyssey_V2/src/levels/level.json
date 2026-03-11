@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "config": {
+    "size": {
+      "x": 200,
+      "z": 200
+    },
+    "voxelSize": 1,
+    "baseHeight": 0,
+    "volumeHeight": 15,
+    "seed": 1337,
+    "isoLevel": -0.1,
+    "baseLayerScale": 0.018,
+    "elevationLayerScale": 0.024,
+    "detailLayerScale": 0.06,
+    "structureLayerScale": 0.015,
+    "persistence": 0.5,
+    "lacunarity": 2,
+    "octaves": 10,
+    "caveThreshold": 0.55,
+    "smoothingPasses": 2,
+    "islandRadiusFactor": 0.55,
+    "structureStrength": 1.35,
+    "collisionCellSize": 12,
+    "platformCount": 15,
+    "moons": 20,
+    "soupCount": 1,
+    "walkerDensity": 6
+  },
+  "objects": [
+    {
+      "type": "moon",
+      "x": -28.69,
+      "z": 16.48,
+      "y": 0
+    },
+    {
+      "type": "soup",
+      "x": 33.15,
+      "z": -53.58,
+      "y": 0
+    },
+    {
+      "type": "soup",
+      "x": -43.17,
+      "z": -39.1,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 48.02,
+      "z": 5.91,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 53.89,
+      "z": -75.5,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -77.61,
+      "z": -68.85,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -70.96,
+      "z": 52.72,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": -63.13,
+      "z": 62.5,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 35.5,
+      "z": 64.46,
+      "y": 0
+    },
+    {
+      "type": "moon",
+      "x": 57.03,
+      "z": 40.98,
+      "y": 0
+    }
+  ]
+}
