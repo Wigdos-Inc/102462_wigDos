@@ -1,36 +1,47 @@
 {
-  "version": 1,
-  "name": "Cap Kingdom Placeholder",
+  "version": 2,
+  "name": "Cap Kingdom",
   "kingdom": "cap",
+  "spawn": { "x": 0, "y": 6, "z": 42 },
   "config": {
-    "size": { "x": 150, "z": 150 },
-    "voxelSize": 6,
-    "baseHeight": 0,
-    "volumeHeight": 80,
-    "seed": 1031,
-    "isoLevel": -0.1,
-    "baseLayerScale": 0.018,
-    "elevationLayerScale": 0.024,
-    "detailLayerScale": 0.06,
-    "structureLayerScale": 0.015,
-    "persistence": 0.5,
-    "lacunarity": 2.0,
-    "octaves": 5,
-    "caveThreshold": 0.55,
-    "smoothingPasses": 2,
-    "islandRadiusFactor": 0.55,
-    "structureStrength": 1.35,
-    "collisionCellSize": 12,
-    "platformCount": 15,
-    "moons": 22,
-    "soupCount": 2,
-    "walkerDensity": 7
+    "size": { "x": 180, "z": 180 },
+    "gridSize": 4
   },
   "objects": [
-    { "type": "entrance", "x": 0, "y": 4, "z": 0 },
-    { "type": "platform", "x": -18, "y": 16, "z": 22 },
-    { "type": "moon", "x": 12, "y": 12, "z": -14 },
-    { "type": "soup", "x": -8, "y": 6, "z": -6 },
-    { "type": "walker", "x": 22, "y": 5, "z": 18 }
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 170, "depth": 170, "height": 2, "color": [0.38, 0.52, 0.76] },
+    { "type": "platform", "x": 0, "y": 2.5, "z": -8, "width": 42, "depth": 22, "height": 1.2, "color": [0.58, 0.7, 0.9] },
+
+    { "type": "platform", "x": -30, "y": 5, "z": -24, "width": 12, "depth": 12, "height": 1 },
+    { "type": "platform", "x": -14, "y": 8, "z": -34, "width": 12, "depth": 12, "height": 1 },
+    { "type": "platform", "x": 4, "y": 11, "z": -42, "width": 12, "depth": 12, "height": 1 },
+    { "type": "platform", "x": 24, "y": 14, "z": -48, "width": 12, "depth": 12, "height": 1 },
+    { "type": "platform", "x": 44, "y": 17, "z": -50, "width": 14, "depth": 14, "height": 1 },
+
+    { "type": "platform", "x": -48, "y": 5, "z": 18, "width": 16, "depth": 16, "height": 1 },
+    { "type": "platform", "x": -66, "y": 8, "z": 30, "width": 14, "depth": 14, "height": 1 },
+    { "type": "platform", "x": -78, "y": 11, "z": 44, "width": 14, "depth": 14, "height": 1 },
+
+    { "type": "moon", "x": 0, "y": 6, "z": -8 },
+    { "type": "moon", "x": -30, "y": 8, "z": -24 },
+    { "type": "moon", "x": -14, "y": 11, "z": -34 },
+    { "type": "moon", "x": 4, "y": 14, "z": -42 },
+    { "type": "moon", "x": 24, "y": 17, "z": -48 },
+    { "type": "moon", "x": 44, "y": 20, "z": -50 },
+    { "type": "moon", "x": -48, "y": 8, "z": 18 },
+    { "type": "moon", "x": -66, "y": 11, "z": 30 },
+    { "type": "moon", "x": -78, "y": 14, "z": 44 },
+    { "type": "moon", "x": 56, "y": 6, "z": 38 },
+
+    { "type": "soup", "x": 18, "y": 4, "z": 24 },
+    { "type": "soup", "x": -40, "y": 4, "z": -6 },
+
+    { "type": "walker", "x": -26, "y": 2, "z": 26 },
+    { "type": "walker", "x": 30, "y": 2, "z": 30 },
+    { "type": "walker", "x": -56, "y": 2, "z": -34 },
+    { "type": "walker", "x": 50, "y": 2, "z": -10 },
+
+    { "type": "tophat", "x": -22, "y": 0, "z": -2, "size": 5, "color": [0.09, 0.09, 0.09] },
+    { "type": "tophat", "x": 30, "y": 0, "z": 16, "size": 4.2, "color": [0.1, 0.1, 0.12] },
+    { "type": "building", "x": 8, "y": 0, "z": 24, "width": 14, "height": 9, "depth": 10, "color": [0.44, 0.56, 0.88] }
   ]
 }

@@ -6,202 +6,231 @@
     <title>Music Player - The Super Jeff 3 Odyssey Jeff</title>
     <link rel="icon" href="../../assets/images/jeff_pose_1.png">
     <style>
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
-            background-image: url("../../assets/images/jeff_and_penutface.png");
-            background-size: cover;
-            background-position: center;
+            background: radial-gradient(circle at 25% 25%, rgba(255,215,0,0.15), transparent 45%),
+                        linear-gradient(180deg, #111 0%, #000 100%);
             color: #fff;
             font-family: Arial, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            overflow: hidden;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        #player {
-            background: rgba(0,0,0,0.7);
-            padding: 20px;
-            border-radius: 8px;
+
+        #container {
             text-align: center;
+            width: min(520px, 90vw);
+            padding: 1.5rem;
         }
-        select, button {
-            margin: 4px;
-            padding: 6px 10px;
-            font-size: 1em;
-            min-height: 44px;
-            min-width: 60px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        a.back {
-            display: inline-block;
-            margin-top: 15px;
-            color: #FFD700;
-            text-decoration: none;
-        }
+
         #record-canvas {
-            display: block;
-            margin: 0 auto 10px;
-            max-width: 200px;
             width: 100%;
             height: auto;
+            max-width: 480px;
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            cursor: pointer;
         }
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            #player { padding: 15px; }
-            #player h2 { font-size: 1.5em; }
-            select, button { font-size: 0.9em; padding: 5px 8px; }
-            #record-canvas { max-width: 150px; }
+
+        .hint {
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
         }
-        @media (max-width: 480px) {
-            #player { padding: 12px; }
-            #player h2 { font-size: 1.2em; }
-            select, button { font-size: 0.85em; padding: 4px 6px; }
-            a.back { font-size: 0.9em; }
-            #record-canvas { max-width: 120px; }
-        }
-        @media (max-width: 320px) {
-            #player { padding: 10px; }
-            #player h2 { font-size: 1em; }
-            select, button { font-size: 0.8em; padding: 3px 5px; }
-            a.back { font-size: 0.85em; }
-            #record-canvas { max-width: 100px; }
+
+        a.back {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="player">
-        <h2>Soundtrack Browser</h2>
-        <!-- spinning record display -->
-        <canvas id="record-canvas" style="display:block;margin:0 auto 10px"></canvas>
-        <select id="track-select"></select><br>
-        <button id="play-btn">Play</button>
-        <button id="pause-btn">Pause</button><br>
+    <div id="container">
+        <canvas id="record-canvas" width="400" height="400" aria-label="Rotating record"></canvas>
+        <div class="hint">Tap / click record to play, select a track below.</div>
+
+        <select id="track-select" aria-label="Select song"></select>
+        <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.75rem;">
+            <button id="play-btn" type="button">Play</button>
+            <button id="pause-btn" type="button">Pause</button>
+        </div>
+
         <a href="../../index.html" class="back">← Back to Menu</a>
     </div>
 
+    <audio id="music" loop preload="auto"></audio>
+
     <script>
+        const audio = document.getElementById('music');
+        const record = document.getElementById('record-canvas');
+        const ctx = record.getContext('2d');
+
         const musicFiles = [
             'superGalaxyJeffTheme_1.mp3',
             'superGalaxyJeffTheme_2.mp3',
             'JeffOddeseyTheme2.mp3',
             'JeffOddeseyTheme.mp3',
+            'themesong_old.mp3',
             'themesong.mp3',
             'themesong (1).mp3',
-            'themesong_old.mp3',
             "jeff's song (1).mp3",
-            "jeff's song (2).mp3",
-            "jeff's song (3).mp3",
-            "jeff's song (4).mp3",
-            "jeff's song (5).mp3",
             "jeff's song.mp3",
+            "jeff's song (2).mp3",
             "jeff's song2.mp3",
-            "penutfacefinalfury2.mp3",
-            "penutfacefinalfury.mp3",
+            "jeff's song (5).mp3",
+            "jeff's song (4).mp3",
+            "jeff's song (3).mp3",
             "PenutFace's fury (1).mp3",
             "PenutFace's fury.mp3",
-            "bonustheme.mp3",
+            "penutfacefinalfury.mp3",
+            "penutfacefinalfury2.mp3",
             "bonustheme2.mp3",
-            "credits.mp3",
-            "credits2.mp3",
-            "ElegantHouse.mp3",
-            "HauntedHouse.mp3",
-            "intro.mp3",
-            "intro2.mp3",
-            "jeffsmain.mp3",
-            "jeffsomething.mp3",
-            "jeffsomething2.mp3",
+            "bonustheme.mp3",
             "spookhouse.mp3",
             "spookhouse2.mp3",
             "summerhotspot.mp3",
-            "summerhotspot2.mp3"
+            "summerhotspot2.mp3",
+            "jeffsomething.mp3",
+            "jeffsomething2.mp3",
+            "credits2.mp3",
+            "credits.mp3",
+            "intro.mp3",
+            "intro2.mp3",
+            "JeffStyle.mid",
+            "ElegantHouse.mp3",
+            "HauntedHouse.mp3",
+            "intro_audio.mp3",
+            "jeffani.mp3",
+            "jeffani_2.mp3",
+            "jarlo.mp3",
+            "jarlo_2.mp3",
+            "JeffInsanity.mp3",
+            "skubudobody skubudobody skubudobody skub.mp3",
+            "jeffsshanty.mp3",
+            "mainmenu.mp3",
+            "rats3.mp3",
+            "rats2.mp3",
+            "rats.mp3",
+            "fries on top of fries_new.mp3",
+            "mayonaise mayonaise mayonaise mayonaise .mp3"
         ];
-        const base = '../../assets/sound/';
-        const audio = new Audio();
-        audio.volume = 0.6;
 
+        const base = '../../assets/sound/';
         const select = document.getElementById('track-select');
-        musicFiles.forEach((f,i) => {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = f;
-            select.appendChild(opt);
-        });
         const playBtn = document.getElementById('play-btn');
         const pauseBtn = document.getElementById('pause-btn');
 
-        playBtn.addEventListener('click', () => {
-            const idx = parseInt(select.value);
-            if (!isNaN(idx)) {
-                audio.src = base + encodeURIComponent(musicFiles[idx]);
-                audio.loop = true;
-                audio.play().catch(() => {});
-            }
-        });
-        pauseBtn.addEventListener('click', () => {
-            audio.pause();
+        // populate dropdown
+        musicFiles.forEach((f, i) => {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = f;
+            select.appendChild(option);
         });
 
-        // record drawing and animation
-        const recordCanvas = document.getElementById('record-canvas');
-        const rctx = recordCanvas.getContext('2d');
-        
-        // Make canvas responsive
+        // set default selection
+        select.selectedIndex = 0;
+        audio.src = base + encodeURIComponent(musicFiles[0]);
+
+        function setTrack(index) {
+            const file = musicFiles[index];
+            if (!file) return;
+            audio.src = base + encodeURIComponent(file);
+            audio.play().catch(() => {});
+        }
+
+        select.addEventListener('change', () => setTrack(select.selectedIndex));
+        playBtn.addEventListener('click', () => {
+            if (!audio.src) setTrack(select.selectedIndex);
+            audio.play().catch(() => {});
+        });
+        pauseBtn.addEventListener('click', () => audio.pause());
+
+        const coverImg = new Image();
+        coverImg.src = '../../assets/images/gamecover.png';
+
+        let spinAngle = 0;
+
         function resizeCanvas() {
-            const size = Math.min(200, window.innerWidth * 0.4);
-            recordCanvas.width = size;
-            recordCanvas.height = size;
+            const size = Math.min(480, window.innerWidth * 0.9);
+            record.width = size;
+            record.height = size;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        
-        let spinAngle = 0;
-        function drawRecord() {
-            const size = recordCanvas.width;
-            rctx.clearRect(0,0,size,size);
-            // black vinyl
-            rctx.fillStyle = '#000';
-            rctx.beginPath();
-            rctx.arc(size/2, size/2, size/2-2,0,Math.PI*2);
-            rctx.fill();
-            // label
-            rctx.fillStyle = '#FFD700';
-            rctx.beginPath();
-            rctx.arc(size/2, size/2, size/6,0,Math.PI*2);
-            rctx.fill();
-            // grooves rotated
-            rctx.save();
-            rctx.translate(size/2,size/2);
-            rctx.rotate(spinAngle);
-            rctx.strokeStyle = 'rgba(255,255,255,0.05)';
-            for (let i=0;i<60;i++){
-                rctx.beginPath();
-                const angle = i*(Math.PI*2/60);
-                const r1 = size/6+6;
-                const r2 = size/2-4;
-                rctx.moveTo(Math.cos(angle)*r1, Math.sin(angle)*r1);
-                rctx.lineTo(Math.cos(angle)*r2, Math.sin(angle)*r2);
-                rctx.stroke();
-            }
-            rctx.restore();
-        }
-        function animateRecord() {
-            if (!audio.paused && audio.src) {
-                spinAngle += 0.03;
-            }
-            drawRecord();
-            requestAnimationFrame(animateRecord);
-        }
-        animateRecord();
 
-        // allow user interaction to start audio if blocked
-        document.addEventListener('click', () => {
-            if (audio.src && audio.paused) {
+        function drawRecord() {
+            const size = record.width;
+            const cx = size / 2;
+            const cy = size / 2;
+
+            ctx.clearRect(0, 0, size, size);
+
+            // vinyl base
+            const grad = ctx.createRadialGradient(cx, cy, size * 0.1, cx, cy, size * 0.55);
+            grad.addColorStop(0, '#141414');
+            grad.addColorStop(0.6, '#060606');
+            grad.addColorStop(1, '#000');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // grooves
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(spinAngle);
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 45; i++) {
+                const r = size * (0.18 + i * 0.007);
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // label ring
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.95)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 0.16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // cover image at center
+            if (coverImg.complete && coverImg.naturalWidth) {
+                const coverSize = size * 0.34;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, coverSize / 2, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(coverImg, cx - coverSize / 2, cy - coverSize / 2, coverSize, coverSize);
+                ctx.restore();
+            }
+        }
+
+        function animate() {
+            spinAngle += 0.01;
+            if (!audio.paused) spinAngle += 0.04;
+            drawRecord();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function startAudio() {
+            if (audio.paused) {
                 audio.play().catch(() => {});
             }
-        }, { once: true });
+        }
+
+        record.addEventListener('click', startAudio);
+        document.addEventListener('click', startAudio, { once: true });
     </script>
 </body>
 </html>

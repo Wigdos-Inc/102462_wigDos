@@ -6,540 +6,80 @@
     <title>The Super Jeff 3 Odyssey Jeff</title>
     <link rel="icon" href="assets/images/jeff_pose_1.png">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Press Start 2P', monospace;
-            background: #000;
-            overflow: hidden;
-            position: relative;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        /* Sonic 06 style cinematic background */
-        .cinematic-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at 30% 40%, rgba(135, 206, 235, 0.4) 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 60%, rgba(255, 215, 0, 0.3) 0%, transparent 50%),
-                linear-gradient(180deg, rgba(0, 50, 100, 0.6) 0%, rgba(0, 0, 0, 0.9) 100%);
-            animation: bgFlow 15s ease-in-out infinite;
-        }
-        
-        @keyframes bgFlow {
-            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(1.05) rotate(1deg); opacity: 0.9; }
-        }
-        
-        /* Dramatic light rays */
-        .light-rays {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.1) 50%, transparent 60%),
-                linear-gradient(-45deg, transparent 40%, rgba(135, 206, 235, 0.1) 50%, transparent 60%);
-            animation: raysRotate 20s linear infinite;
-            pointer-events: none;
-        }
-        /* landscape layers */
-        .landscape {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        .landscape .layer {
-            position: absolute;
-            bottom: 0;
-            width: 200%;
-            height: 50%;
-            background-repeat: repeat-x;
-            animation: pan 60s linear infinite;
-        }
-        #layer1 { background: url('assets/images/soup_awsome_tp.png') repeat-x bottom; animation-duration: 80s; z-index: 1; }
-        #layer2 { background: url('assets/images/soup_awsome_tp.png') repeat-x bottom; animation-duration: 50s; z-index: 2; opacity: 0.8; }
-        #layer3 { background: url('assets/images/soup_awsome_tp.png') repeat-x bottom; animation-duration: 30s; z-index: 3; opacity: 0.6; }
-        @keyframes pan { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        
-        @keyframes raysRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Particles */
-        .particle-container {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .energy-particle {
-            position: absolute;
-            width: 3px;
-            height: 80px;
-            background: linear-gradient(to bottom, transparent, rgba(255, 215, 0, 0.8), transparent);
-            animation: energyRise 4s linear infinite;
-        }
-        
-        @keyframes energyRise {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
-        }
-        
-        /* Main container */
-        .menu-wrapper {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            padding: 2vh;
-        }
-        
-        .menu-content {
-            text-align: center;
-            perspective: 1500px;
-        }
-        
-        /* Epic title */
-        .title-container {
-            margin-bottom: 100px;
-            animation: titleEntrance 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        @keyframes titleEntrance {
-            0% {
-                opacity: 0;
-                transform: translateY(-100px) scale(0.5) rotateX(-90deg);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1) rotateX(0);
-            }
-        }
-        
-        .main-title {
-            font-size: 7em;
-            font-weight: bold;
-            letter-spacing: 15px;
-            background: linear-gradient(45deg, #FFD700 0%, #FFA500 25%, #FFD700 50%, #FFA500 75%, #FFD700 100%);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 0 40px rgba(255, 215, 0, 1))
-                    drop-shadow(0 0 80px rgba(255, 215, 0, 0.6))
-                    drop-shadow(0 10px 30px rgba(0, 0, 0, 0.8));
-            animation: titleGlow 4s ease-in-out infinite, titleShimmer 3s linear infinite;
-            text-transform: uppercase;
-        }
-        
-        @keyframes titleGlow {
-            0%, 100% {
-                filter: drop-shadow(0 0 40px rgba(255, 215, 0, 1))
-                        drop-shadow(0 0 80px rgba(255, 215, 0, 0.6))
-                        drop-shadow(0 10px 30px rgba(0, 0, 0, 0.8));
-            }
-            50% {
-                filter: drop-shadow(0 0 60px rgba(255, 215, 0, 1))
-                        drop-shadow(0 0 120px rgba(255, 215, 0, 0.8))
-                        drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
-            }
-        }
-        
-        @keyframes titleShimmer {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 300% 50%; }
-        }
-        
-        .subtitle {
-            font-size: 2.5em;
-            color: #fff;
-            text-shadow: 
-                0 0 20px rgba(135, 206, 235, 1),
-                0 0 40px rgba(135, 206, 235, 0.6),
-                0 5px 20px rgba(0, 0, 0, 0.8);
-            margin-top: 20px;
-            letter-spacing: 8px;
-            animation: subtitlePulse 3s ease-in-out infinite;
-        }
-        
-        @keyframes subtitlePulse {
-            0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.05); opacity: 1; }
-        }
-        
-        /* Menu buttons - Sonic 06 style */
-        .menu-options {
-            display: grid;
-            grid-template-columns: auto auto auto auto;
-            flex-direction: column;
-            gap: 2.5vh;
-            margin-top: 6vh;
-            width: 90%;
-            max-width: 600px;
-            margin-left: 20%;
-        }
-        
-        .menu-button {
-            position: relative;
-            padding: 2.5vh 8vw;
-            font-size: 4vw;
-            font-weight: bold;
-            color: #fff;
-            text-decoration: none;
-            text-transform: uppercase;
-            background-color: #000;
-            border: 4px solid #fff;
-            border-radius: 15px;
-            backdrop-filter: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            animation: buttonSlideIn 1s ease-out both;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-            .main-title { font-size: 6em; letter-spacing: 12px; }
-            .subtitle { font-size: 2.2em; letter-spacing: 6px; }
-            .title-container { margin-bottom: 80px; }
-        }
-        @media (max-width: 1024px) {
-            .main-title { font-size: 5em; letter-spacing: 10px; }
-            .subtitle { font-size: 2em; }
-            .menu-button { font-size: 3.5vw; padding: 2.5vh 7vw; }
-            .button-img { width: 35px; height: 35px; }
-            .title-container { margin-bottom: 70px; }
-        }
-        @media (max-width: 768px) {
-            .main-title { font-size: 10vw; letter-spacing: 6px; }
-            .subtitle { font-size: 5vw; letter-spacing: 4px; }
-            .menu-button { font-size: 6vw; padding: 3vh 10vw; }
-            .button-img { width: 30px; height: 30px; margin-right: 10px; }
-            .title-container { margin-bottom: 60px; }
-            .start-text { font-size: 1.2em; bottom: 40px; }
-            .version-info { font-size: 0.8em; }
-        }
-        @media (max-width: 600px) {
-            .main-title { font-size: 11vw; letter-spacing: 4px; }
-            .subtitle { font-size: 5.5vw; letter-spacing: 3px; }
-            .menu-button { font-size: 7vw; padding: 3.5vh 11vw; }
-            .title-container { margin-bottom: 50px; }
-        }
-        @media (max-width: 480px) {
-            .main-title { font-size: 12vw; letter-spacing: 2px; }
-            .subtitle { font-size: 6vw; letter-spacing: 2px; margin-top: 15px; }
-            .menu-button { font-size: 8vw; padding: 4vh 12vw; }
-            .button-img { width: 25px; height: 25px; margin-right: 8px; }
-            .title-container { margin-bottom: 40px; }
-            .start-text { font-size: 1em; bottom: 30px; }
-            .version-info { font-size: 0.7em; bottom: 10px; right: 15px; }
-        }
-        @media (max-width: 375px) {
-            .main-title { font-size: 13vw; letter-spacing: 1px; }
-            .subtitle { font-size: 6.5vw; letter-spacing: 1px; }
-            .menu-button { font-size: 9vw; padding: 4vh 12vw; }
-            .button-img { width: 22px; height: 22px; }
-            .title-container { margin-bottom: 35px; }
-        }
-        @media (max-width: 320px) {
-            .main-title { font-size: 14vw; letter-spacing: 1px; }
-            .subtitle { font-size: 7vw; letter-spacing: 1px; margin-top: 10px; }
-            .menu-button { font-size: 9.5vw; padding: 4vh 13vw; }
-            .button-img { width: 20px; height: 20px; margin-right: 6px; }
-            .title-container { margin-bottom: 30px; }
-            .start-text { font-size: 0.9em; bottom: 25px; }
-            .version-info { font-size: 0.6em; }
-        }
-        /* Landscape mode adjustments */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .title-container { margin-bottom: 30px; }
-            .main-title { font-size: 8vw; }
-            .subtitle { font-size: 4vw; margin-top: 10px; }
-            .menu-button { padding: 2vh 8vw; font-size: 4vw; }
-            .button-img { width: 25px; height: 25px; }
-            .menu-options { gap: 1.5vh; margin-top: 3vh; }
-            .start-text { font-size: 0.9em; bottom: 20px; }
-        }
-        
-        .menu-button:nth-child(1) { animation-delay: 0.3s; }
-        .menu-button:nth-child(2) { animation-delay: 0.5s; }
-        .menu-button:nth-child(3) { animation-delay: 0.7s; }
-        
-        @keyframes buttonSlideIn {
-            0% {
-                opacity: 0;
-                transform: translateX(-200px) rotateY(-45deg);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0) rotateY(0);
-            }
-        }
-        
-        .menu-button::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -150%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%
-            );
-            transform: rotate(30deg);
-            transition: left 0.7s;
-        }
-        
-        .menu-button:hover::before {
-            left: 150%;
-        }
-        
-        .menu-button::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3), transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .menu-button:hover::after {
-            opacity: 1;
-        }
-        
-        .menu-button:hover {
-            transform: translateX(30px) scale(1.1) rotateY(5deg);
-            border-color: rgba(255, 215, 0, 1);
-            box-shadow: 
-                0 0 50px rgba(255, 215, 0, 0.8),
-                0 0 100px rgba(255, 215, 0, 0.4),
-                inset 0 0 40px rgba(255, 215, 0, 0.2),
-                0 20px 60px rgba(0, 0, 0, 0.6);
-            background: linear-gradient(135deg, 
-                rgba(255, 215, 0, 0.3) 0%, 
-                rgba(135, 206, 235, 0.3) 100%);
-        }
-        
-        .menu-button:active {
-            transform: translateX(30px) scale(1.05) rotateY(3deg);
-        }
-        
-        .button-icon {
-            display: inline-block;
-            margin-right: 20px;
-            font-size: 1.2em;
-            animation: iconFloat 2s ease-in-out infinite;
-        }
-        .button-img {
-            display: inline-block;
-            vertical-align: middle;
-            width: 40px;
-            height: 40px;
-            margin-right: 15px;
-        }
-        
-        @keyframes iconFloat {
-            0%, 100% { transform: translateY(0) rotateZ(0deg); }
-            50% { transform: translateY(-10px) rotateZ(10deg); }
-        }
-        
-        /* Energy rings */
-        .energy-ring {
-            position: absolute;
-            border: 4px solid rgba(255, 215, 0, 0.4);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: ringExpand 4s ease-out infinite;
-        }
-        
-        @keyframes ringExpand {
-            0% {
-                width: 50px;
-                height: 50px;
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(0);
-            }
-            100% {
-                width: 600px;
-                height: 600px;
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-        
-        .energy-ring:nth-child(1) { animation-delay: 0s; }
-        .energy-ring:nth-child(2) { animation-delay: 1.3s; }
-        .energy-ring:nth-child(3) { animation-delay: 2.6s; }
-        
-        /* Glow orbs */
-        .glow-orb {
-            position: fixed;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.6), transparent 70%);
-            filter: blur(40px);
-            animation: orbFloat 8s ease-in-out infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(50px, -50px) scale(1.2); }
-        }
-        
-        .glow-orb:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
-        .glow-orb:nth-child(2) { top: 60%; right: 15%; animation-delay: 2s; }
-        .glow-orb:nth-child(3) { bottom: 15%; left: 20%; animation-delay: 4s; }
-        
-        /* Press Start */
-        .start-text {
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.6em;
-            font-weight: bold;
-            color: #FFD700;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 1);
-            animation: blink 2s ease-in-out infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
-        }
-        
-        .version-info {
-            position: fixed;
-            bottom: 15px;
-            right: 25px;
-            color: #666;
-            font-size: 1em;
-        }
-    </style>
+    <link rel="stylesheet" href="src/css/mainmenu.css">
+    <link rel="stylesheet" href="src/css/sliders.css">
 </head>
 <body>
-    <div class="cinematic-bg"></div>
-    <div class="landscape">
-        <div class="layer" id="layer1"></div>
-        <div class="layer" id="layer2"></div>
-        <div class="layer" id="layer3"></div>
-    </div>
-    <div class="light-rays"></div>
-    
-    <div class="particle-container" id="particles">
-        <div class="glow-orb"></div>
-        <div class="glow-orb"></div>
-        <div class="glow-orb"></div>
-    </div>
-    
-    <div class="menu-wrapper">
-        <div class="menu-content">
-            <div class="title-container">
-                <div class="main-title">THE SUPER JEFF<br>ODDYSSEY V2 REJEFFANINATED</div>
-                <div class="subtitle">AN EPIC ADVENTURE AWAITS</div>
-            </div>
-            
-            <div class="menu-options">
-                <a href="src/html/introSplash.html" class="menu-button">
-                    <img src="assets/images/jeff_throw2.png" alt="" class="button-img">
-                    START GAME
-                    <div class="energy-ring"></div>
-                    <div class="energy-ring"></div>
-                    <div class="energy-ring"></div>
-                </a>
-                
-                <a href="src/html/game.html?kingdom=cascade" class="menu-button">
-                    <img src="assets/images/jeff_new.png" alt="" class="button-img">
-                    SELECT LEVEL
-                </a>
+    <div class="menu">
+        <!--<div class="main-title">THE SUPER JEFF<br>ODDYSSEY V2</div>-->
+        <div style="margin-bottom: 40%;"></div>
 
-                <a href="src/html/music.html" class="menu-button">
-                    <img src="assets/images/jeff_flute.png" alt="" class="button-img">
-                    JEFF OST
-                </a>
-            </div>
+        <div class="menu-options">
+            <a href="src/html/introSplash.html" class="menu-button">
+                START GAME
+            </a>
+
+            <a href="src/html/game.html?kingdom=cascade" class="menu-button">
+                SELECT LEVEL
+            </a>
+
+            <a href="src/html/music.html" class="menu-button">
+                JEFF OST
+            </a>
+        </div>
+
+        <div class="version-info">v2.0 - Moonshine Edition</div>
+
+        <div class="audio-ui">
+            <label for="volume">🔊</label>
+            <input type="range" id="volume" min="0" max="100" value="80">
         </div>
     </div>
-    
-    <div class="start-text">▶ SELECT AN OPTION ◀</div>
-    <div class="version-info">v1.0 - Odyssey Edition</div>
-    
+
     <!-- background music -->
     <audio id="menu-music" src="assets/sound/jeff's song (3).mp3" loop preload="auto"></audio>
-    
+
     <script>
-        // Generate energy particles
-        const particleContainer = document.getElementById('particles');
-        for (let i = 0; i < 30; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'energy-particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 4 + 's';
-            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-            particle.style.opacity = Math.random() * 0.5 + 0.3;
-            particleContainer.appendChild(particle);
-        }
-        
-        // Add hover sound effect trigger (optional)
-        document.querySelectorAll('.menu-button').forEach(button => {
-            button.addEventListener('mouseenter', () => {
-                button.style.transform = 'translateX(30px) scale(1.1) rotateY(5deg) rotateZ(2deg)';
-            });
-            button.addEventListener('mouseleave', () => {
-                button.style.transform = '';
-            });
-        });
-        
-        // play menu music on first interaction
+        const volume = document.getElementById('volume');
         const menuMusic = document.getElementById('menu-music');
+
+        volume.value = (localStorage.getItem("volume") || 60);
         function startMusic() {
+            const random = Math.floor(Math.random() * 10);
+            console.log(random);
+            switch(random) {
+                case 1:
+                    menuMusic.src = 'assets/sound/mayonaise mayonaise mayonaise mayonaise .mp3';
+                    break;
+                case 3:
+                    menuMusic.src = 'assets/sound/rats.mp3';
+                    break;
+                case 5:
+                    menuMusic.src = 'assets/sound/skubudobody skubudobody skubudobody skub.mp3';
+                    break;
+                case 7:
+                    menuMusic.src = 'assets/sound/JeffInsanity.mp3';
+                    break;
+                case 9:
+                    menuMusic.src = 'assets/sound/mainmenu.mp3';
+                    break;
+                default:
+                    menuMusic.src = "assets/sound/jeff's song (3).mp3";
+            }
+
             if (menuMusic.paused) {
-                menuMusic.volume = 0.5;
+                menuMusic.volume = volume.value / 100;
                 menuMusic.play().catch(() => {});
             }
             document.removeEventListener('click', startMusic);
         }
-        document.addEventListener('click', startMusic, { once: true });
-        
-        // credits button handler
-        const creditsBtn = document.getElementById('credits-btn');
-        creditsBtn.addEventListener('click', () => {
-            alert('Credits will be added soon!');
+
+        volume.addEventListener("input", () => {
+            menuMusic.volume = volume.value / 100;
+            localStorage.setItem("volume", volume.value);
         });
-        
-        // Clear intro flag to ensure it plays
-        sessionStorage.removeItem('odysseyIntroShown');
+
+        document.addEventListener('click', startMusic, { once: true });
     </script>
 </body>
 </html>

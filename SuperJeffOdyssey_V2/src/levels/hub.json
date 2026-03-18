@@ -1,118 +1,41 @@
 {
-  "version": 1,
-  "name": "Hub Island Placeholder",
+  "version": 2,
+  "name": "Tropical Hub",
   "kingdom": "hub",
+  "spawn": { "x": 0, "y": 6, "z": 26 },
   "config": {
-    "size": {
-      "x": 1000,
-      "z": 1000
-    },
-    "voxelSize": 6,
-    "baseHeight": 0,
-    "volumeHeight": 40,
-    "seed": 1337,
-    "isoLevel": -0.1,
-    "baseLayerScale": 0.018,
-    "elevationLayerScale": 0.024,
-    "detailLayerScale": 0.06,
-    "structureLayerScale": 0.015,
-    "persistence": 0.5,
-    "lacunarity": 2,
-    "octaves": 5,
-    "caveThreshold": 0.55,
-    "smoothingPasses": 2,
-    "islandRadiusFactor": 0.55,
-    "structureStrength": 1.35,
-    "collisionCellSize": 12,
-    "platformCount": 15,
-    "moons": 20,
-    "soupCount": 1,
-    "walkerDensity": 6
+    "size": { "x": 260, "z": 260 },
+    "gridSize": 4
   },
   "objects": [
-    {
-      "type": "platform",
-      "x": -334.83,
-      "z": -173.97,
-      "y": 0
-    },
-    {
-      "type": "platform",
-      "x": 228.77,
-      "z": -354.01,
-      "y": 0
-    },
-    {
-      "type": "platform",
-      "x": 232.68,
-      "z": 98.04,
-      "y": 0
-    },
-    {
-      "type": "walker",
-      "x": -334.83,
-      "z": -170.06,
-      "y": 0
-    },
-    {
-      "type": "walker",
-      "x": -182.19,
-      "z": -275.73,
-      "y": 0
-    },
-    {
-      "type": "walker",
-      "x": 111.35,
-      "z": -68.3,
-      "y": 0
-    },
-    {
-      "type": "entrance",
-      "x": 21.33,
-      "z": -322.7,
-      "y": 0
-    },
-    {
-      "type": "entrance",
-      "x": -186.11,
-      "z": 64.77,
-      "y": 0
-    },
-    {
-      "type": "entrance",
-      "x": 314.87,
-      "z": -128.96,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -101.96,
-      "z": -119.18,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -303.52,
-      "z": 115.66,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 354.01,
-      "z": -322.7,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -154.79,
-      "z": -395.11,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 91.78,
-      "z": 269.47,
-      "y": 0
-    }
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 220, "depth": 220, "height": 2, "color": [0.62, 0.76, 0.58] },
+    { "type": "platform", "x": 0, "y": 0.8, "z": 0, "width": 56, "depth": 56, "height": 1.6, "color": [0.86, 0.86, 0.78] },
+    { "type": "platform", "x": 0, "y": 0.4, "z": -72, "width": 18, "depth": 92, "height": 1, "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": 0, "y": 0.4, "z": 72, "width": 18, "depth": 92, "height": 1, "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": -72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": 72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "color": [0.72, 0.72, 0.74] },
+
+    { "type": "entrance", "target": "cap", "x": 0, "y": 1, "z": -96, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
+    { "type": "entrance", "target": "cascade", "x": 96, "y": 1, "z": 0, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
+    { "type": "entrance", "target": "sand", "x": -96, "y": 1, "z": 0, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
+    { "type": "entrance", "target": "boss", "x": 0, "y": 1, "z": 96, "width": 6, "height": 8, "depth": 4, "color": [0.9, 0.2, 0.2] },
+
+    { "type": "moon", "x": 0, "y": 7, "z": 0 },
+    { "type": "moon", "x": 0, "y": 5, "z": -45 },
+    { "type": "moon", "x": 0, "y": 5, "z": 45 },
+    { "type": "moon", "x": -45, "y": 5, "z": 0 },
+    { "type": "moon", "x": 45, "y": 5, "z": 0 },
+    { "type": "moon", "x": 64, "y": 5, "z": 64 },
+    { "type": "moon", "x": -64, "y": 5, "z": 64 },
+    { "type": "moon", "x": 64, "y": 5, "z": -64 },
+    { "type": "moon", "x": -64, "y": 5, "z": -64 },
+
+    { "type": "soup", "x": 24, "y": 3, "z": 22 },
+    { "type": "soup", "x": -26, "y": 3, "z": -20 },
+
+    { "type": "walker", "x": 30, "y": 2, "z": -32 },
+    { "type": "walker", "x": -34, "y": 2, "z": 18 },
+    { "type": "walker", "x": 16, "y": 2, "z": 40 },
+    { "type": "walker", "x": -44, "y": 2, "z": -28 }
   ]
 }

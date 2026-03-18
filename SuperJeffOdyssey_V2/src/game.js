@@ -1,6 +1,5 @@
 import { game, kingdomConfigs, engine, vector } from './globals.js';
 import { drawJeff, player } from './player.js';
-import { debugCubes } from './libs/engine/terrainMesh.js';
 import { drawStructures } from './structures.js';
 import { initInput } from './inputs.js';
 import { loadKingdom, enterPyramid, exitPyramid } from './levelgeneration.js';
@@ -8,7 +7,7 @@ import { showMessage, updateHUD, togglePause, showCredits } from './ui.js';
 import { playEffect, beginbackgroundmusic, musicInit, getKingdomtrack } from './audio.js';
 import { supportHeightAtXZ } from './libs/engine/engine.js';
 
-//ReJeffAninated Studios
+// ReJeffAninated Studios
 // Jarlo & Jauigi
 // Moonshine
 
@@ -635,18 +634,13 @@ import { supportHeightAtXZ } from './libs/engine/engine.js';
         game.camera.z += (targetCamPos.z - game.camera.z) * 0.1;
     }
 
-
     function draw() {
         engine.engineUpdate({x: game.camera.x, y: game.camera.y, z: game.camera.z}, player.pos);
 
         if (game.rtxMode) {
             console.warn("Warning: RTX mode not available for now");
         } else {
-            for (const cube of debugCubes) {
-                //drawCube(cube.x, cube.y, cube.z, cube.size, cube.size, cube.size, [1,0,0,0.2], viewMatrix, projMatrix);
-            }
             // Normal render path
-            //drawTerrain(viewMatrix, projMatrix);
             drawStructures();
             game.platforms.forEach(platform => platform.draw());
             game.collectibles.forEach(moon => moon.draw());

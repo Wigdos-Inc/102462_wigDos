@@ -1,36 +1,47 @@
 {
-  "version": 1,
-  "name": "Sand Kingdom Placeholder",
+  "version": 2,
+  "name": "Sand Kingdom",
   "kingdom": "sand",
+  "spawn": { "x": -56, "y": 6, "z": 18 },
   "config": {
-    "size": { "x": 160, "z": 160 },
-    "voxelSize": 6,
-    "baseHeight": 1,
-    "volumeHeight": 80,
-    "seed": 987654,
-    "isoLevel": -0.1,
-    "baseLayerScale": 0.018,
-    "elevationLayerScale": 0.024,
-    "detailLayerScale": 0.06,
-    "structureLayerScale": 0.015,
-    "persistence": 0.5,
-    "lacunarity": 2.0,
-    "octaves": 5,
-    "caveThreshold": 0.55,
-    "smoothingPasses": 2,
-    "islandRadiusFactor": 0.55,
-    "structureStrength": 1.35,
-    "collisionCellSize": 12,
-    "platformCount": 16,
-    "moons": 26,
-    "soupCount": 1,
-    "walkerDensity": 6
+    "size": { "x": 190, "z": 190 },
+    "gridSize": 4
   },
   "objects": [
-    { "type": "entrance", "x": 0, "y": 4, "z": 0 },
-    { "type": "platform", "x": -26, "y": 14, "z": -24 },
-    { "type": "moon", "x": 20, "y": 11, "z": 20 },
-    { "type": "soup", "x": -14, "y": 6, "z": 12 },
-    { "type": "walker", "x": 18, "y": 5, "z": -16 }
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 184, "depth": 184, "height": 2, "color": [0.88, 0.76, 0.56] },
+
+    { "type": "platform", "x": -56, "y": 3, "z": 18, "width": 24, "depth": 20, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": -28, "y": 6, "z": 8, "width": 22, "depth": 18, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": -2, "y": 9, "z": -4, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": 24, "y": 12, "z": -14, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": 48, "y": 15, "z": -22, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+
+    { "type": "platform", "x": 44, "y": 3, "z": 34, "width": 34, "depth": 26, "height": 1, "color": [0.4, 0.7, 0.78] },
+
+    { "type": "moon", "x": -56, "y": 6, "z": 18 },
+    { "type": "moon", "x": -28, "y": 9, "z": 8 },
+    { "type": "moon", "x": -2, "y": 12, "z": -4 },
+    { "type": "moon", "x": 24, "y": 15, "z": -14 },
+    { "type": "moon", "x": 48, "y": 18, "z": -22 },
+    { "type": "moon", "x": 44, "y": 6, "z": 34 },
+    { "type": "moon", "x": 70, "y": 6, "z": 46 },
+    { "type": "moon", "x": -70, "y": 6, "z": -36 },
+    { "type": "moon", "x": -16, "y": 5, "z": 66 },
+    { "type": "moon", "x": 14, "y": 5, "z": 72 },
+
+    { "type": "soup", "x": -20, "y": 4, "z": 40 },
+    { "type": "soup", "x": 60, "y": 4, "z": 18 },
+
+    { "type": "walker", "x": -42, "y": 2, "z": -26 },
+    { "type": "walker", "x": 18, "y": 2, "z": 18 },
+    { "type": "walker", "x": 62, "y": 2, "z": -6 },
+    { "type": "walker", "x": -10, "y": 2, "z": 58 },
+
+    { "type": "pyramid", "x": 0, "y": 0, "z": -48, "size": 26, "height": 20, "hasInterior": true, "color": [0.85, 0.75, 0.5] },
+    { "type": "palm", "x": -36, "y": 0, "z": 54, "height": 8, "color": [0.3, 0.5, 0.2] },
+    { "type": "palm", "x": -14, "y": 0, "z": 58, "height": 9, "color": [0.3, 0.5, 0.2] },
+    { "type": "palm", "x": 58, "y": 0, "z": 42, "height": 8, "color": [0.3, 0.5, 0.2] },
+    { "type": "dune", "x": -62, "y": 0, "z": 8, "size": 6, "color": [0.93, 0.82, 0.62] },
+    { "type": "dune", "x": 30, "y": 0, "z": -54, "size": 7, "color": [0.93, 0.82, 0.62] }
   ]
 }

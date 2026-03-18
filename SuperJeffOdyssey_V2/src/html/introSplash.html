@@ -270,6 +270,7 @@ body{
 <script>
 
 const audio = document.getElementById("introAudio");
+audio.volume = (localStorage.getItem("volume") || 60) / 100;
 
 audio.addEventListener("ended", () => {
     window.location.href = "intro.html";

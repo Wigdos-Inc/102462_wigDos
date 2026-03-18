@@ -1,11 +1,70 @@
-import { uploadTerrainMesh } from './libs/engine/engine.js';
 import { game, kingdomConfigs, vector } from './globals.js';
-import { generateLevelLayout } from './libs/engine/terrainGenerator.js';
 import { Walker } from './entities.js';
 import { playTrack, getmusicfiles, getKingdomtrack } from './audio.js';
 import { Boss, PowerMoon, PowerSoup, Platform } from './characters.js';
 import { showMessage, updateHUD } from './ui.js';
 import { player } from './player.js';
+import { createPyramidInterior } from './structures.js';
+
+function createFallbackLevel(kingdomKey, kingdom) {
+    const sizeX = kingdom.size?.x || 120;
+    const sizeZ = kingdom.size?.z || 120;
+    return {
+        name: kingdom.name || kingdomKey,
+        spawn: { x: 0, y: 5, z: 10 },
+        objects: [
+            {
+                type: 'platform',
+                x: 0,
+                y: 0,
+                z: 0,
+                width: sizeX,
+                depth: sizeZ,
+                height: 2,
+                color: kingdom.platformColor || [0.5, 0.6, 0.7]
+            }
+        ]
+    };
+}
+
+function parseLevelObjects(levelData) {
+    const objects = Array.isArray(levelData?.objects) ? levelData.objects : [];
+    const platforms = [];
+    const moons = [];
+    const soups = [];
+    const walkers = [];
+    const structures = [];
+
+    for (const obj of objects) {
+        if (!obj || typeof obj !== 'object') continue;
+        const type = obj.type;
+        const x = Number(obj.x) || 0;
+        const y = Number(obj.y) || 0;
+        const z = Number(obj.z) || 0;
+
+        if (type === 'platform') {
+            platforms.push({
+                x,
+                y,
+                z,
+                width: Number(obj.width) || 8,
+                height: Number(obj.height) || 1,
+                depth: Number(obj.depth) || 8,
+                color: obj.color || [0.5, 0.6, 0.7]
+            });
+        } else if (type === 'moon') {
+            moons.push({ x, y, z });
+        } else if (type === 'soup') {
+            soups.push({ x, y, z });
+        } else if (type === 'walker') {
+            walkers.push({ x, y, z });
+        } else {
+            structures.push({ ...obj, x, y, z });
+        }
+    }
+
+    return { platforms, moons, soups, walkers, structures };
+}
 
 export async function loadKingdom(kingdomKey) {
         const kingdom = kingdomConfigs[kingdomKey] || {};
@@ -14,15 +73,18 @@ export async function loadKingdom(kingdomKey) {
         game.platforms = [];
         game.moons = 0;
 
-        // Try loading external level JSON; fall back to baked config
         let levelJson = null;
         try {
-            const res = await fetch(`../levels/${kingdomKey}.jsony?ts=${Date.now()}`);
+            const res = await fetch(`../levels/${kingdomKey}.json?ts=${Date.now()}`);
             if (res.ok) {
                 levelJson = await res.json();
             }
         } catch (err) {
-            console.warn('Level JSON load failed, using defaults', err);
+            console.warn('Level JSON load failed, using fallback level', err);
+        }
+
+        if (!levelJson) {
+            levelJson = createFallbackLevel(kingdomKey, kingdom);
         }
 
         const displayName = levelJson?.name || kingdom.name || kingdomKey;
@@ -50,34 +112,24 @@ export async function loadKingdom(kingdomKey) {
             showMessage('Welcome to the Hub! Walk into orange arches to visit kingdoms.', '#00CED1');
         }
 
-        const mergedConfig = { ...kingdom, ...(levelJson?.config || {}) };
-        const terrain = generateLevelLayout({ ...mergedConfig, objects: levelJson?.objects, fromLevelFile: !!levelJson });
+        const parsed = parseLevelObjects(levelJson);
 
-        // Store terrain mesh data
-        game.terrainMesh = terrain.terrainMesh;
-        game.structures = terrain.structures || [];
-        game.heightMap = terrain.heightMap;
-        game.terrainCollision = terrain.collision;
-        game.sampleTerrainHeight = terrain.sampleHeight;
-        game.gridSize = terrain.gridSize;
-        
-        // Pass terrain mesh data to engine for buffering; the engine takes care of
-        // creating and updating its own GL resources.
-        if (game.terrainMesh && game.terrainMesh.vertices) {
-            uploadTerrainMesh(game.terrainMesh);
-        }
+        game.terrainMesh = null;
+        game.heightMap = null;
+        game.terrainCollision = null;
+        game.sampleTerrainHeight = null;
+        game.gridSize = Number(levelJson?.config?.gridSize || kingdom.gridSize || 4);
+        game.structures = parsed.structures;
 
-        // Only add floating platforms (not the ground grid tiles)
-        terrain.platforms.map(p => new Platform(p.x, p.y, p.z, p.width, p.height, p.depth, p.color)).forEach(p => game.platforms.push(p));
+        parsed.platforms
+            .map(p => new Platform(p.x, p.y, p.z, p.width, p.height, p.depth, p.color))
+            .forEach(p => game.platforms.push(p));
 
-        game.collectibles = terrain.moons.map(m => new PowerMoon(m.x, m.y, m.z));
-        game.totalMoons = terrain.moons.length;
+        game.collectibles = parsed.moons.map(m => new PowerMoon(m.x, m.y, m.z));
+        game.totalMoons = parsed.moons.length;
 
-        const soups = terrain.soups || [];
-        game.powerSoups = soups.map(s => new PowerSoup(s.x, s.y, s.z));
-
-        const walkers = terrain.walkers || [];
-        game.walkers = walkers.map(p => new Walker(p.x, p.z, p.y));
+        game.powerSoups = parsed.soups.map(s => new PowerSoup(s.x, s.y, s.z));
+        game.walkers = parsed.walkers.map(w => new Walker(w.x, w.z, w.y));
         if (kingdomKey === 'boss') {
             // remove random walkers, boss arena shouldn't have them
             game.walkers = [];
@@ -103,9 +155,8 @@ export async function loadKingdom(kingdomKey) {
             game.boss = null;
         }
 
-        const centerHeight = terrain.centerHeight ?? kingdom.baseHeight;
-        const spawnHeight = Math.max(centerHeight + 4, kingdom.baseHeight + 5, player.radius + 1);
-        player.pos = vector.create(0, spawnHeight, 12);
+        const spawn = levelJson?.spawn || { x: 0, y: Math.max((kingdom.baseHeight || 0) + 5, player.radius + 1), z: 12 };
+        player.pos = vector.create(spawn.x || 0, Math.max(spawn.y || 0, player.radius + 1), spawn.z || 12);
         player.vel = vector.create(0, 0, 0);
         player.onGround = false;
         player.state = 'idle';

@@ -1,92 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
+  "name": "Custom Template Level",
+  "spawn": { "x": 0, "y": 6, "z": 18 },
   "config": {
-    "size": {
-      "x": 200,
-      "z": 200
-    },
-    "voxelSize": 1,
-    "baseHeight": 0,
-    "volumeHeight": 15,
-    "seed": 1337,
-    "isoLevel": -0.1,
-    "baseLayerScale": 0.018,
-    "elevationLayerScale": 0.024,
-    "detailLayerScale": 0.06,
-    "structureLayerScale": 0.015,
-    "persistence": 0.5,
-    "lacunarity": 2,
-    "octaves": 10,
-    "caveThreshold": 0.55,
-    "smoothingPasses": 2,
-    "islandRadiusFactor": 0.55,
-    "structureStrength": 1.35,
-    "collisionCellSize": 12,
-    "platformCount": 15,
-    "moons": 20,
-    "soupCount": 1,
-    "walkerDensity": 6
+    "size": { "x": 140, "z": 140 },
+    "gridSize": 4
   },
   "objects": [
-    {
-      "type": "moon",
-      "x": -28.69,
-      "z": 16.48,
-      "y": 0
-    },
-    {
-      "type": "soup",
-      "x": 33.15,
-      "z": -53.58,
-      "y": 0
-    },
-    {
-      "type": "soup",
-      "x": -43.17,
-      "z": -39.1,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 48.02,
-      "z": 5.91,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 53.89,
-      "z": -75.5,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -77.61,
-      "z": -68.85,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -70.96,
-      "z": 52.72,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": -63.13,
-      "z": 62.5,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 35.5,
-      "z": 64.46,
-      "y": 0
-    },
-    {
-      "type": "moon",
-      "x": 57.03,
-      "z": 40.98,
-      "y": 0
-    }
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 120, "depth": 120, "height": 2, "color": [0.55, 0.6, 0.62] },
+    { "type": "platform", "x": 20, "y": 4, "z": -10, "width": 16, "depth": 16, "height": 1 },
+    { "type": "platform", "x": 38, "y": 7, "z": -22, "width": 14, "depth": 14, "height": 1 },
+    { "type": "moon", "x": 20, "y": 7, "z": -10 },
+    { "type": "moon", "x": 38, "y": 10, "z": -22 },
+    { "type": "soup", "x": -22, "y": 3, "z": 16 },
+    { "type": "walker", "x": -10, "y": 2, "z": -26 },
+    { "type": "walker", "x": 26, "y": 2, "z": 20 }
   ]
 }

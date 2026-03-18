@@ -1,4 +1,4 @@
-import { engine, vector, game, kingdomConfigs } from './globals.js';
+import { engine, vector, game, kingdomConfigs, texBuffer } from './globals.js';
 import { showMessage, updateHUD } from './ui.js';
 import { player } from './player.js';
 
@@ -123,6 +123,6 @@ export class Platform {
     }
 
     draw() {
-        engine.drawCube(this.pos.x, this.pos.y, this.pos.z, this.width, this.height, this.depth, {x: this.color[0], y: this.color[1], z: this.color[2]});
+        engine.drawTexCube(this.pos.x, this.pos.y, this.pos.z, this.width, this.height, this.depth, {x: this.color[0], y: this.color[1], z: this.color[2]}, true, {width: 32, height: 32, pixels: texBuffer});
     }
 }

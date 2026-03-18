@@ -70,7 +70,7 @@ export function playTrack(idx) {
 // play a short audio effect; stops after `duration` seconds (default 2)
 export function playEffect(name, duration = 2) {
         const eff = new Audio(musicBasePath + encodeURIComponent(name));
-        eff.volume = 0.7;
+        eff.volume = (localStorage.getItem("volume") || 60) / 100;
         eff.play().catch(() => {});
         if (duration > 0) {
             setTimeout(() => {
@@ -117,7 +117,10 @@ document.addEventListener('click', () => {
 }
 
 const volumeSlider = document.getElementById("volume");
+volumeSlider.value = localStorage.getItem("volume") || 60;
+audio.volume = volumeSlider.value / 100;
 
 volumeSlider.addEventListener("input", () => {
-  audio.volume = volumeSlider.value / 100;
+    audio.volume = volumeSlider.value / 100;
+    localStorage.setItem("volume", volumeSlider.value);
 });

@@ -1,35 +1,22 @@
 {
-  "version": 1,
-  "name": "Boss Arena Placeholder",
+  "version": 2,
+  "name": "Boss Arena",
   "kingdom": "boss",
+  "spawn": { "x": 0, "y": 6, "z": 28 },
   "config": {
     "size": { "x": 120, "z": 120 },
-    "voxelSize": 6,
-    "baseHeight": 0,
-    "volumeHeight": 70,
-    "seed": 42,
-    "isoLevel": -0.1,
-    "baseLayerScale": 0.018,
-    "elevationLayerScale": 0.024,
-    "detailLayerScale": 0.06,
-    "structureLayerScale": 0.015,
-    "persistence": 0.5,
-    "lacunarity": 2.0,
-    "octaves": 4,
-    "caveThreshold": 0.55,
-    "smoothingPasses": 2,
-    "islandRadiusFactor": 0.55,
-    "structureStrength": 1.35,
-    "collisionCellSize": 12,
-    "platformCount": 0,
-    "moons": 0,
-    "soupCount": 0,
-    "walkerDensity": 0
+    "gridSize": 4
   },
   "objects": [
-    { "type": "entrance", "x": 0, "y": 4, "z": -30 },
-    { "type": "platform", "x": 0, "y": 10, "z": 0 },
-    { "type": "moon", "x": 18, "y": 9, "z": 18 },
-    { "type": "walker", "x": -18, "y": 6, "z": -18 }
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 112, "depth": 112, "height": 2, "color": [0.42, 0.12, 0.12] },
+    { "type": "platform", "x": 0, "y": 3, "z": 0, "width": 26, "depth": 26, "height": 1, "color": [0.62, 0.22, 0.22] },
+    { "type": "platform", "x": -30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": 30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": -30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": 30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
+    { "type": "soup", "x": -30, "y": 8, "z": -30 },
+    { "type": "soup", "x": 30, "y": 8, "z": -30 },
+    { "type": "soup", "x": -30, "y": 8, "z": 30 },
+    { "type": "soup", "x": 30, "y": 8, "z": 30 }
   ]
 }

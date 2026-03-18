@@ -413,6 +413,8 @@
         let currentScene = 0;
         const music = document.getElementById('introMusic');
         const flash = document.getElementById('flash');
+
+        music.volume = (localStorage.getItem("volume") || 60) / 100;
         
         // Generate particles
         const particlesContainer = document.getElementById('particles');
