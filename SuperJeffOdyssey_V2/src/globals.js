@@ -1,4 +1,5 @@
 import EngineModule from './libs/jeffsgine.js';
+import { tex_grass } from './libs/engine/definedtex.js';
 
 export let engine = null;
 export let vector = null;
@@ -11,23 +12,13 @@ async function loadEngine() {
     vector = new Module.Vector;
     texBuffer = new Module.TexBuffer;
 
-    const colors = [
-        [255, 0, 0, 255],    // red
-        [0, 255, 0, 255],    // green
-        [0, 0, 255, 255],    // blue
-        [255, 255, 0, 255]   // yellow
-    ];
-
     for (let x = 0; x < 32; x++) {
         for (let y = 0; y < 32; y++) {
-            const colorIndex = ((x % 2) + (y % 2) * 2) % colors.length;
-            const color = colors[colorIndex];
-
-            const o = (y * 32 + x) * 4;
-            texBuffer.push_back(color[0]);
-            texBuffer.push_back(color[1]);
-            texBuffer.push_back(color[2]);
-            texBuffer.push_back(color[3]);
+            const o = (y * 32 + x);
+            texBuffer.push_back(tex_grass[o][0]);
+            texBuffer.push_back(tex_grass[o][1]);
+            texBuffer.push_back(tex_grass[o][2]);
+            texBuffer.push_back(tex_grass[o][3]);
         }
     }
 

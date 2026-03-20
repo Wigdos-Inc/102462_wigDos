@@ -19,7 +19,31 @@
   font-size:24px;
 }
 
+button {
+  position: absolute;
+  background:#ffd92c;
+  border:6px solid black;
+  border-radius:25px;
+  box-shadow:5px 5px 0 black;
+  padding: 1%;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: bolder;
+  font-size: medium;
+}
+
+#back-button {
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+}
+
 #volume{
+  color: black;
   appearance:none;
   width:200px;
   height:12px;
@@ -53,6 +77,7 @@
 }
 
 .health-ui{
+  color: black;
   position:fixed;
   top:30px;
   left:30px;
