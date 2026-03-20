@@ -112,6 +112,12 @@
             justify-content: center;
             margin-bottom: 20px;
         }
+        #character-select .engine-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
         #character-select button {
             padding: 15px 30px;
             font-size: 16px;
@@ -184,11 +190,16 @@
             <button id="btn-carl">Carl</button>
             <button id="btn-wally">Wally</button>
         </div>
+        <div class="engine-buttons">
+            <button id="btn-engine-legacy" class="selected">Legacy Renderer</button>
+            <button id="btn-engine-v1">Engine v1 (Preview)</button>
+        </div>
         <div class="character-info">
             <div id="character-desc">
                 <strong>SuperJeff</strong><br>
                 The original champion with blue shirt and distinctive hair!
             </div>
+            <button id="btn-start-race" style="margin-top: 20px; font-size: 18px; padding: 12px 40px; border: 2px solid #ffd700; background: #333; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">START RACE! 🚀</button>
         </div>
     </div>
     <div id="ui" style="display: none;">
@@ -217,10 +228,13 @@
         </div>
     </div>
     <script type="module">
-        // Character selection logic
         const characterSelect = document.getElementById('character-select');
         const charDesc = document.getElementById('character-desc');
+        const startBtn = document.getElementById('btn-start-race');
+        const engineLegacyBtn = document.getElementById('btn-engine-legacy');
+        const engineV1Btn = document.getElementById('btn-engine-v1');
         let selectedCharacter = 'superjeff';
+        let selectedEngine = 'legacy';
 
         const characters = {
             superjeff: {
@@ -237,7 +251,6 @@
             }
         };
 
-        // Set up character buttons
         document.getElementById('btn-superjeff').addEventListener('click', () => {
             selectCharacter('superjeff');
         });
@@ -247,70 +260,70 @@
         document.getElementById('btn-wally').addEventListener('click', () => {
             selectCharacter('wally');
         });
+        engineLegacyBtn.addEventListener('click', () => {
+            selectEngine('legacy');
+        });
+        engineV1Btn.addEventListener('click', () => {
+            selectEngine('v1');
+        });
 
         function selectCharacter(name) {
             selectedCharacter = name;
-            
-            // Update button states
+
             document.getElementById('btn-superjeff').classList.remove('selected');
             document.getElementById('btn-carl').classList.remove('selected');
             document.getElementById('btn-wally').classList.remove('selected');
             document.getElementById(`btn-${name}`).classList.add('selected');
-            
-            // Update description
+
             const char = characters[name];
             charDesc.innerHTML = `<strong>${char.name}</strong><br>${char.desc}`;
         }
 
-        // Start game on button click or Enter key
+        function selectEngine(mode) {
+            selectedEngine = mode === 'v1' ? 'v1' : 'legacy';
+            engineLegacyBtn.classList.remove('selected');
+            engineV1Btn.classList.remove('selected');
+
+            if (selectedEngine === 'v1') {
+                engineV1Btn.classList.add('selected');
+            } else {
+                engineLegacyBtn.classList.add('selected');
+            }
+        }
+
+        function startGame() {
+            characterSelect.style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            window.location.href = `?character=${selectedCharacter}&engine=${selectedEngine}`;
+        }
+
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 startGame();
             }
         });
 
-        // Add start button
-        const startBtn = document.createElement('button');
-        startBtn.textContent = 'START RACE! 🚀';
-        startBtn.style.marginTop = '20px';
-        startBtn.style.fontSize = '18px';
-        startBtn.style.padding = '12px 40px';
-        characterSelect.appendChild(startBtn);
-        
-        startBtn.addEventListener('click', startGame);
-
-        function startGame() {
-            // Hide selection and show game
-            characterSelect.style.display = 'none';
-            document.getElementById('ui').style.display = 'block';
-            
-            // Start game with selected character
-            if (window.gameInstance) {
-                window.gameInstance = null;
-            }
-            
-            // Import and start game
-            import('/src/main.js').then(module => {
-                // Game will auto-start with URL params
-            });
-            
-            // Reload with character parameter
-            window.location.href = `?character=${selectedCharacter}`;
+        if (startBtn) {
+            startBtn.addEventListener('click', startGame);
         }
 
-        // Check if a character was selected via URL
         const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('engine') === 'v1') {
+            selectEngine('v1');
+        } else {
+            selectEngine('legacy');
+        }
+
         if (urlParams.has('character')) {
             characterSelect.style.display = 'none';
             document.getElementById('ui').style.display = 'block';
-            
-            // Set total racers
+
             const totalRacersSpan = document.getElementById('total-racers');
             if (totalRacersSpan) {
                 totalRacersSpan.textContent = '6';
             }
         }
     </script>
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/boot.js"></script>
 </body>
 </html>
