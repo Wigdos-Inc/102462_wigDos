@@ -1,9 +1,14 @@
 import EngineModule from './libs/jeffsgine.js';
-import { tex_grass } from './libs/engine/definedtex.js';
+import { renderOnce, getTextureData } from "./libs/engine/texgen.js";
 
 export let engine = null;
 export let vector = null;
 export let texBuffer = null;
+export let collision = null;
+
+export const BOX = 0;
+export const CYLINDER = 1;
+export const TRIANGLE = 2;
 
 async function loadEngine() {
     const Module = await EngineModule();
@@ -11,16 +16,17 @@ async function loadEngine() {
     engine = new Module.Engine;
     vector = new Module.Vector;
     texBuffer = new Module.TexBuffer;
+    collision = new Module.Collision;
 
-    for (let x = 0; x < 32; x++) {
-        for (let y = 0; y < 32; y++) {
-            const o = (y * 32 + x);
-            texBuffer.push_back(tex_grass[o][0]);
-            texBuffer.push_back(tex_grass[o][1]);
-            texBuffer.push_back(tex_grass[o][2]);
-            texBuffer.push_back(tex_grass[o][3]);
-        }
+    renderOnce(128, 128, 1, 1484.72, 12.0, 8.0, 5, 0.5, 0.2, 1.4);
+    const texture = getTextureData();
+    for (let i = 0; i < texture.length; i++) {
+        texBuffer.push_back(texture[i][0]);
+        texBuffer.push_back(texture[i][1]);
+        texBuffer.push_back(texture[i][2]);
+        texBuffer.push_back(texture[i][3]);
     }
+    texBuffer = {width: 128, height: 128, pixels: texBuffer};
 
     engine.engineInit();
 }

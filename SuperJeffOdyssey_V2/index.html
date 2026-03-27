@@ -45,8 +45,8 @@
 
         volume.value = (localStorage.getItem("volume") || 60);
         function startMusic() {
-            const random = Math.floor(Math.random() * 10);
-            console.log(random);
+            const random = Math.floor(Math.random() * 100);
+            //console.log(random);
             switch(random) {
                 case 1:
                     menuMusic.src = 'assets/sound/mayonaise mayonaise mayonaise mayonaise .mp3';
@@ -61,10 +61,10 @@
                     menuMusic.src = 'assets/sound/JeffInsanity.mp3';
                     break;
                 case 9:
-                    menuMusic.src = 'assets/sound/mainmenu.mp3';
+                    menuMusic.src = "assets/sound/jeff's song (3).mp3";
                     break;
                 default:
-                    menuMusic.src = "assets/sound/jeff's song (3).mp3";
+                    menuMusic.src = 'assets/sound/mainmenu.mp3';
             }
 
             if (menuMusic.paused) {

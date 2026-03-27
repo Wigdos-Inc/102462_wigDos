@@ -113,7 +113,7 @@ export class Walker {
 
         // determine where the walker should be standing by querying the
         // generic support-height function; falls back to ground at y=0
-        const underY = supportHeightAtXZ(this.pos.x, this.pos.z, platforms, 0);
+        const underY = supportHeightAtXZ(this.pos.x, this.pos.z, this.pos.y, platforms, 0);
 
         // Snap to surface
         const targetY = underY + this.radius;
@@ -124,7 +124,7 @@ export class Walker {
         // Query support height ahead of the walker; if the surface drops
         // below the current underY we consider it a cliff.
         const lookAheadX = this.pos.x + this.dir * (this.radius + 0.6);
-        const aheadY = supportHeightAtXZ(lookAheadX, this.pos.z, platforms, 0);
+        const aheadY = supportHeightAtXZ(lookAheadX, this.pos.z, this.pos.y, platforms, 0);
         if (aheadY < underY - 0.01) {
             this.dir *= -1;
         }

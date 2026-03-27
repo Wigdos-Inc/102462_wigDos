@@ -20,7 +20,8 @@
         "PenutFace's fury.mp3",
         "bonustheme.mp3",
         'bonustheme2.mp3',
-        'summerhotspot2.mp3'
+        'summerhotspot2.mp3',
+        'game paused 2.mp3'
     ];
 
     const creditTrackName = "jeff's song (5).mp3";
@@ -34,7 +35,7 @@
         boss: "PenutFace's fury.mp3",
         final_boss: "penutfacefinalfury.mp3",
         bonus: "bonustheme2.mp3",
-        pause: "themesong.mp3",
+        pause: "game paused 2.mp3",
         powerup: "jeff's song (2).mp3"
     };
 

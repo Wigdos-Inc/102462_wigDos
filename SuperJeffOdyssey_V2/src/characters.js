@@ -1,4 +1,4 @@
-import { engine, vector, game, kingdomConfigs, texBuffer } from './globals.js';
+import { engine, vector, game, kingdomConfigs, texBuffer, BOX, CYLINDER, TRIANGLE, collision } from './globals.js';
 import { showMessage, updateHUD } from './ui.js';
 import { player } from './player.js';
 
@@ -47,8 +47,66 @@ export class Boss {
 
         draw() {
             if (this.phase === 1) {
-                // draw peanutmobile as a brown sphere
-                engine.drawCylinder(this.peanutPos.x, this.peanutPos.y, this.peanutPos.z, 2, 2.5, {x: 0.6, y: 0.4, z: 0.2});
+                const t = Date.now() * 0.002;
+                const bob = Math.sin(t * 2.1) * 0.1;
+                const px = this.peanutPos.x;
+                const py = this.peanutPos.y + bob;
+                const pz = this.peanutPos.z;
+
+                // Bronze pod body.
+                engine.drawCylinder(px, py, pz, 2.35, 2.4, {x: 0.58, y: 0.33, z: 0.14});
+
+                // Top rim / hatch ring.
+                engine.drawCylinder(px, py + 1.05, pz, 1.2, 0.3, {x: 0.4, y: 0.24, z: 0.1});
+
+                // Front intake/vent.
+                engine.drawCylinder(px, py - 0.35, pz + 2.1, 0.48, 0.3, {x: 0.12, y: 0.12, z: 0.12});
+                engine.drawCylinder(px, py - 0.35, pz + 2.23, 0.3, 0.12, {x: 0.24, y: 0.24, z: 0.24});
+
+                // Side claws/arms.
+                engine.drawCylinder(px - 2.25, py - 0.2, pz + 0.25, 0.25, 0.95, {x: 0.38, y: 0.38, z: 0.42});
+                engine.drawCube(px - 2.65, py - 0.26, pz + 0.38, 0.24, 0.22, 0.55, {x: 0.65, y: 0.65, z: 0.7});
+                engine.drawCylinder(px + 2.25, py - 0.2, pz + 0.25, 0.25, 0.95, {x: 0.38, y: 0.38, z: 0.42});
+                engine.drawCube(px + 2.65, py - 0.26, pz + 0.38, 0.24, 0.22, 0.55, {x: 0.65, y: 0.65, z: 0.7});
+
+                // Thruster flames.
+                const flamePulse = 0.85 + Math.sin(t * 10) * 0.2;
+                engine.drawCylinder(px - 1.55, py - 0.9, pz - 1.65, 0.24 * flamePulse, 1.2 * flamePulse, {x: 0.3, y: 0.7, z: 1.0});
+                engine.drawCylinder(px - 1.55, py - 1.2, pz - 2.15, 0.18 * flamePulse, 0.95 * flamePulse, {x: 1.0, y: 0.8, z: 0.3});
+
+                // Peanut pilot head.
+                const hx = px;
+                const hy = py + 1.95;
+                const hz = pz + 0.25;
+                engine.drawCylinder(hx, hy, hz, 0.88, 1.65, {x: 0.75, y: 0.57, z: 0.33});
+
+                // Helmet and goggles.
+                engine.drawCylinder(hx, hy + 0.92, hz - 0.02, 0.92, 0.46, {x: 0.12, y: 0.12, z: 0.15});
+                engine.drawCylinder(hx - 0.27, hy + 1.08, hz + 0.41, 0.18, 0.1, {x: 0.56, y: 0.46, z: 0.28});
+                engine.drawCylinder(hx + 0.27, hy + 1.08, hz + 0.41, 0.18, 0.1, {x: 0.56, y: 0.46, z: 0.28});
+
+                // Eyes.
+                engine.drawSphere(hx - 0.22, hy + 0.24, hz + 0.7, 0.18, {x: 0.96, y: 0.96, z: 0.96});
+                engine.drawSphere(hx + 0.22, hy + 0.24, hz + 0.7, 0.18, {x: 0.96, y: 0.96, z: 0.96});
+                engine.drawSphere(hx - 0.2, hy + 0.22, hz + 0.84, 0.08, {x: 0.1, y: 0.1, z: 0.1});
+                engine.drawSphere(hx + 0.2, hy + 0.22, hz + 0.84, 0.08, {x: 0.1, y: 0.1, z: 0.1});
+
+                // Angry eyebrows.
+                engine.drawCube(hx - 0.28, hy + 0.45, hz + 0.7, 0.38, 0.08, 0.08, {x: 0.3, y: 0.17, z: 0.08});
+                engine.drawCube(hx + 0.28, hy + 0.45, hz + 0.7, 0.38, 0.08, 0.08, {x: 0.3, y: 0.17, z: 0.08});
+
+                // Nose and teethy grin.
+                engine.drawSphere(hx, hy + 0.02, hz + 0.84, 0.11, {x: 0.7, y: 0.5, z: 0.28});
+                engine.drawCube(hx, hy - 0.26, hz + 0.78, 0.42, 0.12, 0.09, {x: 0.93, y: 0.93, z: 0.9});
+
+                // Big curled mustache (stylized with two curl bulbs).
+                engine.drawCylinder(hx - 0.26, hy - 0.14, hz + 0.82, 0.18, 0.72, {x: 0.36, y: 0.19, z: 0.08});
+                engine.drawCylinder(hx + 0.26, hy - 0.14, hz + 0.82, 0.18, 0.72, {x: 0.36, y: 0.19, z: 0.08});
+                engine.drawSphere(hx - 0.57, hy - 0.08, hz + 0.78, 0.14, {x: 0.36, y: 0.19, z: 0.08});
+                engine.drawSphere(hx + 0.57, hy - 0.08, hz + 0.78, 0.14, {x: 0.36, y: 0.19, z: 0.08});
+
+                // Glass canopy in front of controls.
+                engine.drawCylinder(px, py + 1.15, pz + 0.9, 1.08, 0.58, {x: 0.65, y: 0.82, z: 0.95});
             } else {
                 // body cube
                 engine.drawCube(this.robotPos.x, this.robotPos.y, this.robotPos.z, 3, 3, 3, {x: 0.5, y: 0.5, z: 0.5});
@@ -111,18 +169,10 @@ export class Platform {
         this.height = height;
         this.depth = depth;
         this.color = color;
-
-        // store a shape object that the collision module understands
-        this.shape = {
-            type: 'box',
-            center: this.pos,
-            width: this.width,
-            height: this.height,
-            depth: this.depth
-        };
+        this.shape = collision.createBox({x: this.pos.x, y: this.pos.y, z: this.pos.z}, this.width, this.height, this.depth);
     }
 
     draw() {
-        engine.drawTexCube(this.pos.x, this.pos.y, this.pos.z, this.width, this.height, this.depth, {x: this.color[0], y: this.color[1], z: this.color[2]}, true, {width: 32, height: 32, pixels: texBuffer});
+        engine.drawTexCube(this.pos.x, this.pos.y, this.pos.z, this.width, this.height, this.depth, {x: this.color[0], y: this.color[1], z: this.color[2]}, true, texBuffer);
     }
 }

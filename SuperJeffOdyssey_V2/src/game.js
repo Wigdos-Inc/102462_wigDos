@@ -1,11 +1,10 @@
 import { game, kingdomConfigs, engine, vector } from './globals.js';
-import { drawJeff, player } from './player.js';
+import { drawJeff, player, updatePlayerMovementAndCollision } from './player.js';
 import { drawStructures } from './structures.js';
 import { initInput } from './inputs.js';
 import { loadKingdom, enterPyramid, exitPyramid } from './levelgeneration.js';
 import { showMessage, updateHUD, togglePause, showCredits } from './ui.js';
 import { playEffect, beginbackgroundmusic, musicInit, getKingdomtrack } from './audio.js';
-import { supportHeightAtXZ } from './libs/engine/engine.js';
 
 // ReJeffAninated Studios
 // Jarlo & Jauigi
@@ -32,214 +31,14 @@ import { supportHeightAtXZ } from './libs/engine/engine.js';
         // boss logic if present
         if (game.boss) game.boss.update(dt);
 
-        // Ground and platform collision (unified via collision helper)
-        player.onGround = false;
+        const input = updatePlayerMovementAndCollision(game, dt, showMessage);
+        const qKey = input.qKey;
+        const eKey = input.eKey;
+        const fKey = input.fKey;
+        const kKey = input.kKey;
+        const rKey = input.rKey;
+        const bKey = input.bKey;
 
-        // Check mesh-accurate terrain collision using the volumetric surface
-        if (game.sampleTerrainHeight) {
-            const terrainHeight = game.sampleTerrainHeight(player.pos.x, player.pos.z, player.pos.y);
-            if (terrainHeight !== null && player.pos.y - player.radius <= terrainHeight) {
-                player.pos.y = terrainHeight + player.radius;
-                player.vel.y = Math.max(0, player.vel.y);
-                player.onGround = true;
-            }
-        }
-        
-        // Fallback to flat ground at y=0
-        if (!player.onGround && player.pos.y - player.radius <= 0) {
-            //player.pos.y = player.radius;
-            //player.vel.y = Math.max(0, player.vel.y);
-            //player.onGround = true;
-        }
-
-        // Platform support query – find highest top surface beneath player
-        const platTop = supportHeightAtXZ(player.pos.x, player.pos.z, game.platforms, null);
-        if (platTop !== null) {
-            // if near or below platform surface, snap up
-            if (player.pos.y - player.radius <= platTop + 0.01) {
-                player.pos.y = platTop + player.radius;
-                player.vel.y = Math.max(0, player.vel.y);
-                player.onGround = true;
-            }
-        }
-
-        // Standard gravity (not galaxy gravity) applied after collision checks
-        if (!player.onGround) {
-            player.vel.y -= 25 * dt; // Standard downward gravity
-        }
-
-        // Movement
-        const wKey = game.keys['w'] || game.keys['W'] || game.keys['KeyW'] || game.keys['ArrowUp'];
-        const sKey = game.keys['s'] || game.keys['S'] || game.keys['KeyS'] || game.keys['ArrowDown'];
-        const aKey = game.keys['a'] || game.keys['A'] || game.keys['KeyA'] || game.keys['ArrowLeft'];
-        const dKey = game.keys['d'] || game.keys['D'] || game.keys['KeyD'] || game.keys['ArrowRight'];
-        const spaceKey = game.keys[' '] || game.keys['Space'];
-        const shiftKey = game.keys['Shift'] || game.keys['ShiftLeft'] || game.keys['ShiftRight'];
-        const qKey = game.keys['q'] || game.keys['Q'];
-        const eKey = game.keys['e'] || game.keys['E'];
-        const fKey = game.keys['f'] || game.keys['F']; // ADD
-        const kKey = game.keys['k'] || game.keys['K'];
-        const rKey = game.keys['r'] || game.keys['R'];
-        const bKey = game.keys['b'] || game.keys['B']; // boss key
-
-        // Mario Sunshine momentum-based movement
-        const camYaw = game.camera.yaw;
-        const forward = vector.create(Math.sin(camYaw), 0, Math.cos(camYaw));
-        const right = vector.create(Math.cos(camYaw), 0, -Math.sin(camYaw));
-        
-        const maxSpeed = 18 * (player.speedMultiplier || 1.0);
-        const acceleration = 60 * (player.speedMultiplier || 1.0);
-        const airControl = 35;
-        
-        // Get input direction
-        let inputX = 0, inputZ = 0;
-        if (wKey) { inputX += forward.x; inputZ += forward.z; }
-        if (sKey) { inputX -= forward.x; inputZ -= forward.z; }
-        if (aKey) { inputX += right.x; inputZ += right.z; }
-        if (dKey) { inputX -= right.x; inputZ -= right.z; }
-        
-        const inputLength = Math.sqrt(inputX * inputX + inputZ * inputZ);
-        if (inputLength > 0.1) {
-            inputX /= inputLength;
-            inputZ /= inputLength;
-            player.moveDir = vector.create(inputX, 0, inputZ);
-            player.facingDir = player.moveDir;
-        }
-        
-        // Ground movement with momentum
-        if (player.onGround && player.state !== 'attacking' && !player.diving && !player.canDiveJump) {
-            if (inputLength > 0.1) {
-                player.vel.x += inputX * acceleration * dt;
-                player.vel.z += inputZ * acceleration * dt;
-                
-                // Limit to max speed
-                const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
-                if (currentSpeed > maxSpeed) {
-                    player.vel.x = (player.vel.x / currentSpeed) * maxSpeed;
-                    player.vel.z = (player.vel.z / currentSpeed) * maxSpeed;
-                }
-            }
-        } else if (!player.onGround && !player.groundPounding && !player.diving) {
-            // Air control (reduced)
-            if (inputLength > 0.1) {
-                player.vel.x += inputX * airControl * dt;
-                player.vel.z += inputZ * airControl * dt;
-            }
-        }
-        
-        // Reset jump counter when grounded
-        if (player.onGround && player.state !== 'jumping') {
-            const now = Date.now();
-            if (now - player.lastJumpTime > 800) {
-                player.jumpCount = 0;
-            }
-        }
-        
-        // Long Jump (shift + space while running on ground)
-        if (shiftKey && spaceKey && !game.spaceWasPressed && player.onGround && !player.canDiveJump) {
-            const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
-            if (currentSpeed > 5) {
-                player.vel.y = 12 * (player.jumpMultiplier || 1.0);
-                const dir = vector.normalize(vector.create(player.vel.x, 0, player.vel.z));
-                player.vel.x = dir.x * 22;
-                player.vel.z = dir.z * 22;
-                player.state = 'longjump';
-                player.stateTimer = 0.6;
-                player.jumpCount = 0;
-                showMessage('Long Jump!', '#FFD700');
-                game.spaceWasPressed = true;
-                return; // Skip other jump checks
-            }
-        }
-        
-        // Triple Jump system
-        if (spaceKey && !game.spaceWasPressed && player.onGround && !player.canDiveJump) {
-            const now = Date.now();
-            const timeSinceLastJump = now - player.lastJumpTime;
-            
-            // Check for backflip (jumping while moving backward)
-            const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
-            const isMovingBack = sKey && currentSpeed > 3;
-            
-            if (isMovingBack) {
-                // Side flip / Backflip
-                player.vel.y = 18 * (player.jumpMultiplier || 1.0);
-                player.vel.x = player.facingDir.x * -12;
-                player.vel.z = player.facingDir.z * -12;
-                player.state = 'backflip';
-                player.rotation = 0;
-                player.jumpCount = 0;
-                showMessage('Backflip!', '#00FFFF');
-            } else if (timeSinceLastJump < 600 && player.jumpCount < 3) {
-                // Triple jump progression
-                player.jumpCount++;
-                if (player.jumpCount === 1) {
-                    player.vel.y = 13 * (player.jumpMultiplier || 1.0);
-                    player.state = 'jumping';
-                } else if (player.jumpCount === 2) {
-                    player.vel.y = 15 * (player.jumpMultiplier || 1.0);
-                    player.state = 'jumping';
-                    showMessage('Double Jump!', '#FFFF00');
-                } else if (player.jumpCount === 3) {
-                    player.vel.y = 20 * (player.jumpMultiplier || 1.0);
-                    player.state = 'jumping';
-                    showMessage('Triple Jump!', '#FF00FF');
-                }
-            } else {
-                // First jump
-                player.jumpCount = 1;
-                player.vel.y = 13 * (player.jumpMultiplier || 1.0);
-                player.state = 'jumping';
-            }
-            
-            player.lastJumpTime = now;
-            player.spinJumping = false;
-        }
-        
-        // Spin Jump (press jump again in air)
-        if (spaceKey && !game.spaceWasPressed && !player.onGround && !player.spinJumping && player.vel.y > 0) {
-            player.vel.y += 8 * (player.jumpMultiplier || 1.0);
-            player.spinJumping = true;
-            player.state = 'spinjump';
-            player.rotation = 0;
-            showMessage('Spin Jump!', '#00FFFF');
-        }
-        
-        // Ground Pound (shift while in air, no forward movement)
-        if (shiftKey && !game.shiftWasPressed && !player.onGround && !player.groundPounding) {
-            const horizontalSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
-            if (horizontalSpeed < 8) {
-                player.vel.y = -30;
-                player.vel.x *= 0.3;
-                player.vel.z *= 0.3;
-                player.groundPounding = true;
-                player.state = 'groundpound';
-                showMessage('Ground Pound!', '#FF8C00');
-            } else {
-                // Dive (shift while moving in air)
-                player.diving = true;
-                player.groundPounding = false;
-                player.state = 'dive';
-                const diveSpeed = 25;
-                const dir = vector.normalize(vector.create(player.vel.x, 0, player.vel.z));
-                player.vel.x = dir.x * diveSpeed;
-                player.vel.z = dir.z * diveSpeed;
-                player.vel.y = -8;
-                showMessage('Dive!', '#00CED1');
-            }
-        }
-        
-        // Dive recovery jump
-        if (player.diving && spaceKey && !game.spaceWasPressed && player.canDiveJump) {
-            player.vel.y = 16 * (player.jumpMultiplier || 1.0);
-            player.diving = false;
-            player.canDiveJump = false;
-            player.state = 'jumping';
-            showMessage('Dive Jump!', '#7FFF00');
-        }
-        
-        game.spaceWasPressed = spaceKey;
-        game.shiftWasPressed = shiftKey;
 
         // Attack
         if (qKey && !game.qWasPressed && player.onGround) {
@@ -462,15 +261,6 @@ import { supportHeightAtXZ } from './libs/engine/engine.js';
         }
         game.rWasPressed = rKey;
 
-
-        // Update timers
-        if (player.stateTimer > 0) {
-            player.stateTimer -= dt;
-            if (player.stateTimer <= 0 && (player.state === 'attacking' || player.state === 'longjump' || player.state === 'summersault')) {
-                player.state = 'idle';
-            }
-        }
-
         // Update Power Soup timer
         if (player.soupTimer > 0) {
             player.soupTimer -= dt;
@@ -481,66 +271,6 @@ import { supportHeightAtXZ } from './libs/engine/engine.js';
                 showMessage('Power Soup expired');
             }
         }
-
-        // Handle landing from special states
-        if (player.onGround) {
-            if (player.groundPounding) {
-                player.vel.x *= 0.1;
-                player.vel.z *= 0.1;
-                player.groundPounding = false;
-                showMessage('Slam!', '#FF4500');
-            }
-            if (player.diving) {
-                player.canDiveJump = true;
-                player.vel.x *= 0.7;
-                player.vel.z *= 0.7;
-            } else {
-                player.canDiveJump = false;
-            }
-            player.spinJumping = false;
-        } else {
-            // In air - no dive jump
-            if (!player.diving) {
-                player.canDiveJump = false;
-            }
-        }
-        
-        if (player.state === 'summersault' || player.state === 'spinjump') {
-            player.rotation += dt * 15;
-        }
-        if (player.state === 'backflip') {
-            player.rotation += dt * 8;
-        }
-
-        // Animation states
-        const speed = Math.sqrt(player.vel.x ** 2 + player.vel.z ** 2);
-        if (player.state === 'longjump' || player.state === 'summersault' || player.state === 'attacking' || 
-            player.state === 'dive' || player.state === 'groundpound' || player.state === 'spinjump' || player.state === 'backflip') {
-            // Keep special state
-        } else if (!player.onGround) {
-            player.state = 'jumping';
-        } else if (speed > 1) {
-            player.state = 'running';
-            player.walkCycle += dt * 10;
-        } else {
-            player.state = 'idle';
-            player.diving = false;
-        }
-
-        // Mario Sunshine-style damping (slower, more momentum)
-        if (player.onGround) {
-            player.vel.x *= 0.88;
-            player.vel.z *= 0.88;
-        } else {
-            // Less air friction for better air control
-            player.vel.x *= 0.97;
-            player.vel.z *= 0.97;
-        }
-
-        // Update position
-        player.pos.x += player.vel.x * dt;
-        player.pos.y += player.vel.y * dt;
-        player.pos.z += player.vel.z * dt;
 
         // Collect moons
         game.collectibles.forEach(moon => {

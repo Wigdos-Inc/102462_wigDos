@@ -2,6 +2,21 @@
 export function initInput(game) {
     game.keys = game.keys || {};
 
+    function resetAllInputState() {
+        Object.keys(game.keys).forEach((key) => {
+            game.keys[key] = false;
+        });
+        game.spaceWasPressed = false;
+        game.shiftWasPressed = false;
+        game.qWasPressed = false;
+        game.eWasPressed = false;
+        game.fWasPressed = false;
+        game.kWasPressed = false;
+        game.rWasPressed = false;
+        game.pWasPressed = false;
+        game.bWasPressed = false;
+    }
+
     // helper to set a key (lowercase and uppercase consistency)
     function setKey(key, value) {
         if (key == null) return;
@@ -24,6 +39,13 @@ export function initInput(game) {
     window.addEventListener('keyup', (e) => {
         game.keys[e.key] = false;
         game.keys[e.code] = false;
+    });
+
+    window.addEventListener('blur', resetAllInputState);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            resetAllInputState();
+        }
     });
 
     // pointer lock & mouse controls
@@ -49,6 +71,13 @@ export function initInput(game) {
         canvas.addEventListener('click', (e) => {
             canvas.requestPointerLock();
             canvas.focus();
+        });
+
+        canvas.addEventListener('blur', resetAllInputState);
+        document.addEventListener('pointerlockchange', () => {
+            if (document.pointerLockElement !== canvas) {
+                resetAllInputState();
+            }
         });
 
         // mobile touch drag for camera

@@ -1,4 +1,5 @@
 import { engine, vector } from './globals.js';
+import { supportHeightAtXZ } from './libs/engine/engine.js';
 
 export const player = createPlayer();
 
@@ -36,6 +37,258 @@ export function createPlayer() {
         wallSliding: false,
         backflipping: false
     };
+}
+
+export function getPlayerInput(keys) {
+    return {
+        wKey: keys['w'] || keys['W'] || keys['KeyW'] || keys['ArrowUp'],
+        sKey: keys['s'] || keys['S'] || keys['KeyS'] || keys['ArrowDown'],
+        aKey: keys['a'] || keys['A'] || keys['KeyA'] || keys['ArrowLeft'],
+        dKey: keys['d'] || keys['D'] || keys['KeyD'] || keys['ArrowRight'],
+        spaceKey: keys[' '] || keys['Space'],
+        shiftKey: keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'],
+        qKey: keys['q'] || keys['Q'],
+        eKey: keys['e'] || keys['E'],
+        fKey: keys['f'] || keys['F'],
+        kKey: keys['k'] || keys['K'],
+        rKey: keys['r'] || keys['R'],
+        bKey: keys['b'] || keys['B'],
+        pKey: keys['p'] || keys['P'] || keys['KeyP']
+    };
+}
+
+export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {}) {
+    const input = getPlayerInput(game.keys || {});
+
+    // Ground and platform collision.
+    player.onGround = false;
+
+    if (game.sampleTerrainHeight) {
+        const terrainHeight = game.sampleTerrainHeight(player.pos.x, player.pos.z, player.pos.y);
+        if (terrainHeight !== null && player.pos.y - player.radius <= terrainHeight) {
+            player.pos.y = terrainHeight + player.radius;
+            player.vel.y = Math.max(0, player.vel.y);
+            player.onGround = true;
+        }
+    }
+
+    const platTop = supportHeightAtXZ(player.pos.x, player.pos.z, player.pos.y, game.platforms, null);
+    if (platTop !== null && player.pos.y - player.radius <= platTop + 0.01) {
+        player.pos.y = platTop + player.radius;
+        player.vel.y = Math.max(0, player.vel.y);
+        player.onGround = true;
+    }
+
+    if (!player.onGround) {
+        player.vel.y -= 25 * dt;
+    }
+
+    const camYaw = game.camera.yaw;
+    const forward = vector.create(Math.sin(camYaw), 0, Math.cos(camYaw));
+    const right = vector.create(Math.cos(camYaw), 0, -Math.sin(camYaw));
+    const maxSpeed = 18 * (player.speedMultiplier || 1.0);
+    const acceleration = 60 * (player.speedMultiplier || 1.0);
+    const airControl = 35;
+
+    let inputX = 0;
+    let inputZ = 0;
+    if (input.wKey) { inputX += forward.x; inputZ += forward.z; }
+    if (input.sKey) { inputX -= forward.x; inputZ -= forward.z; }
+    if (input.aKey) { inputX += right.x; inputZ += right.z; }
+    if (input.dKey) { inputX -= right.x; inputZ -= right.z; }
+
+    const inputLength = Math.sqrt(inputX * inputX + inputZ * inputZ);
+    if (inputLength > 0.1) {
+        inputX /= inputLength;
+        inputZ /= inputLength;
+        player.moveDir = vector.create(inputX, 0, inputZ);
+        player.facingDir = player.moveDir;
+    }
+
+    if (player.onGround && player.state !== 'attacking' && !player.diving && !player.canDiveJump) {
+        if (inputLength > 0.1) {
+            player.vel.x += inputX * acceleration * dt;
+            player.vel.z += inputZ * acceleration * dt;
+
+            const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
+            if (currentSpeed > maxSpeed) {
+                player.vel.x = (player.vel.x / currentSpeed) * maxSpeed;
+                player.vel.z = (player.vel.z / currentSpeed) * maxSpeed;
+            }
+        }
+    } else if (!player.onGround && !player.groundPounding && !player.diving) {
+        if (inputLength > 0.1) {
+            player.vel.x += inputX * airControl * dt;
+            player.vel.z += inputZ * airControl * dt;
+        }
+    }
+
+    if (player.onGround && player.state !== 'jumping') {
+        const now = Date.now();
+        if (now - player.lastJumpTime > 800) {
+            player.jumpCount = 0;
+        }
+    }
+
+    // Track one-shot jump usage instead of returning early from update.
+    let consumedJumpPress = false;
+
+    if (input.shiftKey && input.spaceKey && !game.spaceWasPressed && player.onGround && !player.canDiveJump) {
+        const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
+        if (currentSpeed > 5) {
+            player.vel.y = 12 * (player.jumpMultiplier || 1.0);
+            const dir = vector.normalize(vector.create(player.vel.x, 0, player.vel.z));
+            player.vel.x = dir.x * 22;
+            player.vel.z = dir.z * 22;
+            player.state = 'longjump';
+            player.stateTimer = 0.6;
+            player.jumpCount = 0;
+            showMessage('Long Jump!', '#FFD700');
+            consumedJumpPress = true;
+        }
+    }
+
+    if (!consumedJumpPress && input.spaceKey && !game.spaceWasPressed && player.onGround && !player.canDiveJump) {
+        const now = Date.now();
+        const timeSinceLastJump = now - player.lastJumpTime;
+        const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
+        const isMovingBack = input.sKey && currentSpeed > 3;
+
+        if (isMovingBack) {
+            player.vel.y = 18 * (player.jumpMultiplier || 1.0);
+            player.vel.x = player.facingDir.x * -12;
+            player.vel.z = player.facingDir.z * -12;
+            player.state = 'backflip';
+            player.rotation = 0;
+            player.jumpCount = 0;
+            showMessage('Backflip!', '#00FFFF');
+        } else if (timeSinceLastJump < 600 && player.jumpCount < 3) {
+            player.jumpCount++;
+            if (player.jumpCount === 1) {
+                player.vel.y = 13 * (player.jumpMultiplier || 1.0);
+                player.state = 'jumping';
+            } else if (player.jumpCount === 2) {
+                player.vel.y = 15 * (player.jumpMultiplier || 1.0);
+                player.state = 'jumping';
+                showMessage('Double Jump!', '#FFFF00');
+            } else if (player.jumpCount === 3) {
+                player.vel.y = 20 * (player.jumpMultiplier || 1.0);
+                player.state = 'jumping';
+                showMessage('Triple Jump!', '#FF00FF');
+            }
+        } else {
+            player.jumpCount = 1;
+            player.vel.y = 13 * (player.jumpMultiplier || 1.0);
+            player.state = 'jumping';
+        }
+
+        player.lastJumpTime = now;
+        player.spinJumping = false;
+    }
+
+    if (!consumedJumpPress && input.spaceKey && !game.spaceWasPressed && !player.onGround && !player.spinJumping && player.vel.y > 0) {
+        player.vel.y += 8 * (player.jumpMultiplier || 1.0);
+        player.spinJumping = true;
+        player.state = 'spinjump';
+        player.rotation = 0;
+        showMessage('Spin Jump!', '#00FFFF');
+    }
+
+    if (input.shiftKey && !game.shiftWasPressed && !player.onGround && !player.groundPounding) {
+        const horizontalSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
+        if (horizontalSpeed < 8) {
+            player.vel.y = -30;
+            player.vel.x *= 0.3;
+            player.vel.z *= 0.3;
+            player.groundPounding = true;
+            player.state = 'groundpound';
+            showMessage('Ground Pound!', '#FF8C00');
+        } else {
+            player.diving = true;
+            player.groundPounding = false;
+            player.state = 'dive';
+            const diveSpeed = 25;
+            const dir = vector.normalize(vector.create(player.vel.x, 0, player.vel.z));
+            player.vel.x = dir.x * diveSpeed;
+            player.vel.z = dir.z * diveSpeed;
+            player.vel.y = -8;
+            showMessage('Dive!', '#00CED1');
+        }
+    }
+
+    if (player.diving && input.spaceKey && !game.spaceWasPressed && player.canDiveJump) {
+        player.vel.y = 16 * (player.jumpMultiplier || 1.0);
+        player.diving = false;
+        player.canDiveJump = false;
+        player.state = 'jumping';
+        showMessage('Dive Jump!', '#7FFF00');
+    }
+
+    game.spaceWasPressed = !!input.spaceKey;
+    game.shiftWasPressed = !!input.shiftKey;
+
+    if (player.stateTimer > 0) {
+        player.stateTimer -= dt;
+        if (player.stateTimer <= 0 && (player.state === 'attacking' || player.state === 'longjump' || player.state === 'summersault')) {
+            player.state = 'idle';
+        }
+    }
+
+    if (player.onGround) {
+        if (player.groundPounding) {
+            player.vel.x *= 0.1;
+            player.vel.z *= 0.1;
+            player.groundPounding = false;
+            showMessage('Slam!', '#FF4500');
+        }
+        if (player.diving) {
+            player.canDiveJump = true;
+            player.vel.x *= 0.7;
+            player.vel.z *= 0.7;
+        } else {
+            player.canDiveJump = false;
+        }
+        player.spinJumping = false;
+    } else if (!player.diving) {
+        player.canDiveJump = false;
+    }
+
+    if (player.state === 'summersault' || player.state === 'spinjump') {
+        player.rotation += dt * 15;
+    }
+    if (player.state === 'backflip') {
+        player.rotation += dt * 8;
+    }
+
+    const speed = Math.sqrt(player.vel.x ** 2 + player.vel.z ** 2);
+    if (player.state === 'longjump' || player.state === 'summersault' || player.state === 'attacking' ||
+        player.state === 'dive' || player.state === 'groundpound' || player.state === 'spinjump' || player.state === 'backflip') {
+        // Preserve active special states.
+    } else if (!player.onGround) {
+        player.state = 'jumping';
+    } else if (speed > 1) {
+        player.state = 'running';
+        player.walkCycle += dt * 10;
+    } else {
+        player.state = 'idle';
+        player.diving = false;
+    }
+
+    if (player.onGround) {
+        player.vel.x *= 0.88;
+        player.vel.z *= 0.88;
+        if (inputLength <= 0.1 && Math.abs(player.vel.x) < 0.08) player.vel.x = 0;
+        if (inputLength <= 0.1 && Math.abs(player.vel.z) < 0.08) player.vel.z = 0;
+    } else {
+        player.vel.x *= 0.97;
+        player.vel.z *= 0.97;
+    }
+
+    player.pos.x += player.vel.x * dt;
+    player.pos.y += player.vel.y * dt;
+    player.pos.z += player.vel.z * dt;
+
+    return input;
 }
 
 export function drawJeff(player) {
