@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone - Avatar Shop</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .shop-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .shop-panel {
+            background: #20252d;
+            border-radius: 12px;
+            border: 2px solid #2f9dff;
+            padding: 16px;
+        }
+        .preview-body {
+            margin: 18px auto;
+            width: 120px;
+            height: 170px;
+            position: relative;
+        }
+        .preview-part {
+            position: absolute;
+            border: 2px solid rgba(0, 0, 0, 0.25);
+        }
+        .head { width: 54px; height: 54px; left: 33px; top: 0; }
+        .torso { width: 64px; height: 58px; left: 28px; top: 56px; }
+        .arm-left { width: 20px; height: 58px; left: 4px; top: 56px; }
+        .arm-right { width: 20px; height: 58px; right: 4px; top: 56px; }
+        .leg-left { width: 26px; height: 52px; left: 31px; top: 116px; background: #2f3e46; }
+        .leg-right { width: 26px; height: 52px; left: 62px; top: 116px; background: #2f3e46; }
+        .hat { width: 62px; height: 18px; left: 29px; top: -16px; display: none; }
+
+        .shop-category { margin-bottom: 24px; }
+        .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+        .item-card {
+            background: #161a20;
+            border: 2px solid #2e3b4a;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .item-card.owned { border-color: #2bb673; }
+        .color-chip { width: 100%; height: 26px; border-radius: 6px; margin: 8px 0; }
+        .shop-btn { width: 100%; border: 0; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .buy-btn { background: #ffaa00; color: #111; }
+        .equip-btn { background: #0d84ff; color: #fff; }
+        .active-tag { color: #6be6a4; font-size: 0.8rem; margin-top: 6px; display: block; }
+
+        @media (max-width: 900px) {
+            .shop-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="games.html">Games</a></li>
+            </ul>
+            <a href="login.html"><img src="../assets/images/ProfilePicture.png" alt="Profile"></a>
+        </nav>
+    </header>
+    
+    <main class="container">
+        <h1 class="text-center mt-20">Avatar Shop</h1>
+        <p class="text-center" style="color: var(--text-secondary); margin-bottom: 22px;">Buy and equip parts. Your selected look is shown inside the game.</p>
+
+        <div class="shop-layout" style="max-width: 1200px; margin: 0 auto 40px auto;">
+            <aside class="shop-panel">
+                <h3 style="margin: 0 0 8px;">Preview</h3>
+                <p id="coins-label" style="margin: 0; color: #8fd0ff; font-weight: 700;"></p>
+                <div class="preview-body">
+                    <div id="hat" class="preview-part hat"></div>
+                    <div id="head" class="preview-part head"></div>
+                    <div id="torso" class="preview-part torso"></div>
+                    <div id="arm-left" class="preview-part arm-left"></div>
+                    <div id="arm-right" class="preview-part arm-right"></div>
+                    <div class="preview-part leg-left"></div>
+                    <div class="preview-part leg-right"></div>
+                </div>
+                <p style="color: var(--text-secondary);">Tip: start game from Play page to see your full 3D block avatar.</p>
+            </aside>
+
+            <section class="shop-panel">
+                <div id="shop-root"></div>
+            </section>
+        </div>
+
+        <p id="message" class="text-center" style="font-weight: 700; margin-bottom: 30px;"></p>
+    </main>
+    
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+    </footer>
+    
+    <script src="../js/auth.js"></script>
+    <script type="module">
+        import {
+            getShopCatalog,
+            getAvatarState,
+            getAvatarRenderData,
+            buyItem,
+            equipItem
+        } from '../js/engine/customization.js';
+
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        const root = document.getElementById('shop-root');
+        const messageEl = document.getElementById('message');
+
+        function showMessage(text, ok) {
+            messageEl.textContent = text;
+            messageEl.style.color = ok ? '#37d67a' : '#ff6b6b';
+        }
+
+        function renderPreview() {
+            const look = getAvatarRenderData(currentUser.id);
+
+            document.getElementById('head').style.background = look.bodyColor;
+            document.getElementById('arm-left').style.background = look.bodyColor;
+            document.getElementById('arm-right').style.background = look.bodyColor;
+            document.getElementById('torso').style.background = look.shirtColor || look.bodyColor;
+
+            const hat = document.getElementById('hat');
+            if (look.hatColor) {
+                hat.style.display = 'block';
+                hat.style.background = look.hatColor;
+            } else {
+                hat.style.display = 'none';
+            }
+        }
+
+        function itemLabel(item, owned, active) {
+            if (active) return '<span class="active-tag">Equipped</span>';
+            if (owned) return '<span class="active-tag">Owned</span>';
+            return `<span class="active-tag">Price: ${item.price} coins</span>`;
+        }
+
+        function renderShop() {
+            const catalog = getShopCatalog();
+            const state = getAvatarState(currentUser.id);
+
+            document.getElementById('coins-label').textContent = `Coins: ${state.coins}`;
+
+            const categories = [
+                { key: 'bodyColors', title: 'Body Color', equippedKey: 'bodyColor' },
+                { key: 'shirts', title: 'Shirt', equippedKey: 'shirt' },
+                { key: 'hats', title: 'Hat', equippedKey: 'hat' }
+            ];
+
+            let html = '';
+            for (let i = 0; i < categories.length; i += 1) {
+                const c = categories[i];
+                html += `<div class="shop-category"><h3>${c.title}</h3><div class="items">`;
+
+                const items = catalog[c.key];
+                for (let j = 0; j < items.length; j += 1) {
+                    const item = items[j];
+                    const owned = state.owned[c.key].includes(item.id);
+                    const active = state.equipped[c.equippedKey] === item.id;
+                    const btnClass = owned ? 'equip-btn' : 'buy-btn';
+                    const btnText = owned ? 'Equip' : `Buy (${item.price})`;
+
+                    html += `
+                        <div class="item-card ${owned ? 'owned' : ''}">
+                            <strong>${item.name}</strong>
+                            <div class="color-chip" style="background: ${item.color};"></div>
+                            <button class="shop-btn ${btnClass}" data-category="${c.key}" data-item="${item.id}">${btnText}</button>
+                            ${itemLabel(item, owned, active)}
+                        </div>
+                    `;
+                }
+
+                html += '</div></div>';
+            }
+
+            root.innerHTML = html;
+
+            const buttons = root.querySelectorAll('button[data-category]');
+            buttons.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const category = btn.getAttribute('data-category');
+                    const item = btn.getAttribute('data-item');
+                    const latestState = getAvatarState(currentUser.id);
+                    const isOwned = latestState.owned[category].includes(item);
+
+                    const result = isOwned
+                        ? equipItem(currentUser.id, category, item)
+                        : buyItem(currentUser.id, category, item);
+
+                    showMessage(result.message, result.success);
+                    renderShop();
+                    renderPreview();
+                });
+            });
+        }
+
+        renderShop();
+        renderPreview();
+    </script>
+</body>
+</html>

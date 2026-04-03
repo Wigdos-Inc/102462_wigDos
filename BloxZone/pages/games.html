@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone - Play</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="games.html">Play</a></li>
+                <li><a href="avatar.html">Avatar Shop</a></li>
+                <li><a href="profile.html">Profile</a></li>
+            </ul>
+            <a href="login.html"><img src="../assets/images/ProfilePicture.png" alt="Profile"></a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="games">
+            <h1 class="text-center mt-20">Classic Block World</h1>
+            <p class="text-center" style="color: var(--text-secondary);">
+                Roblox-like simple world with block terrain, easy movement, and your custom avatar.
+            </p>
+
+            <div style="max-width: 760px; margin: 20px auto 0 auto; background: var(--card-bg); border-radius: 12px; padding: 20px; border: 2px solid var(--primary-color);">
+                <h3 style="margin-top: 0;">How this version is built</h3>
+                <ul style="padding-left: 18px; margin-bottom: 0;">
+                    <li>No external 3D library</li>
+                    <li>Simple 3D math and rendering in js/engine/</li>
+                    <li>Simple AABB collision in js/engine/</li>
+                    <li>Shop/equip system linked to in-game character</li>
+                </ul>
+            </div>
+
+            <div style="max-width: 760px; margin: 20px auto 0 auto; background: var(--card-bg); border-radius: 12px; padding: 20px; border: 2px solid #2c3e50;">
+                <h3 style="margin-top: 0;">Active Servers</h3>
+                <p id="server-list-hint" style="margin: 0 0 10px 0; color: var(--text-secondary);">Loading servers...</p>
+                <div id="server-list" style="display: grid; gap: 8px;"></div>
+            </div>
+
+            <div style="text-align: center; margin: 36px 0;">
+                <button class="btn" onclick="playGame()" style="padding: 14px 36px; font-size: 1.05rem;">Start Game</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/p2p-config.js"></script>
+    <script src="../js/p2p.js"></script>
+    <script>
+        const GAME_ID = 'classic-world';
+        const MAX_PLAYERS = 20;
+        let p2pManager = null;
+
+        function renderServerCards(servers) {
+            const listEl = document.getElementById('server-list');
+            const hintEl = document.getElementById('server-list-hint');
+            listEl.innerHTML = '';
+
+            if (!servers || servers.length === 0) {
+                hintEl.textContent = 'No active servers yet. Press Start Game to create one.';
+                return;
+            }
+
+            hintEl.textContent = `${servers.length} server(s) found. Play will join the first server with open slots.`;
+
+            for (let i = 0; i < servers.length; i += 1) {
+                const server = servers[i];
+                const card = document.createElement('div');
+                card.style.background = 'rgba(12, 20, 30, 0.5)';
+                card.style.border = '1px solid rgba(70, 120, 170, 0.6)';
+                card.style.borderRadius = '8px';
+                card.style.padding = '10px 12px';
+
+                const status = server.players.length >= server.maxPlayers ? 'FULL' : 'OPEN';
+                card.innerHTML = `<strong>${server.roomName}</strong><br><span style="color: var(--text-secondary)">Host: ${server.hostUsername} • Players: ${server.players.length}/${server.maxPlayers} • ${status}</span>`;
+                listEl.appendChild(card);
+            }
+        }
+
+        function releaseManager() {
+            if (p2pManager) {
+                p2pManager.disconnect();
+                p2pManager = null;
+            }
+        }
+
+        async function getOrCreateP2P(currentUser) {
+            const requestedUserId = currentUser ? currentUser.id : null;
+            if (p2pManager && p2pManager.userId !== requestedUserId) {
+                releaseManager();
+            }
+
+            if (!p2pManager) {
+                p2pManager = new P2PManager(currentUser ? currentUser.id : null, currentUser ? currentUser.username : 'Guest', {
+                    gameId: GAME_ID,
+                    maxPlayers: MAX_PLAYERS
+                });
+                await p2pManager.initialize();
+                p2pManager.onServerListChanged((list) => renderServerCards(list));
+            }
+            return p2pManager;
+        }
+
+        async function renderServers() {
+            const currentUser = getCurrentUser();
+            const manager = await getOrCreateP2P(currentUser);
+            await manager.refreshServerList();
+            renderServerCards(manager.getServerList(GAME_ID));
+        }
+
+        async function playGame() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const manager = await getOrCreateP2P(currentUser);
+            let result = null;
+            try {
+                result = await manager.joinOrCreateServer();
+            } catch (err) {
+                result = null;
+            }
+            if (!result || !result.success) {
+                alert('Could not join or create a server. Please try again.');
+                return;
+            }
+
+            const gameWidth = 1200;
+            const gameHeight = 760;
+            const gwleft = (window.innerWidth / 2) - (gameWidth / 2);
+            const gwtop = (window.innerHeight / 2) - (gameHeight / 2);
+
+            const url = `player.html?gameId=${encodeURIComponent(GAME_ID)}&serverId=${encodeURIComponent(result.roomId)}&clientId=${encodeURIComponent(manager.clientId)}`;
+            window.open(url, 'bloxzone-game', `width=${gameWidth},height=${gameHeight},left=${gwleft},top=${gwtop}`);
+
+            // Player window continues the same client session.
+            releaseManager();
+        }
+
+        window.addEventListener('beforeunload', () => {
+            releaseManager();
+        });
+
+        window.addEventListener('load', () => {
+            renderServers();
+        });
+    </script>
+</body>
+</html>

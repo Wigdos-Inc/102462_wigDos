@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone - Profile</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="games.html">Games</a></li>
+                <li><a href="avatar.html">Avatar Shop</a></li>
+                <li><a href="creator.html">Creator Hub</a></li>
+            </ul>
+            <a href="login.html"><img src="../assets/images/ProfilePicture.png" alt="Profile"></a>
+        </nav>
+    </header>
+    
+    <main class="container">
+        <h1 class="text-center mt-20">My Profile</h1>
+        
+        <div id="profile-info" style="max-width: 600px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: var(--border-radius);"></div>
+        
+        <div style="max-width: 900px; margin: 0 auto;">
+            <h2 style="color: var(--primary-color);">My Friends</h2>
+            <div id="friends-list" style="margin-bottom: 40px;"></div>
+            
+            <h2 style="color: var(--primary-color);">Friend Requests</h2>
+            <div id="friend-requests" style="margin-bottom: 40px;"></div>
+            
+            <h2 style="color: var(--primary-color);">Add Friend</h2>
+            <form id="add-friend-form" style="max-width: 500px;">
+                <label>Username:</label>
+                <input type="text" id="friend-username" placeholder="Enter friend's username" required>
+                <button type="submit" class="btn">Send Friend Request</button>
+            </form>
+            <p id="friend-message" style="color: var(--success-color); font-weight: bold;"></p>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+    </footer>
+    
+    <script src="../js/auth.js"></script>
+    <script src="../js/friends.js"></script>
+    <script src="../js/avatar.js"></script>
+    <script>
+        const currentUser = getCurrentUser();
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else {
+            const avatar = getAvatar(currentUser.id);
+            const avatarIcon = getAvatarIcon(currentUser.id);
+            
+            document.getElementById('profile-info').innerHTML = `
+                <h3 style="font-size: 2em; margin-bottom: 15px;">${currentUser.username}</h3>
+                <p style="color: var(--text-secondary);">User ID: <span style="color: white;">${currentUser.id}</span></p>
+                <p style="color: var(--text-secondary);">Avatar: <span style="color: var(--accent-color); font-size: 1.2em;">${avatarIcon} ${avatar}</span></p>
+                <a href="avatar.html" class="btn" style="display: inline-block; margin-top: 15px; text-decoration: none;">Open Avatar Shop</a>
+            `;
+            
+            loadFriends();
+        }
+        
+        document.getElementById('add-friend-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const friendUsername = document.getElementById('friend-username').value;
+            const result = sendFriendRequest(currentUser.id, friendUsername);
+            document.getElementById('friend-message').textContent = result.message;
+            document.getElementById('friend-username').value = '';
+        });
+        
+        function loadFriends() {
+            const friends = getFriends(currentUser.id);
+            const requests = getFriendRequests(currentUser.id);
+            
+            let friendsHTML = '';
+            if (friends.length === 0) {
+                friendsHTML = '<p style="color: var(--text-secondary);">No friends yet</p>';
+            } else {
+                friendsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">';
+                friends.forEach(friend => {
+                    friendsHTML += `
+                        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 2px solid var(--primary-color);">
+                            <div style="font-size: 2em; text-align: center;">${friend.avatar}</div>
+                            <div style="text-align: center; margin-top: 10px; font-weight: bold;">${friend.username}</div>
+                        </div>
+                    `;
+                });
+                friendsHTML += '</div>';
+            }
+            document.getElementById('friends-list').innerHTML = friendsHTML;
+            
+            let requestsHTML = '';
+            if (requests.length === 0) {
+                requestsHTML = '<p style="color: var(--text-secondary);">No pending requests</p>';
+            } else {
+                requestsHTML = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                requests.forEach(request => {
+                    requestsHTML += `
+                        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>${request.username}</strong> sent you a friend request</span>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn" style="background: var(--success-color); padding: 8px 16px;" onclick="acceptFriend('${currentUser.id}', '${request.id}')">Accept</button>
+                                <button class="btn" style="background: var(--danger-color); padding: 8px 16px;" onclick="rejectFriend('${currentUser.id}', '${request.id}')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                requestsHTML += '</div>';
+            }
+            document.getElementById('friend-requests').innerHTML = requestsHTML;
+        }
+        
+        function acceptFriend(userId, friendId) {
+            acceptFriendRequest(userId, friendId);
+            loadFriends();
+        }
+        
+        function rejectFriend(userId, friendId) {
+            rejectFriendRequest(userId, friendId);
+            loadFriends();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone - Creator Hub</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="games.html">Games</a></li>
+                <li><a href="profile.html">Profile</a></li>
+            </ul>
+            <a href="login.html"><img src="../assets/images/ProfilePicture.png" alt="Profile"></a>
+        </nav>
+    </header>
+    
+    <main class="container">
+        <div style="text-align: center; margin: 40px 0;">
+            <h1 style="font-size: 3em;">🎮 Creator Hub</h1>
+            <p style="color: var(--text-secondary); font-size: 1.2em;">Build amazing games and share them with the BloxZone community!</p>
+        </div>
+        
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <h2 style="color: var(--primary-color); margin-bottom: 20px;">📦 My Games</h2>
+            <div id="my-games" style="margin-bottom: 50px;">
+                <p style="color: var(--text-secondary);">No games created yet</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, var(--card-bg) 0%, #1a1c20 100%); padding: 40px; border-radius: var(--border-radius); border: 2px solid var(--primary-color);">
+                <h3 style="color: var(--accent-color); margin-bottom: 20px; font-size: 1.8em;">✨ Create New Game</h3>
+                <form id="create-game-form">
+                    <label>Game Name:</label>
+                    <input type="text" id="game-name" placeholder="My Awesome Game" required>
+                    
+                    <label>Game Description:</label>
+                    <textarea id="game-description" rows="4" placeholder="Describe your game..."></textarea>
+                    
+                    <label>Max Players:</label>
+                    <input type="number" id="max-players" min="1" max="100" value="10">
+                    
+                    <button type="submit" class="btn" style="width: 100%;">🚀 Create Game</button>
+                </form>
+                
+                <p id="message" style="text-align: center; color: var(--success-color); font-weight: bold; margin-top: 20px;"></p>
+            </div>
+            
+            <div style="margin-top: 50px;">
+                <h3 style="color: var(--primary-color); margin-bottom: 20px;">🛠️ Development Tools</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); border: 2px solid #3a3d42;">
+                        <h4 style="color: var(--accent-color);">🎨 Game Studio</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9em;">Visual editor for building game worlds</p>
+                        <span style="color: #FFD700;">Coming Soon</span>
+                    </div>
+                    
+                    <div style="background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); border: 2px solid #3a3d42;">
+                        <h4 style="color: var(--accent-color);">📚 Asset Library</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9em;">Browse and use community assets</p>
+                        <span style="color: #FFD700;">Coming Soon</span>
+                    </div>
+                    
+                    <div style="background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); border: 2px solid #3a3d42;">
+                        <h4 style="color: var(--accent-color);">💻 Script Editor</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9em;">Code your game logic with JavaScript</p>
+                        <span style="color: #FFD700;">Coming Soon</span>
+                    </div>
+                    
+                    <div style="background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); border: 2px solid #3a3d42;">
+                        <h4 style="color: var(--accent-color);">💰 Monetization</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9em;">Earn from your creations</p>
+                        <span style="color: #FFD700;">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+    </footer>
+    
+    <script src="../js/auth.js"></script>
+    <script src="../js/game-engine.js"></script>
+    <script>
+        const currentUser = getCurrentUser();
+        
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('create-game-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const gameName = document.getElementById('game-name').value;
+            const gameDescription = document.getElementById('game-description').value;
+            const maxPlayers = document.getElementById('max-players').value;
+            
+            // Get existing games
+            let games = JSON.parse(localStorage.getItem('games') || '[]');
+            
+            const newGame = {
+                id: 'game-' + Date.now().toString(),
+                name: gameName,
+                description: gameDescription,
+                thumbnail: '../assets/images/PlaceHolder.png',
+                maxPlayers: parseInt(maxPlayers),
+                players: 0,
+                rating: 0,
+                creator: currentUser.username,
+                creatorId: currentUser.id,
+                createdAt: new Date().toISOString()
+            };
+            
+            gameManager.registerGame(newGame);
+            
+            document.getElementById('message').textContent = '✅ Game created successfully!';
+            document.getElementById('create-game-form').reset();
+            loadMyGames();
+            
+            setTimeout(() => {
+                document.getElementById('message').textContent = '';
+            }, 3000);
+        });
+        
+        function loadMyGames() {
+            gameManager.loadGamesFromStorage();
+            const games = gameManager.getAllGames();
+            const myGames = games.filter(game => game.creatorId === currentUser.id);
+            
+            if (myGames.length === 0) {
+                document.getElementById('my-games').innerHTML = '<p style="color: var(--text-secondary);">No games created yet</p>';
+            } else {
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">';
+                myGames.forEach(game => {
+                    html += `
+                        <div class="game-card">
+                            <img src="${game.thumbnail}" alt="${game.name}">
+                            <div class="game-card-content">
+                                <h3>${game.name}</h3>
+                                <p>${game.description}</p>
+                                <div class="game-card-stats">
+                                    <span>👥 ${game.players || 0}</span>
+                                    <span>⭐ ${game.rating || 0}</span>
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: 0.85em; margin-top: 10px;">
+                                    Created: ${new Date(game.createdAt).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                document.getElementById('my-games').innerHTML = html;
+            }
+        }
+        
+        loadMyGames();
+    </script>
+</body>
+</html>

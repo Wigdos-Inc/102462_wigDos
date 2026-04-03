@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="#games">Games</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="login.html"><img src="../assets/images/ProfilePicture.png" alt=""></a>
+        </nav>
+    </header>
+
+    <main class="container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+        <div style="max-width: 500px; width: 100%;">
+            <h1 class="text-center" style="margin-bottom: 30px;">Login to BloxZone</h1>
+            
+            <form id="login-form">
+                <label>Username:</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                
+                <label>Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                
+                <button type="submit" class="btn">Login</button>
+            </form>
+            
+            <p id="message" style="text-align: center; color: var(--danger-color); margin-top: 15px;"></p>
+            
+            <p class="text-center" style="margin-top: 20px; color: var(--text-secondary);">
+                Don't have an account? <a href="signup.html" style="color: var(--accent-color);">Sign up here</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+    </footer>
+    
+    <script src="../js/auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (login(username, password)) {
+                document.getElementById('message').textContent = 'Login successful!';
+                document.getElementById('message').style.color = 'var(--success-color)';
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            } else {
+                document.getElementById('message').textContent = 'Invalid username or password';
+                document.getElementById('message').style.color = 'var(--danger-color)';
+            }
+        });
+    </script>
+</body>
+</html>

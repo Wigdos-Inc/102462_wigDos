@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone - Classic World</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #game-ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: linear-gradient(180deg, rgba(8, 11, 18, 0.9), rgba(8, 11, 18, 0));
+        }
+        #game-info h2 { margin: 0; font-size: 1.1rem; }
+        #game-info p { margin: 4px 0 0; color: #d9e5f1; font-size: 0.85rem; }
+        #game-controls { display: flex; gap: 8px; }
+        .control-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            background: #0d84ff;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #game-container { width: 100vw; height: 100vh; }
+        #instructions {
+            position: fixed;
+            left: 14px;
+            bottom: 14px;
+            z-index: 5;
+            background: rgba(14, 18, 24, 0.92);
+            border: 2px solid #178fff;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.82rem;
+            max-width: 280px;
+        }
+        #instructions p { margin: 6px 0; color: #d2d9e1; }
+    </style>
+</head>
+<body>
+    <div id="game-ui">
+        <div id="game-info">
+            <h2>Classic Block World</h2>
+            <p id="avatar-summary">Loading avatar...</p>
+            <p id="server-summary">Connecting to server...</p>
+        </div>
+        <div id="game-controls">
+            <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+            <button class="control-btn" onclick="exitGame()">Exit</button>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <div id="instructions">
+        <p><strong>Click screen</strong>: Lock mouse camera</p>
+        <p><strong>Move mouse</strong>: Look around</p>
+        <p><strong>W/A/S/D</strong>: Move</p>
+        <p><strong>Space</strong>: Jump</p>
+        <p><strong>Esc</strong>: Unlock mouse</p>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/avatar.js"></script>
+    <script src="../js/p2p-config.js"></script>
+    <script src="../js/p2p.js"></script>
+    <script type="module">
+        import { SimpleGameEngine } from '../js/game-engine.js';
+        import { getAvatarRenderData } from '../js/engine/customization.js';
+
+        const MAX_PLAYERS = 20;
+        const DEFAULT_GAME_ID = 'classic-world';
+
+        let gameEngine = null;
+        let p2pManager = null;
+
+        function getGameConnectionFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                gameId: params.get('gameId') || DEFAULT_GAME_ID,
+                serverId: params.get('serverId') || null,
+                clientId: params.get('clientId') || null
+            };
+        }
+
+        function updateServerSummary(server) {
+            const text = server
+                ? `Server: ${server.roomName} | Host: ${server.hostUsername} | Players: ${server.players.length}/${server.maxPlayers}`
+                : 'Server: unavailable';
+            document.getElementById('server-summary').textContent = text;
+        }
+
+        async function connectToServer(currentUser) {
+            const connection = getGameConnectionFromUrl();
+            const avatarLook = getAvatarRenderData(currentUser.id);
+            p2pManager = new P2PManager(currentUser.id, currentUser.username, {
+                gameId: connection.gameId,
+                maxPlayers: MAX_PLAYERS,
+                avatarLook,
+                clientId: connection.clientId
+            });
+            await p2pManager.initialize();
+
+            let result = null;
+
+            if (connection.serverId) {
+                result = await p2pManager.joinServer(connection.serverId);
+            }
+
+            if (!result || !result.success) {
+                result = await p2pManager.joinOrCreateServer();
+            }
+
+            await p2pManager.refreshServerList();
+
+            const activeServer = p2pManager.getCurrentServer();
+            updateServerSummary(activeServer);
+
+            p2pManager.onServerListChanged(() => {
+                const latest = p2pManager.getCurrentServer();
+                updateServerSummary(latest);
+            });
+
+            p2pManager.updateMyState({
+                position: { x: 0, y: 2.6, z: 0 },
+                velocity: { x: 0, y: 0, z: 0 },
+                facingYaw: 0,
+                walkTime: 0,
+                grounded: false
+            });
+        }
+
+        async function startGame() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('avatar-summary').textContent = `Avatar: ${getAvatar(currentUser.id)}`;
+            await connectToServer(currentUser);
+
+            gameEngine = new SimpleGameEngine(currentUser.id, { p2pManager });
+            gameEngine.init();
+            gameEngine.start();
+        }
+
+        window.toggleFullscreen = function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        window.exitGame = function exitGame() {
+            if (gameEngine) {
+                gameEngine.stop();
+            }
+
+            if (p2pManager) {
+                p2pManager.leaveCurrentServer();
+                p2pManager.disconnect();
+                p2pManager = null;
+            }
+
+            // If this page is opened as a small popup, close it.
+            if (window.opener) {
+                window.close();
+                return;
+            }
+
+            window.location.href = '../index.html';
+        };
+
+        window.addEventListener('beforeunload', () => {
+            if (gameEngine) {
+                gameEngine.stop();
+            }
+
+            if (p2pManager) {
+                p2pManager.leaveCurrentServer();
+                p2pManager.disconnect();
+                p2pManager = null;
+            }
+        });
+
+        window.addEventListener('load', () => {
+            startGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloxZone</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">BloxZone</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="pages/games.html">Games</a></li>
+                <li><a href="pages/profile.html">Profile</a></li>
+                <li><a href="pages/avatar.html">Avatar Shop</a></li>
+                <li><a href="pages/creator.html">Creator Hub</a></li>
+            </ul>
+            <div id="auth-section">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section id="home" class="hero">
+            <h1>Welcome to BloxZone!</h1>
+            <p>Play a simple Roblox-style block world and customize your lego avatar in the shop.</p>
+            <div id="user-info-hero"></div>
+        </section>
+        
+        <section id="games" class="games">
+            <h2>Featured Games</h2>
+            <div class="games-grid" id="games-list">
+                <!-- Games will be loaded here dynamically -->
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2026 BloxZone. All rights reserved.</p>
+        <p>Build your own games and share them with the world!</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Initialize auth section
+        function initAuthSection() {
+            const currentUser = getCurrentUser();
+            const authSection = document.getElementById('auth-section');
+            
+            if (currentUser) {
+                // Show profile dropdown
+                authSection.innerHTML = `
+                    <div class="profile-container">
+                        <img src="assets/images/ProfilePicture.png" alt="Profile" id="profile-icon">
+                        <div class="profile-dropdown" id="profile-dropdown">
+                            <a href="pages/profile.html">👤 My Profile</a>
+                            <a href="pages/avatar.html">🛒 Avatar Shop</a>
+                            <a href="pages/creator.html">🛠️ Creator Hub</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="pages/games.html">🎮 Play</a>
+                            <div class="dropdown-divider"></div>
+                            <button onclick="handleLogout()">🚪 Logout</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Setup dropdown toggle
+                const profileIcon = document.getElementById('profile-icon');
+                const dropdown = document.getElementById('profile-dropdown');
+                
+                profileIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', () => {
+                    dropdown.classList.remove('show');
+                });
+                
+                // Update hero
+                document.getElementById('user-info-hero').innerHTML = `
+                    <p style="margin-top: 20px;">Welcome back, <strong>${currentUser.username}</strong>! 🎮</p>
+                    <button style="margin-top: 20px; padding: 12px 30px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em;" onclick="playGame()">Play Now</button>
+                `;
+            } else {
+                // Show login/signup buttons
+                authSection.innerHTML = `
+                    <div class="auth-buttons">
+                        <a href="pages/login.html" class="auth-btn auth-btn-login">Login</a>
+                        <a href="pages/signup.html" class="auth-btn auth-btn-signup">Sign Up</a>
+                    </div>
+                `;
+                
+                document.getElementById('user-info-hero').innerHTML = `
+                    <p style="margin-top: 20px;">Join BloxZone today and start playing amazing games!</p>
+                `;
+            }
+        }
+        
+        function handleLogout() {
+            logout();
+            window.location.reload();
+        }
+        
+        // Display featured game
+        function loadGames() {
+            const gamesContainer = document.getElementById('games-list');
+            
+            // Display the simple character game as the featured game
+            gamesContainer.innerHTML = `
+                <div class="game-card" style="cursor: pointer;" onclick="playGame()">
+                    <div class="game-card-image">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #4fa3ff 0%, #9bd6ff 100%); display: flex; align-items: center; justify-content: center; font-size: 3em;">
+                            🧱
+                        </div>
+                    </div>
+                    <div class="game-card-content">
+                        <h3>Classic Block World</h3>
+                        <p>Explore a retro block map, jump between obby blocks, and play with your own shop-customized avatar.</p>
+                        <div class="game-card-stats">
+                            <span class="player-badge">🛒 Avatar Shop Linked</span>
+                            <span class="rating">⭐ Simple Engine</span>
+                        </div>
+                        <button onclick="event.stopPropagation(); playGame();">Play Now</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initAuthSection();
+            loadGames();
+        });
+    </script>
+</body>
+</html>
