@@ -5,18 +5,19 @@
   "spawn": { "x": -56, "y": 6, "z": 18 },
   "config": {
     "size": { "x": 190, "z": 190 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["dirt", "pebble", "tile"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 184, "depth": 184, "height": 2, "color": [0.88, 0.76, 0.56] },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 184, "depth": 184, "height": 2, "texture": "dirt", "color": [0.88, 0.76, 0.56] },
 
-    { "type": "platform", "x": -56, "y": 3, "z": 18, "width": 24, "depth": 20, "height": 1.2, "color": [0.92, 0.84, 0.62] },
-    { "type": "platform", "x": -28, "y": 6, "z": 8, "width": 22, "depth": 18, "height": 1.2, "color": [0.92, 0.84, 0.62] },
-    { "type": "platform", "x": -2, "y": 9, "z": -4, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
-    { "type": "platform", "x": 24, "y": 12, "z": -14, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
-    { "type": "platform", "x": 48, "y": 15, "z": -22, "width": 20, "depth": 16, "height": 1.2, "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": -56, "y": 3, "z": 18, "width": 24, "depth": 20, "height": 1.2, "texture": "tile", "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": -28, "y": 6, "z": 8, "width": 22, "depth": 18, "height": 1.2, "texture": "dirt", "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": -2, "y": 9, "z": -4, "width": 20, "depth": 16, "height": 1.2, "texture": "pebble", "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": 24, "y": 12, "z": -14, "width": 20, "depth": 16, "height": 1.2, "texture": "tile", "color": [0.92, 0.84, 0.62] },
+    { "type": "platform", "x": 48, "y": 15, "z": -22, "width": 20, "depth": 16, "height": 1.2, "texture": "dirt", "color": [0.92, 0.84, 0.62] },
 
-    { "type": "platform", "x": 44, "y": 3, "z": 34, "width": 34, "depth": 26, "height": 1, "color": [0.4, 0.7, 0.78] },
+    { "type": "platform", "x": 44, "y": 3, "z": 34, "width": 34, "depth": 26, "height": 1, "texture": "tile", "color": [0.4, 0.7, 0.78] },
 
     { "type": "moon", "x": -56, "y": 6, "z": 18 },
     { "type": "moon", "x": -28, "y": 9, "z": 8 },

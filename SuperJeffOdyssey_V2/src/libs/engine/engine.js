@@ -7,5 +7,7 @@ import * as collision from './collision.js';
 
 // collision helpers
 export const {
-    supportHeightAtXZ
+    supportHeightAtXZ,
+    resolveSphereCollisions,
+    resolveSphereMotion
 } = collision;

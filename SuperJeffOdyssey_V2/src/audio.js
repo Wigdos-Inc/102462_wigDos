@@ -21,7 +21,8 @@
         "bonustheme.mp3",
         'bonustheme2.mp3',
         'summerhotspot2.mp3',
-        'game paused 2.mp3'
+        'game paused 2.mp3',
+        'Fierceble Nuts (1).mp3'
     ];
 
     const creditTrackName = "jeff's song (5).mp3";
@@ -34,15 +35,18 @@
         hub: "summerhotspot2.mp3",
         boss: "PenutFace's fury.mp3",
         final_boss: "penutfacefinalfury.mp3",
+        mini_boss: "Fierceble Nuts (1).mp3",
         bonus: "bonustheme2.mp3",
         pause: "game paused 2.mp3",
-        powerup: "jeff's song (2).mp3"
+        powerup: "jeff's song (2).mp3",
+        jump: "sfx/p_sfx_3.mp3"
     };
 
     const audio = new Audio();
     audio.volume = 0.6;
     let musicStarted = false;
     let musicIndex;
+    const activeEffects = new Set();
 
 export function getKingdomtrack() {
     return kingdomTrack;
@@ -72,16 +76,34 @@ export function playTrack(idx) {
 export function playEffect(name, duration = 2) {
         const eff = new Audio(musicBasePath + encodeURIComponent(name));
         eff.volume = (localStorage.getItem("volume") || 60) / 100;
+        activeEffects.add(eff);
+        eff.addEventListener('ended', () => {
+            activeEffects.delete(eff);
+        });
         eff.play().catch(() => {});
         if (duration > 0) {
             setTimeout(() => {
                 eff.pause();
                 // rewind in case reused
                 eff.currentTime = 0;
+                activeEffects.delete(eff);
             }, duration * 1000);
         }
         return eff;
     }
+
+export function stopAllEffects() {
+    activeEffects.forEach((eff) => {
+        try {
+            eff.pause();
+            eff.currentTime = 0;
+            eff.loop = false;
+        } catch (_) {
+            // Ignore teardown errors.
+        }
+    });
+    activeEffects.clear();
+}
 
 export function playRandomBackground() {
         if (game.creditsShown) return;

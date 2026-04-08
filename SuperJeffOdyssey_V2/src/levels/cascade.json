@@ -5,20 +5,21 @@
   "spawn": { "x": -60, "y": 7, "z": 34 },
   "config": {
     "size": { "x": 170, "z": 170 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["stone", "pebble", "wood"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 164, "depth": 164, "height": 2, "color": [0.34, 0.58, 0.44] },
-    { "type": "platform", "x": -54, "y": 4, "z": 26, "width": 28, "depth": 22, "height": 1.2, "color": [0.44, 0.66, 0.5] },
-    { "type": "platform", "x": -28, "y": 8, "z": 10, "width": 24, "depth": 18, "height": 1.2, "color": [0.44, 0.66, 0.5] },
-    { "type": "platform", "x": -4, "y": 12, "z": -8, "width": 24, "depth": 18, "height": 1.2, "color": [0.44, 0.66, 0.5] },
-    { "type": "platform", "x": 22, "y": 16, "z": -24, "width": 22, "depth": 16, "height": 1.2, "color": [0.44, 0.66, 0.5] },
-    { "type": "platform", "x": 46, "y": 20, "z": -38, "width": 20, "depth": 14, "height": 1.2, "color": [0.44, 0.66, 0.5] },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 164, "depth": 164, "height": 2, "texture": "stone", "color": [0.34, 0.58, 0.44] },
+    { "type": "platform", "x": -54, "y": 4, "z": 26, "width": 28, "depth": 22, "height": 1.2, "texture": "pebble", "color": [0.44, 0.66, 0.5] },
+    { "type": "platform", "x": -28, "y": 8, "z": 10, "width": 24, "depth": 18, "height": 1.2, "texture": "wood", "color": [0.44, 0.66, 0.5] },
+    { "type": "platform", "x": -4, "y": 12, "z": -8, "width": 24, "depth": 18, "height": 1.2, "texture": "stone", "color": [0.44, 0.66, 0.5] },
+    { "type": "platform", "x": 22, "y": 16, "z": -24, "width": 22, "depth": 16, "height": 1.2, "texture": "pebble", "color": [0.44, 0.66, 0.5] },
+    { "type": "platform", "x": 46, "y": 20, "z": -38, "width": 20, "depth": 14, "height": 1.2, "texture": "wood", "color": [0.44, 0.66, 0.5] },
 
-    { "type": "platform", "x": -10, "y": 5, "z": 42, "width": 14, "depth": 14, "height": 1 },
-    { "type": "platform", "x": 8, "y": 8, "z": 54, "width": 14, "depth": 14, "height": 1 },
-    { "type": "platform", "x": 28, "y": 11, "z": 64, "width": 14, "depth": 14, "height": 1 },
-    { "type": "platform", "x": 50, "y": 14, "z": 72, "width": 16, "depth": 16, "height": 1 },
+    { "type": "platform", "x": -10, "y": 5, "z": 42, "width": 14, "depth": 14, "height": 1, "texture": "stone" },
+    { "type": "platform", "x": 8, "y": 8, "z": 54, "width": 14, "depth": 14, "height": 1, "texture": "pebble" },
+    { "type": "platform", "x": 28, "y": 11, "z": 64, "width": 14, "depth": 14, "height": 1, "texture": "wood" },
+    { "type": "platform", "x": 50, "y": 14, "z": 72, "width": 16, "depth": 16, "height": 1, "texture": "stone" },
 
     { "type": "moon", "x": -54, "y": 7, "z": 26 },
     { "type": "moon", "x": -28, "y": 11, "z": 10 },

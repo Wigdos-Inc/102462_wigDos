@@ -89,6 +89,43 @@
         const flash = document.getElementById('flash');
 
         music.volume = (localStorage.getItem("volume") || 60) / 100;
+
+        const random = Math.floor(Math.random() * 12);
+        switch(random) {
+            case 1:
+                music.src = '../../assets/sound/intro.mp3';
+                break;
+            case 2:
+                music.src = "../../assets/sound/jeffsomething.mp3";
+                break;
+            case 3:
+                music.src = '../../assets/sound/WildWest.mp3';
+                break;
+            case 4:
+                music.src = "../../assets/sound/JeffOddeseyTheme2.mp3";
+                break;
+            case 5:
+                music.src = '../../assets/sound/themesong.mp3';
+                break;
+            case 6:
+                music.src = "../../assets/sound/JeffOddeseyTheme.mp3";
+                break;
+            case 7:
+                music.src = '../../assets/sound/splits/JeffInsanity [vocals].mp3';
+                break;
+            case 8:
+                music.src = "../../assets/sound/superGalaxyJeffTheme_2.mp3";
+                break;
+            case 9:
+                music.src = "../../assets/sound/themesong_old.mp3";
+                break;
+            case 10:
+                music.src = "../../assets/sound/jeff's song (5).mp3";
+                break;
+            case 11: music.src = "../../assets/sound/jeffsomething2.mp3";
+            default:
+                music.src = "../../assets/sound/jeff's song (2).mp3";
+        }
         
         // Generate particles
         const particlesContainer = document.getElementById('particles');

@@ -5,15 +5,16 @@
   "spawn": { "x": 0, "y": 6, "z": 28 },
   "config": {
     "size": { "x": 120, "z": 120 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["brick", "stone", "pebble"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 112, "depth": 112, "height": 2, "color": [0.42, 0.12, 0.12] },
-    { "type": "platform", "x": 0, "y": 3, "z": 0, "width": 26, "depth": 26, "height": 1, "color": [0.62, 0.22, 0.22] },
-    { "type": "platform", "x": -30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
-    { "type": "platform", "x": 30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
-    { "type": "platform", "x": -30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
-    { "type": "platform", "x": 30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 112, "depth": 112, "height": 2, "texture": "brick", "color": [0.42, 0.12, 0.12] },
+    { "type": "platform", "x": 0, "y": 3, "z": 0, "width": 26, "depth": 26, "height": 1, "texture": "stone", "color": [0.62, 0.22, 0.22] },
+    { "type": "platform", "x": -30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "texture": "pebble", "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": 30, "y": 6, "z": -30, "width": 12, "depth": 12, "height": 1, "texture": "pebble", "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": -30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "texture": "pebble", "color": [0.7, 0.26, 0.26] },
+    { "type": "platform", "x": 30, "y": 6, "z": 30, "width": 12, "depth": 12, "height": 1, "texture": "pebble", "color": [0.7, 0.26, 0.26] },
     { "type": "soup", "x": -30, "y": 8, "z": -30 },
     { "type": "soup", "x": 30, "y": 8, "z": -30 },
     { "type": "soup", "x": -30, "y": 8, "z": 30 },

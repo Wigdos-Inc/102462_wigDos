@@ -6,18 +6,50 @@ export function updateHUD(game, kingdomConfigs, player) {
     document.getElementById('moons').textContent = game.moons;
     document.getElementById('totalMoons').textContent = game.totalMoons;
     document.getElementById('kingdom').textContent = kingdomConfigs[game.currentKingdom].name;
+    const hpFill = document.getElementById('healthFill');
+    if (hpFill) {
+        const maxHp = Math.max(1, Number(game.playerMaxHealth) || 3);
+        const hp = Math.max(0, Math.min(maxHp, Number(game.playerHealth) || 0));
+        const pct = (hp / maxHp) * 100;
+        hpFill.style.width = `${pct}%`;
+    }
     const t = Math.max(0, Math.floor(player.soupTimer));
     const soupEl = document.getElementById('soupTimer');
     if (soupEl) soupEl.textContent = t > 0 ? (t + 's') : '0s';
-    // boss health display
-    const bossEl = document.getElementById('bossHealth');
-    const bossVal = document.getElementById('bossVal');
-    if (game.boss && game.boss.phase === 2) {
-        bossEl.style.display = 'block';
-        bossVal.textContent = game.boss.robotHealth;
-    } else {
-        bossEl.style.display = 'none';
+    updateBossHealthUI(game);
+}
+
+function getActiveBossHealthInfo(game) {
+    if (game.gameOverActive) return null;
+    if (game.boss && typeof game.boss.getHealthInfo === 'function') {
+        return game.boss.getHealthInfo();
     }
+    if (game.miniBoss && typeof game.miniBoss.getHealthInfo === 'function') {
+        return game.miniBoss.getHealthInfo();
+    }
+    return null;
+}
+
+export function updateBossHealthUI(game) {
+    const root = document.getElementById('bossHealthUI');
+    const label = document.getElementById('bossHealthLabel');
+    const fill = document.getElementById('bossHealthFill');
+    const val = document.getElementById('bossHealthValue');
+    if (!root || !label || !fill || !val) return;
+
+    const info = getActiveBossHealthInfo(game);
+    if (!info || !Number.isFinite(info.max) || info.max <= 0) {
+        root.style.display = 'none';
+        return;
+    }
+
+    const current = Math.max(0, Math.min(info.max, Number(info.current) || 0));
+    const pct = (current / info.max) * 100;
+    root.style.display = 'flex';
+    root.classList.toggle('rage', !!info.rage);
+    label.textContent = info.label || 'BOSS';
+    fill.style.width = `${pct}%`;
+    val.textContent = `${Math.ceil(current)}/${Math.ceil(info.max)}`;
 }
 
 export function showCredits(game) {

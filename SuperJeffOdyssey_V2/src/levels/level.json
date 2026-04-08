@@ -4,12 +4,13 @@
   "spawn": { "x": 0, "y": 6, "z": 18 },
   "config": {
     "size": { "x": 140, "z": 140 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["tile", "stone", "wood"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 120, "depth": 120, "height": 2, "color": [0.55, 0.6, 0.62] },
-    { "type": "platform", "x": 20, "y": 4, "z": -10, "width": 16, "depth": 16, "height": 1 },
-    { "type": "platform", "x": 38, "y": 7, "z": -22, "width": 14, "depth": 14, "height": 1 },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 120, "depth": 120, "height": 2, "texture": "tile", "color": [0.55, 0.6, 0.62] },
+    { "type": "platform", "x": 20, "y": 4, "z": -10, "width": 16, "depth": 16, "height": 1, "texture": "stone" },
+    { "type": "platform", "x": 38, "y": 7, "z": -22, "width": 14, "depth": 14, "height": 1, "texture": "wood" },
     { "type": "moon", "x": 20, "y": 7, "z": -10 },
     { "type": "moon", "x": 38, "y": 10, "z": -22 },
     { "type": "soup", "x": -22, "y": 3, "z": 16 },

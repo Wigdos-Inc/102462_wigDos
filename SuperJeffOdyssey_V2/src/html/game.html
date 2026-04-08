@@ -8,7 +8,11 @@
     <link rel="stylesheet" href="../css/sliders.css">
     <link rel="stylesheet" href="../css/main.css">
     <style>
-        #hud {
+        * {
+            overflow: hidden;
+        }
+        
+        #hud_debug {
             display: none;
             position: absolute;
             top: 10px;
@@ -21,7 +25,7 @@
             z-index: 100;
             max-width: 90vw;
         }
-        #hud h2 { margin: 0 0 10px 0; color: #FFD700; font-size: 1.2em; }
+        #hud_debug h2 { margin: 0 0 10px 0; color: #FFD700; font-size: 1.2em; }
         #controls {
             display: none;
             position: absolute;
@@ -58,12 +62,11 @@
 <body>
     <button id="back-button"><a href="../../index.html">← MENU</a></button>
     
-    <div id="hud">
+    <div id="hud_debug">
         <h2>THE SUPER JEFF 3 ODYESSY JEFF</h2>
         <div>Power Soups: <span id="moons">0</span>/<span id="totalMoons">20</span></div>
         <div>Soup Buff: <span id="soupTimer">0s</span></div>
         <div>Level: <span id="kingdom">Cap Kingdom</span></div>
-        <div id="bossHealth" style="display:none;">Boss HP: <span id="bossVal">0</span></div>
         <div id="message" style="color: #FFD700; margin-top: 5px;"></div>
     </div>
     
@@ -77,6 +80,14 @@
         <div class="health-bar">
             <div class="health-fill" id="healthFill"></div>
         </div>
+    </div>
+
+    <div class="boss-health-ui" id="bossHealthUI" style="display:none;">
+        <span class="boss-health-label" id="bossHealthLabel">BOSS</span>
+        <div class="boss-health-bar">
+            <div class="boss-health-fill" id="bossHealthFill"></div>
+        </div>
+        <span class="boss-health-value" id="bossHealthValue">0/0</span>
     </div>
 
     <div class="audio-ui">
@@ -99,13 +110,13 @@
             if (!debug) {
                 debug = true;
                 console.log("Enabled debug mode.");
-                document.getElementById('hud').style.display = 'block';
+                document.getElementById('hud_debug').style.display = 'block';
                 document.getElementById('controls').style.display = 'block';
                 document.getElementById('textureCanvas').style.display = 'block';
             } else {
                 debug = false;
                 console.log("Disabled debug mode.");
-                document.getElementById('hud').style.display = 'none';
+                document.getElementById('hud_debug').style.display = 'none';
                 document.getElementById('controls').style.display = 'none';
                 document.getElementById('textureCanvas').style.display = 'none';
             }

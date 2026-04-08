@@ -1,5 +1,6 @@
 import { engine, vector } from './globals.js';
-import { supportHeightAtXZ } from './libs/engine/engine.js';
+import { supportHeightAtXZ, resolveSphereCollisions } from './libs/engine/engine.js';
+import { playEffect } from './audio.js';
 
 export const player = createPlayer();
 
@@ -9,7 +10,6 @@ export function createPlayer() {
         vel: vector.create(0, 0, 0),
         radius: 1.5, // INCREASED from 0.8
         onGround: false,
-        currentPlanet: null,
         walkCycle: 0,
         state: 'idle',
         facingDir: vector.create(0, 0, 1),
@@ -21,8 +21,8 @@ export function createPlayer() {
         hairVel: null, // ADD
         hairReturn: false, // ADD
         // Power Soup buffs
-        speedMultiplier: 1.0,
-        jumpMultiplier: 1.0,
+        speedMultiplier: 1.5,
+        jumpMultiplier: 1.3,
         soupTimer: 0,
         // Mario Sunshine movement
         horizontalSpeed: 0,
@@ -32,6 +32,7 @@ export function createPlayer() {
         lastJumpTime: 0,
         spinJumping: false,
         diving: false,
+        gravity: 50,
         groundPounding: false,
         canDiveJump: false,
         wallSliding: false,
@@ -80,7 +81,7 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
     }
 
     if (!player.onGround) {
-        player.vel.y -= 25 * dt;
+        player.vel.y -= player.gravity * dt;
     }
 
     const camYaw = game.camera.yaw;
@@ -89,6 +90,9 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
     const maxSpeed = 18 * (player.speedMultiplier || 1.0);
     const acceleration = 60 * (player.speedMultiplier || 1.0);
     const airControl = 35;
+    const preMoveVelX = player.vel.x;
+    const preMoveVelZ = player.vel.z;
+    const preMoveSpeed = Math.sqrt(preMoveVelX * preMoveVelX + preMoveVelZ * preMoveVelZ);
 
     let inputX = 0;
     let inputZ = 0;
@@ -145,6 +149,7 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
             player.jumpCount = 0;
             showMessage('Long Jump!', '#FFD700');
             consumedJumpPress = true;
+            playEffect('sfx/p_sfx_1.mp3');
         }
     }
 
@@ -152,16 +157,25 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
         const now = Date.now();
         const timeSinceLastJump = now - player.lastJumpTime;
         const currentSpeed = Math.sqrt(player.vel.x * player.vel.x + player.vel.z * player.vel.z);
-        const isMovingBack = input.sKey && currentSpeed > 3;
+        let triggerSomersault = false;
+        if (inputLength > 0.1 && preMoveSpeed > 3.8) {
+            const velNx = preMoveVelX / preMoveSpeed;
+            const velNz = preMoveVelZ / preMoveSpeed;
+            const oppositeDot = (inputX * velNx) + (inputZ * velNz);
+            // Opposite input + enough speed triggers Mario-style somersault/backflip.
+            triggerSomersault = oppositeDot < -0.55;
+        }
 
-        if (isMovingBack) {
+        if (triggerSomersault) {
+            const launchDir = vector.normalize(vector.create(-preMoveVelX, 0, -preMoveVelZ));
             player.vel.y = 18 * (player.jumpMultiplier || 1.0);
-            player.vel.x = player.facingDir.x * -12;
-            player.vel.z = player.facingDir.z * -12;
+            player.vel.x = launchDir.x * 12;
+            player.vel.z = launchDir.z * 12;
             player.state = 'backflip';
             player.rotation = 0;
             player.jumpCount = 0;
-            showMessage('Backflip!', '#00FFFF');
+            showMessage('Somersault!', '#00FFFF');
+            playEffect('sfx/p_sfx_4.mp3');
         } else if (timeSinceLastJump < 600 && player.jumpCount < 3) {
             player.jumpCount++;
             if (player.jumpCount === 1) {
@@ -180,6 +194,7 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
             player.jumpCount = 1;
             player.vel.y = 13 * (player.jumpMultiplier || 1.0);
             player.state = 'jumping';
+            playEffect('sfx/p_sfx_3.mp3');
         }
 
         player.lastJumpTime = now;
@@ -192,6 +207,7 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
         player.state = 'spinjump';
         player.rotation = 0;
         showMessage('Spin Jump!', '#00FFFF');
+        playEffect('sfx/p_sfx_2.mp3');
     }
 
     if (input.shiftKey && !game.shiftWasPressed && !player.onGround && !player.groundPounding) {
@@ -288,6 +304,46 @@ export function updatePlayerMovementAndCollision(game, dt, showMessage = () => {
     player.pos.y += player.vel.y * dt;
     player.pos.z += player.vel.z * dt;
 
+    if (Array.isArray(game.platforms) && game.platforms.length > 0) {
+        const resolve = resolveSphereCollisions(
+            { x: player.pos.x, y: player.pos.y, z: player.pos.z },
+            player.radius,
+            game.platforms,
+            { maxIterations: 5, pushEpsilon: 1e-4 }
+        );
+
+        if (resolve.collided) {
+            player.pos.x = resolve.position.x;
+            player.pos.y = resolve.position.y;
+            player.pos.z = resolve.position.z;
+
+            let hasGroundHit = false;
+            let hasCeilingHit = false;
+
+            for (let i = 0; i < resolve.hits.length; i++) {
+                const n = resolve.hits[i].normal;
+                const inward = player.vel.x * n.x + player.vel.y * n.y + player.vel.z * n.z;
+                if (inward < 0) {
+                    player.vel.x -= n.x * inward;
+                    player.vel.y -= n.y * inward;
+                    player.vel.z -= n.z * inward;
+                }
+
+                if (n.y > 0.45) hasGroundHit = true;
+                if (n.y < -0.45) hasCeilingHit = true;
+            }
+
+            if (hasGroundHit) {
+                player.onGround = true;
+                if (player.vel.y < 0) player.vel.y = 0;
+            }
+
+            if (hasCeilingHit && player.vel.y > 0) {
+                player.vel.y = 0;
+            }
+        }
+    }
+
     return input;
 }
 
@@ -348,7 +404,7 @@ export function drawJeff(player) {
         legSwing = 0.4;
     }
     
-    // Use standard up direction for Odyssey (not planet-based)
+    // Use standard up direction (not planet-based)
     let up = vector.create(0, 1, 0);
     
     let forward = player.facingDir || vector.create(0, 0, 1);

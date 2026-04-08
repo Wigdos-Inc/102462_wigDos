@@ -24,6 +24,30 @@ export function initInput(game) {
         game.keys[key.toUpperCase()] = value;
     }
 
+    function setKeyboardStateFromEvent(e, value) {
+        if (!e) return;
+
+        if (e.key != null) game.keys[e.key] = value;
+        if (e.code != null) game.keys[e.code] = value;
+
+        if (e.code && e.code.startsWith('Key') && e.code.length === 4) {
+            const letter = e.code.slice(3);
+            game.keys[letter.toLowerCase()] = value;
+            game.keys[letter.toUpperCase()] = value;
+        }
+
+        if (e.code === 'Space') {
+            game.keys[' '] = value;
+            game.keys['Space'] = value;
+        }
+
+        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key === 'Shift') {
+            game.keys['Shift'] = value;
+            game.keys['ShiftLeft'] = value;
+            game.keys['ShiftRight'] = value;
+        }
+    }
+
     // keyboard listeners
     window.addEventListener('keydown', (e) => {
         // prevent default for game-related keys so page doesn't scroll
@@ -32,13 +56,11 @@ export function initInput(game) {
         if (ignore.includes(e.key) || e.code.startsWith('Key')) {
             e.preventDefault();
         }
-        game.keys[e.key] = true;
-        game.keys[e.code] = true;
+        setKeyboardStateFromEvent(e, true);
     });
 
     window.addEventListener('keyup', (e) => {
-        game.keys[e.key] = false;
-        game.keys[e.code] = false;
+        setKeyboardStateFromEvent(e, false);
     });
 
     window.addEventListener('blur', resetAllInputState);

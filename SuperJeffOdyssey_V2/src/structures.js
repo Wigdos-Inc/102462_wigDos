@@ -108,13 +108,13 @@ export function createPyramidInterior() {
     const moons = [];
 
     // Floor
-    platforms.push({ x: 0, y: -1, z: 0, width: 40, height: 1, depth: 40, color: [0.7, 0.6, 0.4] });
+    platforms.push({ x: 0, y: -1, z: 0, width: 40, height: 1, depth: 40, color: [0.7, 0.6, 0.4], texture: 'dirt' });
 
     // Interior platforms at different heights
     for (let i = 0; i < 4; i++) {
         const y = i * 5 + 3;
         const size = 8 - i * 1.5;
-        platforms.push({ x: 0, y, z: 0, width: size, height: 0.8, depth: size, color: [0.75, 0.65, 0.45] });
+        platforms.push({ x: 0, y, z: 0, width: size, height: 0.8, depth: size, color: [0.75, 0.65, 0.45], texture: i % 2 ? 'tile' : 'dirt' });
         
         // Moon at top
         if (i === 3) moons.push({ x: 0, y: y + 2, z: 0 });
@@ -122,7 +122,12 @@ export function createPyramidInterior() {
 
     // Side ledges
     [[-12, 2, 0], [12, 2, 0], [0, 2, -12], [0, 2, 12]].forEach(([x, y, z]) => {
-        platforms.push({ x, y, z, width: 6, height: 0.6, depth: 6, color: [0.8, 0.7, 0.5] });
+        platforms.push({ x, y, z, width: 6, height: 0.6, depth: 6, color: [0.8, 0.7, 0.5], texture: 'stone' });
+    });
+
+    // Mid-air stepping squares.
+    [[-8, 7, -8], [8, 7, -8], [-8, 12, 8], [8, 12, 8]].forEach(([x, y, z]) => {
+        platforms.push({ x, y, z, width: 3.6, height: 0.6, depth: 3.6, color: [0.78, 0.68, 0.46], texture: 'tile' });
     });
 
     return { platforms, moons, spawnPoint: { x: 0, y: 1, z: 15 } };
@@ -180,9 +185,48 @@ export function drawStructures() {
             engine.drawSphere(x, groundY + r * 0.3, z, r, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
         } else if (type === 'entrance') {
             // simple glowing archway
-            engine.drawCube(x, groundY + 2, z, structure.width || 4, structure.height || 4, structure.depth || 2, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+            const target = structure.target;
+            const kingdomDone = game.currentKingdom === 'hub' && target && target !== 'boss' && game.completedKingdoms && game.completedKingdoms[target];
+            const baseColor = structure.color || [1, 0.6, 0.2];
+            const pulse = 0.12 * Math.sin(Date.now() * 0.006);
+            const col = kingdomDone
+                ? { x: 0.22 + pulse, y: 0.9, z: 0.28 + pulse * 0.6 }
+                : { x: baseColor[0], y: baseColor[1], z: baseColor[2] };
+
+            engine.drawCube(x, groundY + 2, z, structure.width || 4, structure.height || 4, structure.depth || 2, col);
+            if (kingdomDone) {
+                engine.drawSphere(x, groundY + (structure.height || 4) + 0.8, z, 0.75, {x: 0.35, y: 1.0, z: 0.38});
+            }
         } else if (type === 'cave') {
             engine.drawCube(x, groundY + (structure.height||6)/2, z, structure.width || 10, structure.height || 6, structure.depth || 6, {x: structure.color[0], y: structure.color[1], z: structure.color[2]});
+        } else if (type === 'water') {
+            const y = Number.isFinite(structure.y) ? structure.y : 1.02;
+            const w = structure.width || 24;
+            const h = structure.height || 0.25;
+            const d = structure.depth || 24;
+            const col = structure.color || [0.18, 0.58, 0.78];
+            engine.drawCube(x, groundY + y, z, w, h, d, {x: col[0], y: col[1], z: col[2]});
+        } else if (type === 'sandpatch') {
+            const y = Number.isFinite(structure.y) ? structure.y : 1.01;
+            const w = structure.width || 20;
+            const h = structure.height || 0.22;
+            const d = structure.depth || 20;
+            const col = structure.color || [0.9, 0.82, 0.58];
+            engine.drawCube(x, groundY + y, z, w, h, d, {x: col[0], y: col[1], z: col[2]});
+        } else if (type === 'npc') {
+            const y = Number.isFinite(structure.y) ? structure.y : 1.2;
+            const bodyColor = structure.bodyColor || [0.95, 0.45, 0.18];
+            const shirtColor = structure.shirtColor || [0.12, 0.48, 0.86];
+            const headColor = structure.headColor || [0.95, 0.82, 0.62];
+
+            const baseY = groundY + y;
+            engine.drawCylinder(x, baseY + 0.65, z, 0.4, 1.2, {x: shirtColor[0], y: shirtColor[1], z: shirtColor[2]});
+            engine.drawSphere(x, baseY + 1.55, z, 0.35, {x: headColor[0], y: headColor[1], z: headColor[2]});
+            engine.drawCube(x, baseY + 0.15, z, 0.55, 0.35, 0.45, {x: bodyColor[0], y: bodyColor[1], z: bodyColor[2]});
+
+            // Floating marker so players can spot that this character is interactable.
+            const pulse = 0.05 * Math.sin(Date.now() * 0.006);
+            engine.drawSphere(x, baseY + 2.15 + pulse, z, 0.18, {x: 1.0, y: 0.95, z: 0.2});
         }
     });
 }

@@ -5,20 +5,49 @@
   "spawn": { "x": 0, "y": 6, "z": 26 },
   "config": {
     "size": { "x": 260, "z": 260 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["tile", "grass", "stone"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 220, "depth": 220, "height": 2, "color": [0.62, 0.76, 0.58] },
-    { "type": "platform", "x": 0, "y": 0.8, "z": 0, "width": 56, "depth": 56, "height": 1.6, "color": [0.86, 0.86, 0.78] },
-    { "type": "platform", "x": 0, "y": 0.4, "z": -72, "width": 18, "depth": 92, "height": 1, "color": [0.72, 0.72, 0.74] },
-    { "type": "platform", "x": 0, "y": 0.4, "z": 72, "width": 18, "depth": 92, "height": 1, "color": [0.72, 0.72, 0.74] },
-    { "type": "platform", "x": -72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "color": [0.72, 0.72, 0.74] },
-    { "type": "platform", "x": 72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 220, "depth": 220, "height": 2, "texture": "grass", "color": [0.86, 0.79, 0.58] },
+    { "type": "platform", "x": 0, "y": 0.8, "z": 0, "width": 56, "depth": 56, "height": 1.6, "texture": "tile", "color": [0.86, 0.86, 0.78] },
+    { "type": "platform", "x": 0, "y": 0.4, "z": -72, "width": 18, "depth": 92, "height": 1, "texture": "stone", "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": 0, "y": 0.4, "z": 72, "width": 18, "depth": 92, "height": 1, "texture": "stone", "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": -72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "texture": "stone", "color": [0.72, 0.72, 0.74] },
+    { "type": "platform", "x": 72, "y": 0.4, "z": 0, "width": 92, "depth": 18, "height": 1, "texture": "stone", "color": [0.72, 0.72, 0.74] },
+
+    { "type": "water", "x": 70, "y": 1.02, "z": 68, "width": 54, "depth": 44, "height": 0.22, "color": [0.18, 0.58, 0.78] },
+    { "type": "water", "x": -70, "y": 1.02, "z": -68, "width": 54, "depth": 44, "height": 0.22, "color": [0.18, 0.58, 0.78] },
+    { "type": "water", "x": 68, "y": 1.02, "z": -70, "width": 48, "depth": 36, "height": 0.22, "color": [0.18, 0.58, 0.78] },
+    { "type": "water", "x": -68, "y": 1.02, "z": 70, "width": 48, "depth": 36, "height": 0.22, "color": [0.18, 0.58, 0.78] },
+
+    { "type": "sandpatch", "x": 74, "y": 1.01, "z": 26, "width": 36, "depth": 22, "height": 0.2, "color": [0.94, 0.86, 0.64] },
+    { "type": "sandpatch", "x": -74, "y": 1.01, "z": -24, "width": 36, "depth": 22, "height": 0.2, "color": [0.94, 0.86, 0.64] },
+    { "type": "sandpatch", "x": 24, "y": 1.01, "z": -78, "width": 26, "depth": 34, "height": 0.2, "color": [0.94, 0.86, 0.64] },
+    { "type": "sandpatch", "x": -24, "y": 1.01, "z": 78, "width": 26, "depth": 34, "height": 0.2, "color": [0.94, 0.86, 0.64] },
 
     { "type": "entrance", "target": "cap", "x": 0, "y": 1, "z": -96, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
     { "type": "entrance", "target": "cascade", "x": 96, "y": 1, "z": 0, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
     { "type": "entrance", "target": "sand", "x": -96, "y": 1, "z": 0, "width": 6, "height": 8, "depth": 4, "color": [1.0, 0.55, 0.15] },
     { "type": "entrance", "target": "boss", "x": 0, "y": 1, "z": 96, "width": 6, "height": 8, "depth": 4, "color": [0.9, 0.2, 0.2] },
+
+    { "type": "npc", "name": "Captain Kelp", "x": 10, "y": 1.1, "z": 18, "bodyColor": [0.95, 0.48, 0.18], "shirtColor": [0.12, 0.48, 0.86] },
+
+    { "type": "palm", "x": 56, "y": 1.0, "z": 52, "height": 8, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": 84, "y": 1.0, "z": 62, "height": 9, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": 62, "y": 1.0, "z": 82, "height": 7, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": -58, "y": 1.0, "z": -50, "height": 8, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": -84, "y": 1.0, "z": -60, "height": 9, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": -60, "y": 1.0, "z": -80, "height": 7, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": 58, "y": 1.0, "z": -54, "height": 8, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": 82, "y": 1.0, "z": -62, "height": 9, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": -54, "y": 1.0, "z": 58, "height": 8, "color": [0.28, 0.58, 0.3] },
+    { "type": "palm", "x": -78, "y": 1.0, "z": 62, "height": 9, "color": [0.28, 0.58, 0.3] },
+
+    { "type": "dune", "x": 42, "y": 1.0, "z": 72, "size": 6.5, "color": [0.92, 0.84, 0.62] },
+    { "type": "dune", "x": -46, "y": 1.0, "z": -72, "size": 6.5, "color": [0.92, 0.84, 0.62] },
+    { "type": "dune", "x": 74, "y": 1.0, "z": -34, "size": 5.5, "color": [0.92, 0.84, 0.62] },
+    { "type": "dune", "x": -72, "y": 1.0, "z": 36, "size": 5.5, "color": [0.92, 0.84, 0.62] },
 
     { "type": "moon", "x": 0, "y": 7, "z": 0 },
     { "type": "moon", "x": 0, "y": 5, "z": -45 },

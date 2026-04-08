@@ -5,21 +5,22 @@
   "spawn": { "x": 0, "y": 6, "z": 42 },
   "config": {
     "size": { "x": 180, "z": 180 },
-    "gridSize": 4
+    "gridSize": 4,
+    "detailTextures": ["cloth", "wood", "tile"]
   },
   "objects": [
-    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 170, "depth": 170, "height": 2, "color": [0.38, 0.52, 0.76] },
-    { "type": "platform", "x": 0, "y": 2.5, "z": -8, "width": 42, "depth": 22, "height": 1.2, "color": [0.58, 0.7, 0.9] },
+    { "type": "platform", "x": 0, "y": 0, "z": 0, "width": 170, "depth": 170, "height": 2, "texture": "cloth", "color": [0.38, 0.52, 0.76] },
+    { "type": "platform", "x": 0, "y": 2.5, "z": -8, "width": 42, "depth": 22, "height": 1.2, "texture": "tile", "color": [0.58, 0.7, 0.9] },
 
-    { "type": "platform", "x": -30, "y": 5, "z": -24, "width": 12, "depth": 12, "height": 1 },
-    { "type": "platform", "x": -14, "y": 8, "z": -34, "width": 12, "depth": 12, "height": 1 },
-    { "type": "platform", "x": 4, "y": 11, "z": -42, "width": 12, "depth": 12, "height": 1 },
-    { "type": "platform", "x": 24, "y": 14, "z": -48, "width": 12, "depth": 12, "height": 1 },
-    { "type": "platform", "x": 44, "y": 17, "z": -50, "width": 14, "depth": 14, "height": 1 },
+    { "type": "platform", "x": -30, "y": 5, "z": -24, "width": 12, "depth": 12, "height": 1, "texture": "wood" },
+    { "type": "platform", "x": -14, "y": 8, "z": -34, "width": 12, "depth": 12, "height": 1, "texture": "cloth" },
+    { "type": "platform", "x": 4, "y": 11, "z": -42, "width": 12, "depth": 12, "height": 1, "texture": "tile" },
+    { "type": "platform", "x": 24, "y": 14, "z": -48, "width": 12, "depth": 12, "height": 1, "texture": "wood" },
+    { "type": "platform", "x": 44, "y": 17, "z": -50, "width": 14, "depth": 14, "height": 1, "texture": "cloth" },
 
-    { "type": "platform", "x": -48, "y": 5, "z": 18, "width": 16, "depth": 16, "height": 1 },
-    { "type": "platform", "x": -66, "y": 8, "z": 30, "width": 14, "depth": 14, "height": 1 },
-    { "type": "platform", "x": -78, "y": 11, "z": 44, "width": 14, "depth": 14, "height": 1 },
+    { "type": "platform", "x": -48, "y": 5, "z": 18, "width": 16, "depth": 16, "height": 1, "texture": "tile" },
+    { "type": "platform", "x": -66, "y": 8, "z": 30, "width": 14, "depth": 14, "height": 1, "texture": "wood" },
+    { "type": "platform", "x": -78, "y": 11, "z": 44, "width": 14, "depth": 14, "height": 1, "texture": "cloth" },
 
     { "type": "moon", "x": 0, "y": 6, "z": -8 },
     { "type": "moon", "x": -30, "y": 8, "z": -24 },
