@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EggNus Park Tycoon</title>
+    <meta
+      name="description"
+      content="EggNus Park Tycoon is a stylized 3D browser game about building a futuristic theme park under the watch of Eggnus."
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+
+      <section class="hud">
+        <div class="hud__brand">
+          <div class="hud__brandRow">
+            <img class="hud__portrait" src="./portret.png" alt="Eggnus portrait" />
+            <div class="hud__brandCopy">
+              <div class="hud__eyebrow">EggNus Park Tycoon</div>
+              <h1>Build the park. Keep Eggnus happy.</h1>
+              <p>
+                Place attractions on the glowing plots, earn coins, and expand the park while Eggnus
+                rides overhead telling you what to do.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud__stats" aria-live="polite">
+          <div><span>Coins</span><strong id="coins">0</strong></div>
+          <div><span>Happiness</span><strong id="happiness">0</strong></div>
+          <div><span>Visitors</span><strong id="visitors">0</strong></div>
+          <div><span>Income</span><strong id="income">0</strong></div>
+          <div><span>Rage</span><strong id="rage">0</strong></div>
+        </div>
+
+        <div class="hud__mode" id="modeLabel">Mode: Build</div>
+
+        <div class="hud__message" id="message">Welcome. Eggnus wants work started now.</div>
+
+        <div class="hud__builds" id="builds" aria-label="Build menu">
+          <button data-build="burger">Burger Stall</button>
+          <button data-build="photo">Photo Booth</button>
+          <button data-build="cafe">Aeter Cafe</button>
+          <button data-build="arcade">Zero-G Arcade</button>
+          <button data-build="wheel">Sky Wheel</button>
+        </div>
+
+        <div class="hud__controls">
+          <button id="cameraReset">Reset Camera</button>
+          <button id="viewMode">Walk View</button>
+          <button id="destroyMode">Destroy Mode</button>
+          <button id="editCoaster">Edit Coaster</button>
+          <button id="reseed">New Park Seed</button>
+          <button id="copyShare">Copy Share Code</button>
+          <button id="loadShare">Load Share Code</button>
+        </div>
+      </section>
+
+      <section class="taskbar">
+        <div class="taskbar__title">Current orders from Eggnus</div>
+        <ul id="tasks"></ul>
+      </section>
+
+      <div class="hint">Drag to orbit. Scroll to zoom. Click a glowing plot to build.</div>
+    </div>
+
+    <script type="module" src="./game.js"></script>
+  </body>
+</html>
