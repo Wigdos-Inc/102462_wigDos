@@ -1252,7 +1252,8 @@ function updateTrackPosition(delta, time) {
   if (!state.track.curve || !state.track.eggnus) {
     return;
   }
-  state.track.eggnusProgress = (state.track.eggnusProgress + delta * 0.03) % 1;
+  const rageFactor = 1 + state.rage * 0.012 + state.rageEvents * 0.18;
+  state.track.eggnusProgress = (state.track.eggnusProgress + delta * 0.03 * rageFactor) % 1;
   const point = state.track.curve.getPointAt(state.track.eggnusProgress);
   const tangent = state.track.curve.getTangentAt(state.track.eggnusProgress).normalize();
   state.track.eggnus.position.copy(point);
