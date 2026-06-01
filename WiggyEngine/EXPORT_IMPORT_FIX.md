@@ -6,7 +6,7 @@
 - **Problem**: Projects were being saved with `.wigproj` extension but the file dialog only accepted `.wigp`
 - **Solution**: 
   - Changed save function to use `.wigp` extension consistently
-  - Updated file dialog to accept both `.wigp` and `.wigproj` for backward compatibility
+  - Updated file dialog to accept `.wigp`, `.wigproj`, and `.rbxl` for backward compatibility
 
 ### 2. **Import Error Handling**
 - **Problem**: Weak error handling during decompression caused silent failures
@@ -22,6 +22,13 @@
   - Added alert notification when game is successfully exported
   - Changed export filename from `ProjectName.html` to `ProjectName_game.html` for clarity
   - Better statistics reporting
+
+### 4. **RBXL-Style Project Export**
+- **Problem**: The editor only produced compressed project files
+- **Solution**:
+  - Added a Roblox-style `.rbxl` export path
+  - Loader now accepts the `.rbxl` project container
+  - Projects are normalized before export so older scenes still open cleanly
 
 ### 4. **Asset Browser Import**
 - **Problem**: Asset import button did not support project files
@@ -51,6 +58,7 @@
 
 1. **Line ~71**: Updated asset file input to accept `.wigp,.wigproj`
 2. **Line ~72**: Changed button to use `ProjectManager.showLoadProjectDialog()`
+3. **Line ~25**: Added `RBXL Export` to the main menu
 
 ## How to Use
 
@@ -63,8 +71,14 @@
 ### Importing a Project
 1. Open WiggyEngine editor
 2. Click "Project Openen" in the menu bar
-3. Select your `.wigp` or `.wigproj` file
+3. Select your `.wigp`, `.wigproj`, or `.rbxl` file
 4. Project will load with all gameObjects, scenes, and settings
+
+### Exporting a RBXL-Style Project File
+1. Open your project
+2. Click "RBXL Export" in the menu bar
+3. The file downloads as `ProjectName.rbxl`
+4. Reopen it later through "Project Openen"
 
 ### Build/Export Game
 1. Open your project

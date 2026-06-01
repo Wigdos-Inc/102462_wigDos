@@ -147,6 +147,10 @@ class Inspector {
             case 'SphereCollider':
                 this.createSphereColliderProperties(container, component, index);
                 break;
+              case 'Script':
+              case 'script':
+                  this.createScriptProperties(container, component, index);
+                  break;
             default:
                 this.createGenericProperties(container, component, index);
                 break;
@@ -168,6 +172,26 @@ class Inspector {
             component.material = value;
             this.notifyComponentChanged(component, index);
         });
+
+          if (typeof AssetManager !== 'undefined') {
+              const modelAssets = AssetManager.getAssetsByType('model');
+              const materialAssets = AssetManager.getAssetsByType('material');
+
+              this.createAssetSelectProperty(container, 'Model Asset', component.modelAssetId || '', modelAssets, 'Builtin mesh', (asset) => {
+                  component.modelAssetId = asset ? asset.id : '';
+                  component.modelAssetName = asset ? asset.name : '';
+                  this.notifyComponentChanged(component, index);
+              });
+
+              this.createAssetSelectProperty(container, 'Material Asset', component.materialAssetId || '', materialAssets, 'Builtin material', (asset) => {
+                  component.materialAssetId = asset ? asset.id : '';
+                  component.materialAssetName = asset ? asset.name : '';
+                  if (asset && asset.content && typeof asset.content === 'object') {
+                      component.materialDefinition = asset.content;
+                  }
+                  this.notifyComponentChanged(component, index);
+              });
+          }
     }
 
     // Light component properties
@@ -250,6 +274,24 @@ class Inspector {
             this.notifyComponentChanged(component, index);
         });
     }
+
+      static createScriptProperties(container, component, index) {
+          if (typeof AssetManager !== 'undefined') {
+              const scriptAssets = AssetManager.getScriptAssets();
+
+              this.createAssetSelectProperty(container, 'Script Asset', component.scriptAssetId || '', scriptAssets, 'None', (asset) => {
+                  component.scriptAssetId = asset ? asset.id : '';
+                  component.scriptName = asset ? asset.name : '';
+                  component.code = asset ? (asset.content || '') : '';
+                  this.notifyComponentChanged(component, index);
+              });
+          }
+
+          this.createBooleanProperty(container, 'Enabled', component.enabled !== false, (value) => {
+              component.enabled = value;
+              this.notifyComponentChanged(component, index);
+          });
+      }
 
     // Generic properties for unknown components
     static createGenericProperties(container, component, index) {
@@ -406,6 +448,41 @@ class Inspector {
         row.appendChild(select);
         container.appendChild(row);
     }
+
+      static createAssetSelectProperty(container, label, assetId, assets, emptyLabel, onChange) {
+          const row = document.createElement('div');
+          row.className = 'property-row';
+
+          const labelElement = document.createElement('span');
+          labelElement.className = 'property-label';
+          labelElement.textContent = label;
+
+          const select = document.createElement('select');
+          select.className = 'property-input';
+
+          const emptyOption = document.createElement('option');
+          emptyOption.value = '';
+          emptyOption.textContent = emptyLabel;
+          emptyOption.selected = !assetId;
+          select.appendChild(emptyOption);
+
+          assets.forEach(asset => {
+              const option = document.createElement('option');
+              option.value = asset.id;
+              option.textContent = asset.name;
+              option.selected = asset.id === assetId;
+              select.appendChild(option);
+          });
+
+          select.addEventListener('change', (event) => {
+              const selectedAsset = assets.find(asset => asset.id === event.target.value) || null;
+              onChange(selectedAsset);
+          });
+
+          row.appendChild(labelElement);
+          row.appendChild(select);
+          container.appendChild(row);
+      }
 
     static createColorProperty(container, label, value, onChange) {
         const row = document.createElement('div');

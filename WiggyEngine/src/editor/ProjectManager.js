@@ -53,7 +53,7 @@ class WiggyCompression {
                     bestMatch = { length: matchLength, distance: pos - i };
                 }
             }
-            
+
             if (bestMatch.length >= 3) {
                 result.push({ type: 'match', distance: bestMatch.distance, length: bestMatch.length });
                 pos += bestMatch.length;
@@ -62,150 +62,28 @@ class WiggyCompression {
                 pos++;
             }
         }
-        
+
         return result;
     }
-    
-    static lz77Decompress(compressed) {
-        let result = '';
-        
-        for (const token of compressed) {
-            if (token.type === 'literal') {
-                result += token.char;
-            } else {
-                const start = result.length - token.distance;
-                for (let i = 0; i < token.length; i++) {
-                    result += result[start + i];
-                }
-            }
-        }
-        
-        return result;
-    }
-    
-    static huffmanCompress(tokens) {
-        // Build frequency table
-        const frequencies = new Map();
-        for (const token of tokens) {
-            const key = JSON.stringify(token);
-            frequencies.set(key, (frequencies.get(key) || 0) + 1);
-        }
-        
-        // Build Huffman tree
-        const tree = this.buildHuffmanTree(frequencies);
-        const codes = this.generateHuffmanCodes(tree);
-        
-        // Encode data
-        const encoded = tokens.map(token => codes.get(JSON.stringify(token))).join('');
-        
-        return {
-            encoded: this.binaryToBytes(encoded),
-            tree: tree,
-            originalLength: tokens.length
-        };
-    }
-    
-    static huffmanDecompress(huffmanData) {
-        const binaryString = this.bytesToBinary(huffmanData.encoded);
-        const tokens = [];
-        let pos = 0;
-        
-        while (tokens.length < huffmanData.originalLength && pos < binaryString.length) {
-            const token = this.decodeHuffmanSymbol(binaryString, pos, huffmanData.tree);
-            tokens.push(JSON.parse(token.symbol));
-            pos = token.newPos;
-        }
-        
-        return tokens;
-    }
-    
-    static buildHuffmanTree(frequencies) {
-        const heap = Array.from(frequencies.entries()).map(([symbol, freq]) => ({ symbol, freq, left: null, right: null }));
-        
-        while (heap.length > 1) {
-            heap.sort((a, b) => a.freq - b.freq);
-            const left = heap.shift();
-            const right = heap.shift();
-            
-            heap.push({
-                symbol: null,
-                freq: left.freq + right.freq,
-                left: left,
-                right: right
-            });
-        }
-        
-        return heap[0];
-    }
-    
-    static generateHuffmanCodes(tree, code = '', codes = new Map()) {
-        if (!tree) return codes;
-        
-        if (tree.symbol !== null) {
-            codes.set(tree.symbol, code || '0');
-            return codes;
-        }
-        
-        this.generateHuffmanCodes(tree.left, code + '0', codes);
-        this.generateHuffmanCodes(tree.right, code + '1', codes);
-        
-        return codes;
-    }
-    
-    static decodeHuffmanSymbol(binaryString, pos, tree) {
-        let current = tree;
-        let startPos = pos;
-        
-        while (current.symbol === null && pos < binaryString.length) {
-            if (binaryString[pos] === '0') {
-                current = current.left;
-            } else {
-                current = current.right;
-            }
-            pos++;
-        }
-        
-        return { symbol: current.symbol, newPos: pos };
-    }
-    
-    static binaryToBytes(binaryString) {
-        const bytes = [];
-        for (let i = 0; i < binaryString.length; i += 8) {
-            const byte = binaryString.slice(i, i + 8).padEnd(8, '0');
-            bytes.push(parseInt(byte, 2));
-        }
-        return new Uint8Array(bytes);
-    }
-    
-    static bytesToBinary(bytes) {
-        return Array.from(bytes)
-            .map(byte => byte.toString(2).padStart(8, '0'))
-            .join('');
-    }
+
 }
 
-/**
- * Project Manager - Handles project creation, loading, saving with compression
- */
 class ProjectManager {
     static currentProject = null;
     static projectHistory = [];
-    
-    // Initialize project manager
+
     static initialize() {
         this.loadProjectHistory();
         this.showProjectSelection();
     }
-    
-    // Show project selection screen
+
     static showProjectSelection() {
+        const existing = document.getElementById('project-selection');
+        if (existing) {
+            existing.remove();
+        }
+
         const body = document.body;
-        
-        // Hide main editor interface
-        const mainLayout = document.getElementById('wiggy-engine');
-        if (mainLayout) mainLayout.style.display = 'none';
-        
-        // Create project selection overlay
         const overlay = document.createElement('div');
         overlay.id = 'project-selection';
         overlay.innerHTML = `
@@ -215,50 +93,54 @@ class ProjectManager {
                     <h1>WiggyEngine Editor</h1>
                     <p>Kies een project om te openen of maak een nieuw project aan</p>
                 </div>
-                
+
                 <div class="project-actions">
                     <div class="action-card" onclick="ProjectManager.showNewProjectDialog()">
                         <div class="action-icon">📄</div>
                         <h3>Nieuw Project</h3>
                         <p>Maak een nieuw game project aan</p>
                     </div>
-                    
+
                     <div class="action-card" onclick="ProjectManager.showLoadProjectDialog()">
                         <div class="action-icon">📂</div>
                         <h3>Project Openen</h3>
                         <p>Laad een bestaand project vanaf schijf</p>
                     </div>
                 </div>
-                
+
                 <div class="recent-projects">
                     <h3>Recente Projecten</h3>
-                    <div id="recent-projects-list">
-                        <!-- Recent projects will be populated here -->
-                    </div>
+                    <div id="recent-projects-list"></div>
                 </div>
-                
+
                 <div class="project-footer">
                     <p>WiggyEngine v1.0 - Game Editor</p>
                 </div>
             </div>
         `;
-        
+
         body.appendChild(overlay);
         this.populateRecentProjects();
-        this.addProjectSelectionStyles();
     }
-    
-    // Hide project selection and show main editor
+
     static hideProjectSelection() {
         const overlay = document.getElementById('project-selection');
-        if (overlay) overlay.remove();
-        
+        if (overlay) {
+            overlay.remove();
+        }
+
         const mainLayout = document.getElementById('wiggy-engine');
-        if (mainLayout) mainLayout.style.display = 'flex';
+        if (mainLayout) {
+            mainLayout.style.display = 'flex';
+        }
     }
-    
-    // Show new project dialog
+
     static showNewProjectDialog() {
+        const existing = document.querySelector('.modal-overlay');
+        if (existing) {
+            existing.remove();
+        }
+
         const dialog = document.createElement('div');
         dialog.className = 'modal-overlay';
         dialog.innerHTML = `
@@ -267,11 +149,6 @@ class ProjectManager {
                 <div class="form-group">
                     <label>Project Naam:</label>
                     <input type="text" id="project-name" placeholder="Mijn Game Project" value="Nieuw Project">
-                </div>
-                <div class="form-group">
-                    <label>Locatie:</label>
-                    <input type="text" id="project-location" placeholder="C:/Projects/" readonly>
-                    <small>Projecten worden opgeslagen als .wigp bestanden</small>
                 </div>
                 <div class="form-group">
                     <label>Template:</label>
@@ -294,7 +171,7 @@ class ProjectManager {
     static showLoadProjectDialog() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.wigp,.wigproj';
+        input.accept = '.wigp,.wigproj,.rbxl,.xml';
         input.onchange = (e) => {
             if (e.target.files.length > 0) {
                 this.loadProjectFromFile(e.target.files[0]);
@@ -327,7 +204,7 @@ class ProjectManager {
     
     // Create project with specified data
     static createProjectWithData(name, template) {
-        const project = {
+        const project = this.normalizeProject({
             name: name,
             version: "1.0.0",
             created: new Date().toISOString(),
@@ -348,7 +225,7 @@ class ProjectManager {
                 editorVersion: "1.0.0",
                 author: "WiggyEngine User"
             }
-        };
+        });
         
         this.currentProject = project;
         this.addToProjectHistory(project);
@@ -369,42 +246,46 @@ class ProjectManager {
         try {
             const arrayBuffer = await file.arrayBuffer();
             let projectData;
-            
-            // Try to parse as compressed WiggyEngine project
-            try {
-                const fileContent = new TextDecoder().decode(new Uint8Array(arrayBuffer));
-                const parsedFile = JSON.parse(fileContent);
-                
-                if (parsedFile.type === 'WiggyEngine Project' && parsedFile.compression) {
-                    console.log(`Loading compressed project with ${parsedFile.compression}`);
-                    try {
-                        projectData = WiggyCompression.decompress(parsedFile.data);
-                        console.log(`Decompression successful: ${parsedFile.data.compressedSize} -> ${parsedFile.data.originalSize} bytes`);
-                    } catch (decompError) {
-                        console.error('Decompression failed:', decompError);
-                        // Try to use the data directly if it's already in the right format
-                        if (parsedFile.data && parsedFile.data.name) {
-                            projectData = parsedFile.data;
-                        } else {
-                            throw new Error('Project file is corrupted or in an unsupported format');
-                        }
-                    }
-                } else if (parsedFile.name && parsedFile.scenes) {
-                    // Direct uncompressed format
-                    projectData = parsedFile;
-                } else {
-                    throw new Error('Unknown project file format');
-                }
-            } catch (parseError) {
-                console.warn('JSON parse failed, trying legacy format:', parseError);
-                // Legacy format support
+            const fileContent = new TextDecoder().decode(new Uint8Array(arrayBuffer));
+            const trimmedContent = fileContent.trim();
+
+            if (trimmedContent.startsWith('<')) {
+                projectData = this.parseRbxlProject(trimmedContent);
+            } else {
+                // Try to parse as compressed WiggyEngine project
                 try {
-                    const decompressed = await this.decompressData(arrayBuffer);
-                    projectData = JSON.parse(decompressed);
-                } catch (legacyError) {
-                    throw new Error('Could not parse project file. Format not recognized.');
+                    const parsedFile = JSON.parse(fileContent);
+
+                    if (parsedFile.type === 'WiggyEngine Project' && parsedFile.compression) {
+                        console.log(`Loading compressed project with ${parsedFile.compression}`);
+                        try {
+                            projectData = WiggyCompression.decompress(parsedFile.data);
+                            console.log(`Decompression successful: ${parsedFile.data.compressedSize} -> ${parsedFile.data.originalSize} bytes`);
+                        } catch (decompError) {
+                            console.error('Decompression failed:', decompError);
+                            if (parsedFile.data && parsedFile.data.name) {
+                                projectData = parsedFile.data;
+                            } else {
+                                throw new Error('Project file is corrupted or in an unsupported format');
+                            }
+                        }
+                    } else if (parsedFile.name && parsedFile.scenes) {
+                        projectData = parsedFile;
+                    } else {
+                        throw new Error('Unknown project file format');
+                    }
+                } catch (parseError) {
+                    console.warn('JSON parse failed, trying legacy format:', parseError);
+                    try {
+                        const decompressed = await this.decompressData(arrayBuffer);
+                        projectData = JSON.parse(decompressed);
+                    } catch (legacyError) {
+                        throw new Error('Could not parse project file. Format not recognized.');
+                    }
                 }
             }
+
+            projectData = this.normalizeProject(projectData);
             
             // Validate project structure
             if (!this.validateProject(projectData)) {
@@ -429,41 +310,51 @@ class ProjectManager {
         }
     }
     
-    // Save current project to compressed file
-    static async saveProjectToFile() {
+    // Save current project to a file
+    static async saveProjectToFile(format = 'wigp') {
         if (!this.currentProject) {
             alert('Geen project om op te slaan');
             return;
         }
         
         try {
-            // Update modification time
-            this.currentProject.modified = new Date().toISOString();
+            const normalizedProject = this.normalizeProject({
+                ...this.currentProject,
+                modified: new Date().toISOString()
+            });
+            this.currentProject = normalizedProject;
             
-            // Compress project data using WiggyCompression
-            const compressed = WiggyCompression.compress(this.currentProject);
-            
-            console.log(`Compression: ${compressed.originalSize} -> ${compressed.compressedSize} bytes (ratio: ${compressed.ratio}:1)`);
-            
-            // Create final file with compression metadata
-            const fileData = {
-                type: 'WiggyEngine Project',
-                version: '1.0.0',
-                compression: 'WiggyLZ77+Huffman',
-                data: compressed
-            };
-            
-            const finalData = new Uint8Array(new TextEncoder().encode(JSON.stringify(fileData)));
-            const dataBlob = new Blob([finalData], { type: 'application/octet-stream' });
+            let dataBlob;
+            let fileName;
+
+            if (format === 'rbxl') {
+                const xmlProject = this.serializeRbxlProject(normalizedProject);
+                dataBlob = new Blob([xmlProject], { type: 'application/xml' });
+                fileName = `${normalizedProject.name}.rbxl`;
+            } else {
+                const compressed = WiggyCompression.compress(normalizedProject);
+                console.log(`Compression: ${compressed.originalSize} -> ${compressed.compressedSize} bytes (ratio: ${compressed.ratio}:1)`);
+                
+                const fileData = {
+                    type: 'WiggyEngine Project',
+                    version: '1.0.0',
+                    compression: 'WiggyLZ77+Huffman',
+                    data: compressed
+                };
+                
+                const finalData = new Uint8Array(new TextEncoder().encode(JSON.stringify(fileData)));
+                dataBlob = new Blob([finalData], { type: 'application/octet-stream' });
+                fileName = `${normalizedProject.name}.wigp`;
+            }
             
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${this.currentProject.name}.wigp`;
+            link.download = fileName;
             link.click();
             
             URL.revokeObjectURL(url);
-            console.log(`Project '${this.currentProject.name}' saved with ${compressed.ratio}:1 compression`);
+            console.log(`Project '${normalizedProject.name}' exported as ${fileName}`);
             
         } catch (error) {
             console.error('Failed to save project:', error);
@@ -550,6 +441,130 @@ class ProjectManager {
                Array.isArray(project.scenes) &&
                project.scenes.length > 0;
     }
+
+    static normalizeProject(project) {
+        const safeProject = project || {};
+        const scenes = Array.isArray(safeProject.scenes) ? safeProject.scenes : [];
+
+        return {
+            name: safeProject.name || 'UntitledProject',
+            version: safeProject.version || '1.0.0',
+            created: safeProject.created || new Date().toISOString(),
+            modified: safeProject.modified || new Date().toISOString(),
+            template: safeProject.template || 'empty',
+            settings: {
+                defaultScene: safeProject.settings?.defaultScene || 'Main Scene',
+                targetPlatform: safeProject.settings?.targetPlatform || 'web',
+                buildSettings: safeProject.settings?.buildSettings || {},
+                ...(safeProject.settings || {})
+            },
+            scenes: scenes.map(scene => ({
+                id: scene.id || this.generateId(),
+                name: scene.name || 'Main Scene',
+                gameObjects: Array.isArray(scene.gameObjects) ? scene.gameObjects.map(gameObject => ({
+                    id: gameObject.id || this.generateId(),
+                    name: gameObject.name || 'GameObject',
+                    transform: gameObject.transform || {
+                        position: { x: 0, y: 0, z: 0 },
+                        rotation: { x: 0, y: 0, z: 0 },
+                        scale: { x: 1, y: 1, z: 1 }
+                    },
+                    components: Array.isArray(gameObject.components) ? gameObject.components.map(component => {
+                        if (typeof component === 'string') {
+                            return {
+                                id: this.generateId(),
+                                type: component.toLowerCase(),
+                                name: component,
+                                enabled: true
+                            };
+                        }
+
+                        return {
+                            id: component.id || this.generateId(),
+                            type: component.type || 'unknown',
+                            name: component.name || component.type || 'Component',
+                            enabled: component.enabled !== false,
+                            code: component.code,
+                            ...component
+                        };
+                    }) : []
+                })) : []
+            })),
+            assets: Array.isArray(safeProject.assets) ? safeProject.assets : [],
+            metadata: {
+                editorVersion: safeProject.metadata?.editorVersion || '1.0.0',
+                author: safeProject.metadata?.author || 'WiggyEngine User',
+                projectFileType: safeProject.metadata?.projectFileType || 'wiggy'
+            }
+        };
+    }
+
+    static serializeRbxlProject(project) {
+        const payload = this.normalizeProject(project);
+        const encodedPayload = this.textToBase64(JSON.stringify(payload));
+        const title = this.escapeXml(payload.name);
+        const created = this.escapeXml(payload.created);
+        const modified = this.escapeXml(payload.modified);
+
+        return `<?xml version="1.0" encoding="UTF-8"?>
+<wiggy-project format="rbxl" version="${this.escapeXml(payload.version)}">
+    <header name="${title}" created="${created}" modified="${modified}" template="${this.escapeXml(payload.template)}" />
+    <data encoding="base64">${encodedPayload}</data>
+</wiggy-project>`;
+    }
+
+    static parseRbxlProject(xmlText) {
+        const parser = new DOMParser();
+        const xmlDocument = parser.parseFromString(xmlText, 'application/xml');
+        if (xmlDocument.querySelector('parsererror')) {
+            throw new Error('RBXL project file is invalid XML');
+        }
+
+        const root = xmlDocument.documentElement;
+        if (!root || root.tagName !== 'wiggy-project') {
+            throw new Error('Unknown RBXL project format');
+        }
+
+        const dataNode = root.querySelector('data');
+        if (!dataNode) {
+            throw new Error('RBXL project file is missing project data');
+        }
+
+        const encoded = (dataNode.textContent || '').trim();
+        const jsonText = dataNode.getAttribute('encoding') === 'base64'
+            ? this.base64ToText(encoded)
+            : encoded;
+
+        return this.normalizeProject(JSON.parse(jsonText));
+    }
+
+    static textToBase64(text) {
+        const bytes = new TextEncoder().encode(text);
+        let binary = '';
+        for (const byte of bytes) {
+            binary += String.fromCharCode(byte);
+        }
+        return btoa(binary);
+    }
+
+    static base64ToText(base64) {
+        const binary = atob(base64);
+        const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
+    }
+
+    static escapeXml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
+    }
+
+    static exportProjectToFile() {
+        return this.saveProjectToFile('rbxl');
+    }
     
     // Add project to history
     static addToProjectHistory(project) {
@@ -626,241 +641,7 @@ class ProjectManager {
     
     // Add project selection styles
     static addProjectSelectionStyles() {
-        if (document.getElementById('project-selection-styles')) return;
-        
-        const styles = document.createElement('style');
-        styles.id = 'project-selection-styles';
-        styles.textContent = `
-            #project-selection {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, #2c3e50, #34495e);
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-            }
-            
-            .project-selection-container {
-                max-width: 800px;
-                width: 90%;
-                text-align: center;
-            }
-            
-            .project-header h1 {
-                font-size: 3em;
-                margin: 0;
-                color: #ecf0f1;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            }
-            
-            .project-header p {
-                font-size: 1.2em;
-                margin: 10px 0 40px 0;
-                color: #bdc3c7;
-            }
-            
-            .project-actions {
-                display: flex;
-                gap: 30px;
-                justify-content: center;
-                margin-bottom: 50px;
-                flex-wrap: wrap;
-            }
-            
-            .action-card {
-                background: rgba(255,255,255,0.1);
-                padding: 30px;
-                border-radius: 15px;
-                min-width: 200px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 2px solid transparent;
-            }
-            
-            .action-card:hover {
-                background: rgba(255,255,255,0.2);
-                border-color: #3498db;
-                transform: translateY(-5px);
-            }
-            
-            .action-icon {
-                font-size: 3em;
-                margin-bottom: 15px;
-            }
-            
-            .action-card h3 {
-                margin: 0 0 10px 0;
-                color: #ecf0f1;
-            }
-            
-            .action-card p {
-                margin: 0;
-                color: #bdc3c7;
-                font-size: 0.9em;
-            }
-            
-            .recent-projects {
-                background: rgba(0,0,0,0.2);
-                padding: 30px;
-                border-radius: 15px;
-                margin-bottom: 30px;
-            }
-            
-            .recent-projects h3 {
-                margin-top: 0;
-                color: #ecf0f1;
-            }
-            
-            .recent-project-item {
-                background: rgba(255,255,255,0.1);
-                padding: 15px;
-                margin: 10px 0;
-                border-radius: 8px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                cursor: pointer;
-                transition: background 0.2s ease;
-            }
-            
-            .recent-project-item:hover {
-                background: rgba(255,255,255,0.2);
-            }
-            
-            .project-info {
-                text-align: left;
-                flex: 1;
-            }
-            
-            .project-info h4 {
-                margin: 0 0 5px 0;
-                color: #ecf0f1;
-            }
-            
-            .project-info p, .project-info small {
-                margin: 0;
-                color: #bdc3c7;
-                font-size: 0.9em;
-            }
-            
-            .project-actions button {
-                background: #e74c3c;
-                color: white;
-                border: none;
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 16px;
-            }
-            
-            .project-actions button:hover {
-                background: #c0392b;
-            }
-            
-            .no-projects {
-                color: #7f8c8d;
-                font-style: italic;
-            }
-            
-            .project-footer {
-                margin-top: 30px;
-                color: #7f8c8d;
-                font-size: 0.9em;
-            }
-            
-            .modal-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10001;
-            }
-            
-            .modal-content {
-                background: #34495e;
-                padding: 30px;
-                border-radius: 15px;
-                min-width: 400px;
-                color: white;
-            }
-            
-            .modal-content h3 {
-                margin-top: 0;
-                color: #ecf0f1;
-            }
-            
-            .form-group {
-                margin: 20px 0;
-            }
-            
-            .form-group label {
-                display: block;
-                margin-bottom: 8px;
-                color: #bdc3c7;
-            }
-            
-            .form-group input, .form-group select {
-                width: 100%;
-                padding: 10px;
-                border: 1px solid #7f8c8d;
-                border-radius: 5px;
-                background: #2c3e50;
-                color: white;
-                font-size: 14px;
-                box-sizing: border-box;
-            }
-            
-            .form-group small {
-                color: #95a5a6;
-                font-size: 12px;
-                margin-top: 5px;
-                display: block;
-            }
-            
-            .modal-buttons {
-                margin-top: 30px;
-                text-align: right;
-            }
-            
-            .modal-buttons button {
-                padding: 10px 20px;
-                margin-left: 10px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-            }
-            
-            .modal-buttons button:not(.primary) {
-                background: #7f8c8d;
-                color: white;
-            }
-            
-            .modal-buttons button.primary {
-                background: #3498db;
-                color: white;
-            }
-            
-            .modal-buttons button:hover:not(.primary) {
-                background: #95a5a6;
-            }
-            
-            .modal-buttons button.primary:hover {
-                background: #2980b9;
-            }
-        `;
-        document.head.appendChild(styles);
+        return;
     }
     
     // Generate unique ID
@@ -868,3 +649,5 @@ class ProjectManager {
         return 'id_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
     }
 }
+
+window.ProjectManager = ProjectManager;

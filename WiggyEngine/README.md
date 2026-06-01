@@ -67,6 +67,7 @@ WiggyEngine/
 
 ### Project Management
 - **Save/Load Projects**: Compressed `.wigp` format
+- **Export Project Files**: Roblox-style `.rbxl` project containers
 - **Build System**: Export to standalone HTML
 - **Project Templates**: Empty, 2D, and 3D templates
 - **Recent Projects**: Quick access to previous work
@@ -98,7 +99,7 @@ WiggyEngine/
 
 ### Loading a Project
 1. Click "Project Openen" in the menu bar
-2. Select a `.wigp` or `.wigproj` file
+2. Select a `.wigp`, `.wigproj`, or `.rbxl` file
 3. Project loads with all assets and settings
 
 ### Building a Game
@@ -127,6 +128,11 @@ WiggyEngine/
 - Contains scenes, gameObjects, scripts, and settings
 - JSON-based with LZ77+Huffman compression
 - Typical size: 1-10MB
+
+### Project Files (`.rbxl`)
+- XML container with embedded project data
+- Designed to feel closer to Roblox-style project export
+- Compatible with WiggyEngine's project loader
 
 ### Exported Games (`.html`)
 - Standalone HTML file

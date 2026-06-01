@@ -18,6 +18,7 @@
                 <button class="menu-item" onclick="EditorUI.newProject()">Nieuw Project</button>
                 <button class="menu-item" onclick="EditorUI.openProject()">Project Openen</button>
                 <button class="menu-item" onclick="EditorUI.saveProject()">Opslaan</button>
+                <button class="menu-item menu-item-accent" onclick="EditorUI.exportProject()">RBXL Export</button>
             </div>
             <div class="menu-group">
                 <button class="menu-item" onclick="EditorUI.playProject()">▶ Afspelen</button>
@@ -57,11 +58,7 @@
         <div id="asset-browser" class="panel">
             <h3>Asset Browser</h3>
             <div id="asset-grid"></div>
-            <div class="asset-controls">
-                <input type="file" id="import-asset" multiple accept=".obj,.png,.jpg,.jpeg,.wigc,.wigp,.wigproj">
-                <button onclick="ProjectManager.showLoadProjectDialog()">Project Importeren</button>
-                <button onclick="ScriptEditor.newScript()">+ Script</button>
-            </div>
+            <div class="asset-hint">Rechtsklik om textures, materials, models, objects of .wigscripts toe te voegen.</div>
         </div>
     </div>
 
@@ -95,6 +92,7 @@
     <script src="src/compiler/WigLangCompiler.js"></script>
     
     <!-- Frontend Editor Scripts -->
+    <script src="src/editor/AssetManager.js"></script>
     <script src="src/editor/ProjectBuilder.js"></script>
     <script src="src/editor/ProjectManager.js"></script>
     <script src="src/editor/EditorUI.js"></script>
@@ -105,7 +103,11 @@
     <script>
         // Initialize project manager when page loads
         window.addEventListener('load', () => {
-            ProjectManager.initialize();
+            if (window.ProjectManager && typeof window.ProjectManager.initialize === 'function') {
+                window.ProjectManager.initialize();
+            } else {
+                console.error('ProjectManager failed to load');
+            }
         });
     </script>
 </body>

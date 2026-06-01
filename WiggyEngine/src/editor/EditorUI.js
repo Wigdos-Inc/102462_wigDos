@@ -13,6 +13,9 @@ class EditorUI {
             this.setupEventListeners();
             this.setupToolButtons();
             this.initializeSceneEditor();
+            if (typeof AssetManager !== 'undefined') {
+                AssetManager.initialize();
+            }
         
         // Initialize ScriptEditor
         if (typeof ScriptEditor !== 'undefined') {
@@ -45,13 +48,6 @@ class EditorUI {
 
     // Set up event listeners for UI elements
     static setupEventListeners() {
-        // File input for asset import
-        document.getElementById('import-asset').addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                console.log('Asset import not implemented (engine removed)');
-            }
-        });
-
         // Canvas resize handling
         window.addEventListener('resize', () => {
             this.resizeCanvas();
@@ -143,6 +139,17 @@ class EditorUI {
         this.showNotification('Project opgeslagen', 'success');
     }
 
+    static exportProject() {
+        if (!this.currentProject) {
+            this.showNotification('Geen project om te exporteren', 'warning');
+            return;
+        }
+
+        ProjectManager.currentProject = this.currentProject;
+        ProjectManager.exportProjectToFile();
+        this.showNotification('Project geëxporteerd als RBXL-bestand', 'success');
+    }
+
     static buildProject() {
         if (!this.currentProject) {
             this.showNotification('Geen project om te bouwen', 'warning');
@@ -158,7 +165,10 @@ class EditorUI {
                 
                 // Create project builder instance
                 const builder = new ProjectBuilder();
-                const buildResult = await builder.buildProject(this.currentProject);
+                const project = typeof ProjectManager !== 'undefined' && ProjectManager.normalizeProject
+                    ? ProjectManager.normalizeProject(this.currentProject)
+                    : this.currentProject;
+                const buildResult = await builder.buildProject(project);
                 
                 if (buildResult.success) {
                     // Create downloadable HTML file
@@ -167,12 +177,12 @@ class EditorUI {
                     
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `${this.currentProject.name}_game.html`;
+                    link.download = `${project.name}_game.html`;
                     link.click();
                     
                     URL.revokeObjectURL(url);
                     this.showNotification(`Project succesvol gebouwd! ${buildResult.stats}`, 'success');
-                    alert(`Game geëxporteerd als "${this.currentProject.name}_game.html"\n${buildResult.stats}`);
+                    alert(`Game geëxporteerd als "${project.name}_game.html"\n${buildResult.stats}`);
                 } else {
                     this.showNotification(`Build mislukt: ${buildResult.error}`, 'error');
                     alert('Build mislukt: ' + buildResult.error);
@@ -199,14 +209,22 @@ class EditorUI {
             this.showNotification('Spel gestart!', 'success');
             
             // Start the game
-            WiggyEngine.startPlayMode();
+            const runtime = window.WiggyEngine || globalThis.WiggyEngine;
+            if (runtime && typeof runtime.startPlayMode === 'function') {
+                runtime.startPlayMode();
+            } else {
+                this.showNotification('Play mode is niet beschikbaar in deze build', 'warning');
+            }
         } else {
             playButton.textContent = '▶ Afspelen';
             playButton.style.backgroundColor = '';
             this.showNotification('Spel gestopt!', 'info');
             
             // Stop the game
-            WiggyEngine.stopPlayMode();
+            const runtime = window.WiggyEngine || globalThis.WiggyEngine;
+            if (runtime && typeof runtime.stopPlayMode === 'function') {
+                runtime.stopPlayMode();
+            }
         }
     }
 
@@ -263,7 +281,9 @@ class EditorUI {
     }
 
     static refreshAssetBrowser() {
-        console.log('Asset refresh not implemented (engine removed)');
+        if (typeof AssetManager !== 'undefined') {
+            AssetManager.refreshAssetBrowser();
+        }
     }
 
     // Canvas management
@@ -340,26 +360,40 @@ class EditorUI {
     static loadDefaultProject() {
         this.currentProject = {
             name: 'UntitledProject',
+            version: '1.0.0',
             scenes: [{
                 name: 'Scene1',
+                id: 'scene_default',
                 gameObjects: [
                     {
+                        id: 'camera_default',
                         name: 'Main Camera',
                         transform: {
                             position: { x: 0, y: 0, z: 5 },
                             rotation: { x: 0, y: 0, z: 0 },
                             scale: { x: 1, y: 1, z: 1 }
                         },
-                        components: ['Camera']
+                        components: [{
+                            id: 'component_camera',
+                            type: 'camera',
+                            name: 'Camera',
+                            enabled: true
+                        }]
                     },
                     {
+                        id: 'light_default',
                         name: 'Directional Light',
                         transform: {
                             position: { x: 0, y: 3, z: 0 },
                             rotation: { x: 45, y: 30, z: 0 },
                             scale: { x: 1, y: 1, z: 1 }
                         },
-                        components: ['Light']
+                        components: [{
+                            id: 'component_light',
+                            type: 'light',
+                            name: 'Light',
+                            enabled: true
+                        }]
                     }
                 ]
             }],
@@ -371,8 +405,13 @@ class EditorUI {
             }
         };
         
+        if (typeof ProjectManager !== 'undefined' && ProjectManager.normalizeProject) {
+            this.currentProject = ProjectManager.normalizeProject(this.currentProject);
+        }
+
         this.updateProjectTitle();
         this.refreshHierarchy();
+        this.refreshAssetBrowser();
     }
     
     static showSplashScreen(onComplete) {
@@ -460,6 +499,16 @@ class EditorUI {
         `;
         
         document.body.insertAdjacentHTML('beforeend', splashHTML);
+
+window.EditorUI = EditorUI;
+window.WiggyEngine = window.WiggyEngine || {
+    startPlayMode() {
+        console.log('WiggyEngine play mode shim: startPlayMode');
+    },
+    stopPlayMode() {
+        console.log('WiggyEngine play mode shim: stopPlayMode');
+    }
+};
         
         const progressBar = document.getElementById('splash-progress');
         let progress = 0;

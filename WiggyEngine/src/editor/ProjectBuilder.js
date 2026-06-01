@@ -12,9 +12,10 @@ class ProjectBuilder {
         try {
             console.log('Building project...');
             
-            const compiledScripts = await this.compileProjectScripts(project);
-            const processedScenes = this.processScenes(project.scenes);
-            const html = this.generateHTML(project, { scripts: compiledScripts, scenes: processedScenes });
+            const normalizedProject = this.normalizeProject(project);
+            const compiledScripts = await this.compileProjectScripts(normalizedProject);
+            const processedScenes = this.processScenes(normalizedProject.scenes);
+            const html = this.generateHTML(normalizedProject, { scripts: compiledScripts, scenes: processedScenes });
             
             this.statistics.buildTime = Date.now() - startTime;
             
@@ -38,13 +39,19 @@ class ProjectBuilder {
         this.statistics.totalScripts = 0;
         this.statistics.compiledScripts = 0;
         
-        for (const scene of project.scenes) {
-            for (const gameObject of scene.gameObjects) {
-                for (const component of gameObject.components) {
-                    if (component.type === 'script' && component.code) {
+        for (const scene of project.scenes || []) {
+            for (const gameObject of scene.gameObjects || []) {
+                for (const component of gameObject.components || []) {
+                      if (String(component.type).toLowerCase() === 'script') {
+                          const code = this.resolveScriptSource(project, component);
+                          if (!code) {
+                              this.errors.push(`Script '${component.name || component.scriptName || component.scriptAssetId || 'unnamed'}' has no source code`);
+                              continue;
+                          }
+
                         this.statistics.totalScripts++;
                         
-                        const result = this.compiler.compile(component.code);
+                          const result = this.compiler.compile(code);
                         
                         if (result.success) {
                             compiledScripts.push({
@@ -63,17 +70,88 @@ class ProjectBuilder {
         
         return compiledScripts;
     }
+
+      resolveScriptSource(project, component) {
+          if (component.code) {
+              return component.code;
+          }
+
+          const assets = Array.isArray(project.assets) ? project.assets : [];
+          const asset = assets.find(entry => entry.id === component.scriptAssetId || entry.name === component.scriptName);
+
+          if (!asset) {
+              return '';
+          }
+
+          return typeof asset.content === 'string' ? asset.content : '';
+      }
     
     processScenes(scenes) {
-        return scenes.map(scene => ({
+        return (scenes || []).map(scene => ({
             name: scene.name,
-            gameObjects: scene.gameObjects.map(go => ({
+            id: scene.id,
+            gameObjects: (scene.gameObjects || []).map(go => ({
                 id: go.id,
                 name: go.name,
                 transform: go.transform,
-                components: go.components.filter(c => c.type !== 'script')
+                components: (go.components || []).filter(c => c.type !== 'script')
             }))
         }));
+    }
+
+    normalizeProject(project) {
+        const safeProject = project || {};
+        return {
+            name: safeProject.name || 'UntitledProject',
+            version: safeProject.version || '1.0.0',
+            created: safeProject.created || new Date().toISOString(),
+            modified: safeProject.modified || new Date().toISOString(),
+            template: safeProject.template || 'empty',
+            settings: safeProject.settings || {},
+            scenes: Array.isArray(safeProject.scenes) ? safeProject.scenes.map(scene => ({
+                id: scene.id || `scene_${Math.random().toString(36).slice(2, 10)}`,
+                name: scene.name || 'Main Scene',
+                gameObjects: Array.isArray(scene.gameObjects) ? scene.gameObjects.map(gameObject => ({
+                    id: gameObject.id || `go_${Math.random().toString(36).slice(2, 10)}`,
+                    name: gameObject.name || 'GameObject',
+                    transform: gameObject.transform || {
+                        position: { x: 0, y: 0, z: 0 },
+                        rotation: { x: 0, y: 0, z: 0 },
+                        scale: { x: 1, y: 1, z: 1 }
+                    },
+                    components: Array.isArray(gameObject.components) ? gameObject.components.map(component => {
+                        if (typeof component === 'string') {
+                            return {
+                                id: `component_${Math.random().toString(36).slice(2, 10)}`,
+                                type: component.toLowerCase(),
+                                name: component,
+                                enabled: true
+                            };
+                        }
+
+                        return {
+                            id: component.id || `component_${Math.random().toString(36).slice(2, 10)}`,
+                            type: component.type || 'unknown',
+                            name: component.name || component.type || 'Component',
+                            enabled: component.enabled !== false,
+                            code: component.code,
+                            ...component
+                        };
+                    }) : []
+                })) : []
+            })) : [],
+            assets: Array.isArray(safeProject.assets) ? safeProject.assets : [],
+            metadata: safeProject.metadata || {}
+        };
+    }
+
+    escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
     
     generateHTML(project, buildData) {
@@ -82,11 +160,14 @@ class ProjectBuilder {
             wasm: this.arrayBufferToBase64(script.wasm),
             gameObjectId: script.gameObjectId
         }));
+        const safeName = this.escapeHtml(project.name);
+        const projectDataJson = JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData }).replace(/</g, '\\u003c');
+        const scriptProjectName = JSON.stringify(project.name);
         
         return `<!DOCTYPE html>
 <html>
 <head>
-    <title>${project.name} - WiggyEngine Game</title>
+    <title>${safeName} - WiggyEngine Game</title>
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: Arial; }
         #game-container { text-align: center; padding: 20px; }
@@ -169,13 +250,13 @@ class ProjectBuilder {
     <div id="game-container" style="display: none;">
         <canvas id="game-canvas" width="800" height="600"></canvas>
         <div id="game-info">
-            <p><strong>${project.name}</strong></p>
+            <p><strong>${safeName}</strong></p>
             <p>Gemaakt met WiggyEngine - Scripts: ${buildData.scripts.length} | Scenes: ${buildData.scenes.length}</p>
         </div>
     </div>
 
     <script>
-        const projectData = ${JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData })};
+        const projectData = ${projectDataJson};
         
         class WiggyWasmRuntime {
             constructor() {
@@ -234,7 +315,7 @@ class ProjectBuilder {
                 this.ctx.fillStyle = '#fff';
                 this.ctx.font = '24px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText('${project.name}', this.canvas.width / 2, this.canvas.height / 2);
+                this.ctx.fillText(${scriptProjectName}, this.canvas.width / 2, this.canvas.height / 2);
                 
                 this.ctx.font = '16px Arial';
                 this.ctx.fillText('Game Running...', this.canvas.width / 2, this.canvas.height / 2 + 40);
