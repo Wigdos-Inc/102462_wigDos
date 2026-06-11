@@ -80,11 +80,11 @@ async function ensureEngine() {
 
         try {
             const module = await import(engineBootupUrl);
-            if (!module || !module.ENGINE) {
+            if (!module || !module.StartEngine) {
                 throw new Error("ENGINE export missing in Bootup module.");
             }
 
-            state.engine = module.ENGINE;
+            state.engine = module;
             return state.engine;
         } catch (error) {
             const reason = error && error.message ? error.message : String(error);
@@ -164,10 +164,10 @@ function updateHud(engine) {
 }
 
 function connectPlayerInputBridge(engine) {
-    const input = engine && engine.Player ? engine.Player.Input : null;
-    if (!input) {
-        return;
-    }
+    const input = engine && engine.Input ? engine.Input.StartInputRouter : null;
+    if (!input) return;
+
+    engine.Input.StartInputRouter();
 
     window.addEventListener("USER_INPUT", (event) => {
         const payload = event && event.detail ? event.detail : null;
@@ -227,9 +227,7 @@ async function requestLevelLoad(engine) {
 }
 
 async function startRace() {
-    if (state.raceStarted) {
-        return;
-    }
+    if (state.raceStarted) return;
 
     state.raceStarted = true;
     clearError();
@@ -240,12 +238,16 @@ async function startRace() {
     if (ui) ui.style.display = "block";
 
     try {
-        const engine = await ensureEngine();
+        const engineBoot = await ensureEngine();
+        engineBoot.StartEngine();
+
+        const engine = ENGINE;
 
         if (engine && engine.Config && engine.Config.DEBUG) {
             engine.Config.DEBUG.SKIP.Splash = true;
             engine.Config.DEBUG.SKIP.Intro = true;
         }
+        console.log(ENGINE)
 
         connectPlayerInputBridge(engine);
         await requestLevelLoad(engine);
@@ -274,12 +276,12 @@ function bindUi() {
     byId("btn-carl").addEventListener("click", () => selectCharacter("carl"));
     byId("btn-wally").addEventListener("click", () => selectCharacter("wally"));
     byId("btn-start-race").addEventListener("click", () => {
-        void startRace();
+        //void startRace();
     });
 
     window.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !state.raceStarted) {
-            void startRace();
+            //void startRace();
         }
     });
 }
