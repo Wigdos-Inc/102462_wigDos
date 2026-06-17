@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+        <div id="character-select">
+        <h1>🏎️ Select Your Character</h1>
+        <div class="character-buttons">
+            <button id="btn-superjeff" class="selected">SuperJeff</button>
+            <button id="btn-carl">Carl</button>
+            <button id="btn-wally">Wally</button>
+        </div>
+        <div class="engine-buttons">
+           <!-- <button id="btn-engine-legacy" class="selected">Legacy Renderer</button>
+            <button id="btn-engine-v1">Engine v1 (Preview)</button> -->
+        </div>
+        <div class="character-info">
+            <div id="character-desc">
+                <strong>SuperJeff</strong><br>
+                The original champion with blue shirt and distinctive hair!
+            </div>
+            <button id="btn-start-race" style="margin-top: 20px; font-size: 18px; padding: 12px 40px; border: 2px solid #ffd700; background: #333; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">START RACE! 🚀</button>
+        </div>
+    </div>
+    <div id="ui" style="display: none;">
+        <div id="controls">
+            <strong>🎮 CONTROLS</strong><br>
+            <span class="key">↑</span> <span class="key">W</span> Vooruit<br>
+            <span class="key">↓</span> <span class="key">S</span> Achteruit/Rem<br>
+            <span class="key">←</span> <span class="key">D</span> Links<br>
+            <span class="key">→</span> <span class="key">A</span> Rechts<br>
+            <span class="key">Shift</span> Drift<br>
+            <span class="key">Space</span> Item gebruiken<br>
+            <span class="key">C</span> Camera wisselen
+        </div>
+        <div id="lap-info">
+            <div><strong>🏁 LAP:</strong> <span id="current-lap">1</span> / 3</div>
+            <div><strong>⏱️ TIME:</strong> <span id="time">0:00.0</span></div>
+        </div>
+        <div id="position-info">
+            <strong>📍 POS:</strong> <span id="position">1</span>/<span id="total-racers">6</span>
+        </div>
+        <div id="item-display">
+            <span id="current-item">❓</span>
+        </div>
+        <div id="speedometer">
+            <strong>💨 SPEED:</strong> <span id="speed">0</span> km/h
+        </div>
+    </div>
+    
+    <script type="module" src="src/boot.js"></script>
+</body>
+</html>

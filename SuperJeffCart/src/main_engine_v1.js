@@ -1,13 +1,6 @@
 import { buildSuperJeffCartLevelPayload } from "./levelPayload.js";
-
-const ENGINE_OWNER = "Wigdos-Inc";
-const ENGINE_REPO = "SloppyCarlGames";
-const ENGINE_COMMIT = "main";
-
-const engineBootupUrls = [
-    `https://cdn.jsdelivr.net/gh/${ENGINE_OWNER}/${ENGINE_REPO}@${ENGINE_COMMIT}/engine/v1/Bootup.js`,
-    `https://raw.githubusercontent.com/${ENGINE_OWNER}/${ENGINE_REPO}/${ENGINE_COMMIT}/engine/v1/Bootup.js`,
-];
+import { StartEngine } from 'https://cdn.jsdelivr.net/gh/Wigdos-Inc/SloppyCarlGames@main/engine/v1/Bootup.js';
+StartEngine();
 
 const characterConfig = {
     superjeff: {
@@ -68,58 +61,25 @@ function clearError() {
     }
 }
 
-async function ensureEngine() {
-    if (state.engine) {
-        return state.engine;
-    }
+// function selectCharacter(characterId) {
+//     if (!characterConfig[characterId]) {
+//         return;
+//     }
 
-    const importErrors = [];
+//     state.selectedCharacter = characterId;
 
-    for (let i = 0; i < engineBootupUrls.length; i += 1) {
-        const engineBootupUrl = engineBootupUrls[i];
+//     byId("btn-superjeff").classList.remove("selected");
+//     byId("btn-carl").classList.remove("selected");
+//     byId("btn-wally").classList.remove("selected");
+//     byId(`btn-${characterId}`).classList.add("selected");
 
-        try {
-            const module = await import(engineBootupUrl);
-            if (!module || !module.StartEngine) {
-                throw new Error("ENGINE export missing in Bootup module.");
-            }
-
-            state.engine = module;
-            return state.engine;
-        } catch (error) {
-            const reason = error && error.message ? error.message : String(error);
-            importErrors.push(`${engineBootupUrl} -> ${reason}`);
-        }
-    }
-
-    throw new Error(`Engine import failed. Tried:\n${importErrors.join("\n")}`);
-}
-
-function selectCharacter(characterId) {
-    if (!characterConfig[characterId]) {
-        return;
-    }
-
-    state.selectedCharacter = characterId;
-
-    byId("btn-superjeff").classList.remove("selected");
-    byId("btn-carl").classList.remove("selected");
-    byId("btn-wally").classList.remove("selected");
-    byId(`btn-${characterId}`).classList.add("selected");
-
-    const data = characterConfig[characterId];
-    byId("character-desc").innerHTML = `<strong>${data.name}</strong><br>${data.description}`;
-}
+//     const data = characterConfig[characterId];
+//     byId("character-desc").innerHTML = `<strong>${data.name}</strong><br>${data.description}`;
+// }
 
 function getPlayerSpeed(engine) {
-    if (!engine || !engine.Player || typeof engine.Player.GetState !== "function") {
-        return 0;
-    }
-
-    const playerState = engine.Player.GetState();
-    if (!playerState || !playerState.velocity) {
-        return 0;
-    }
+    const playerState = engine.Level.Player.GetState();
+    if (!playerState || !playerState.velocity) return 0;
 
     const vx = Number(playerState.velocity.x) || 0;
     const vz = Number(playerState.velocity.z) || 0;
@@ -129,14 +89,10 @@ function getPlayerSpeed(engine) {
 
 function updateHud(engine) {
     const speedEl = byId("speed");
-    if (speedEl) {
-        speedEl.textContent = String(getPlayerSpeed(engine));
-    }
+    if (speedEl) speedEl.textContent = String(getPlayerSpeed(engine));
 
     const lapEl = byId("current-lap");
-    if (lapEl) {
-        lapEl.textContent = "1";
-    }
+    if (lapEl) lapEl.textContent = "1";
 
     const timeEl = byId("time");
     if (timeEl && !timeEl.dataset.startTimestamp) {
@@ -153,57 +109,42 @@ function updateHud(engine) {
     }
 
     const positionEl = byId("position");
-    if (positionEl) {
-        positionEl.textContent = "1";
-    }
+    if (positionEl) positionEl.textContent = "1";
 
     const totalEl = byId("total-racers");
-    if (totalEl) {
-        totalEl.textContent = "6";
-    }
+    if (totalEl) totalEl.textContent = "6";
 }
 
-// function connectPlayerInputBridge(engine) {
-//     const input = engine && engine.Input ? engine.Input.StartInputRouter : null;
-//     if (!input) return;
+function handlePlayerInput(payload) {
+	if (!payload) return;
+	const input = ENGINE.Level.Player.Input;
+	if (!input) return;
+	const code = payload.code || "";
 
-//     engine.Input.StartInputRouter();
+	if (payload.type === "keydown") {
+		if (code === "KeyW") { input.forward = 1; }
+		if (code === "KeyS") { input.forward = -1; }
+		if (code === "KeyA") { input.right = -1; }
+		if (code === "KeyD") { input.right = 1; }
+		if (code === "Space") { input.jump = true; }
+		if (code === "ShiftLeft" || code === "ShiftRight") { input.boost = true; }
+		return;
+	}
 
-//     window.addEventListener("USER_INPUT", (event) => {
-//         const payload = event && event.detail ? event.detail : null;
-//         if (!payload) {
-//             return;
-//         }
-
-//         const code = payload.code || "";
-//         if (payload.type === "keydown") {
-//             if (code === "KeyW" || code === "ArrowUp") input.forward = 1;
-//             if (code === "KeyS" || code === "ArrowDown") input.forward = -1;
-//             if (code === "KeyA" || code === "ArrowLeft") input.right = -1;
-//             if (code === "KeyD" || code === "ArrowRight") input.right = 1;
-//             if (code === "Space") input.jump = true;
-//             if (code === "ShiftLeft" || code === "ShiftRight") input.boost = true;
-//             return;
-//         }
-
-//         if (payload.type === "keyup") {
-//             if ((code === "KeyW" || code === "ArrowUp") && input.forward > 0) input.forward = 0;
-//             if ((code === "KeyS" || code === "ArrowDown") && input.forward < 0) input.forward = 0;
-//             if ((code === "KeyA" || code === "ArrowLeft") && input.right < 0) input.right = 0;
-//             if ((code === "KeyD" || code === "ArrowRight") && input.right > 0) input.right = 0;
-//             if (code === "Space") input.jump = false;
-//             if (code === "ShiftLeft" || code === "ShiftRight") input.boost = false;
-//         }
-//     });
-// }
+	if (payload.type === "keyup") {
+		if (code === "KeyW" && input.forward > 0) { input.forward = 0; }
+		if (code === "KeyS" && input.forward < 0) { input.forward = 0; }
+		if (code === "KeyA" && input.right < 0) { input.right = 0; }
+		if (code === "KeyD" && input.right > 0) { input.right = 0; }
+		if (code === "Space") { input.jump = false; }
+		if (code === "ShiftLeft" || code === "ShiftRight") { input.boost = false; }
+		return;
+	}
+}
 
 async function requestLevelLoad(engine) {
     const selected = characterConfig[state.selectedCharacter];
     const payload = buildSuperJeffCartLevelPayload({ character: selected.engineCharacter });
-
-    if (!engine || !engine.Level || typeof engine.Level.CreateLevel !== "function") {
-        throw new Error("ENGINE.Level.CreateLevel is unavailable.");
-    }
 
     if (engine.Log) {
         engine.Log("GAME", `Loading level with character='${selected.engineCharacter}'.`, "log", "Level");
@@ -221,7 +162,7 @@ async function requestLevelLoad(engine) {
     }
 
     if (engine.Audio && typeof engine.Audio.PlayMusic === "function") {
-        const src = new URL("../assets/sounds/JeffCart_Theme.mp3", import.meta.url).href;
+        const src = new URL("../assets/sounds/2. Main Menu.mp3", import.meta.url).href;
         engine.Audio.PlayMusic("SUPER_JEFF_CART_THEME", src, { loop: true, volume: 0.5 });
     }
 }
@@ -238,19 +179,15 @@ async function startRace() {
     if (ui) ui.style.display = "block";
 
     try {
-        const engineBoot = await ensureEngine();
-        engineBoot.StartEngine();
-
         const engine = ENGINE;
 
         if (engine && engine.Config && engine.Config.DEBUG) {
-            engine.Config.DEBUG.SKIP.Splash = true;
-            engine.Config.DEBUG.SKIP.Intro = true;
+            //engine.Config.DEBUG.SKIP.Splash = true;
+            //engine.Config.DEBUG.SKIP.Intro = true;
         }
-        console.log(ENGINE)
 
-        //connectPlayerInputBridge(engine);
-        await requestLevelLoad(engine);
+        console.log(ENGINE);
+        //handlePlayerInput(engine);
 
         if (state.hudIntervalId) {
             window.clearInterval(state.hudIntervalId);
@@ -261,6 +198,8 @@ async function startRace() {
         }, 100);
 
         updateHud(engine);
+
+        await requestLevelLoad(engine);
     } catch (error) {
         const reason = error && error.message ? error.message : String(error);
         setError(`Kon engine race niet starten. ${reason}`);
@@ -271,30 +210,19 @@ async function startRace() {
     }
 }
 
-function bindUi() {
-    byId("btn-superjeff").addEventListener("click", () => selectCharacter("superjeff"));
-    byId("btn-carl").addEventListener("click", () => selectCharacter("carl"));
-    byId("btn-wally").addEventListener("click", () => selectCharacter("wally"));
-    byId("btn-start-race").addEventListener("click", () => {
-        void startRace();
-    });
-
-    window.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !state.raceStarted) {
-            void startRace();
-        }
-    });
+function handleUserInput(event) {
+    handlePlayerInput(event.detail);
 }
 
-bindUi();
 const urlParams = new URLSearchParams(window.location.search);
 const initialCharacter = urlParams.get("character") || "superjeff";
-if (Object.prototype.hasOwnProperty.call(characterConfig, initialCharacter)) {
-    selectCharacter(initialCharacter);
-} else {
-    selectCharacter("superjeff");
-}
 
-if (urlParams.has("character")) {
-    void startRace();
-}
+//if (Object.prototype.hasOwnProperty.call(characterConfig, initialCharacter)) selectCharacter(initialCharacter);
+//else selectCharacter("superjeff");
+
+window.addEventListener("UI_REQUEST", (event) => {
+    console.log("UI_REQUEST event received:", event);
+    if (urlParams.has("character")) void startRace();
+});
+
+window.addEventListener("USER_INPUT", handleUserInput);
