@@ -163,39 +163,39 @@ function updateHud(engine) {
     }
 }
 
-function connectPlayerInputBridge(engine) {
-    const input = engine && engine.Input ? engine.Input.StartInputRouter : null;
-    if (!input) return;
+// function connectPlayerInputBridge(engine) {
+//     const input = engine && engine.Input ? engine.Input.StartInputRouter : null;
+//     if (!input) return;
 
-    engine.Input.StartInputRouter();
+//     engine.Input.StartInputRouter();
 
-    window.addEventListener("USER_INPUT", (event) => {
-        const payload = event && event.detail ? event.detail : null;
-        if (!payload) {
-            return;
-        }
+//     window.addEventListener("USER_INPUT", (event) => {
+//         const payload = event && event.detail ? event.detail : null;
+//         if (!payload) {
+//             return;
+//         }
 
-        const code = payload.code || "";
-        if (payload.type === "keydown") {
-            if (code === "KeyW" || code === "ArrowUp") input.forward = 1;
-            if (code === "KeyS" || code === "ArrowDown") input.forward = -1;
-            if (code === "KeyA" || code === "ArrowLeft") input.right = -1;
-            if (code === "KeyD" || code === "ArrowRight") input.right = 1;
-            if (code === "Space") input.jump = true;
-            if (code === "ShiftLeft" || code === "ShiftRight") input.boost = true;
-            return;
-        }
+//         const code = payload.code || "";
+//         if (payload.type === "keydown") {
+//             if (code === "KeyW" || code === "ArrowUp") input.forward = 1;
+//             if (code === "KeyS" || code === "ArrowDown") input.forward = -1;
+//             if (code === "KeyA" || code === "ArrowLeft") input.right = -1;
+//             if (code === "KeyD" || code === "ArrowRight") input.right = 1;
+//             if (code === "Space") input.jump = true;
+//             if (code === "ShiftLeft" || code === "ShiftRight") input.boost = true;
+//             return;
+//         }
 
-        if (payload.type === "keyup") {
-            if ((code === "KeyW" || code === "ArrowUp") && input.forward > 0) input.forward = 0;
-            if ((code === "KeyS" || code === "ArrowDown") && input.forward < 0) input.forward = 0;
-            if ((code === "KeyA" || code === "ArrowLeft") && input.right < 0) input.right = 0;
-            if ((code === "KeyD" || code === "ArrowRight") && input.right > 0) input.right = 0;
-            if (code === "Space") input.jump = false;
-            if (code === "ShiftLeft" || code === "ShiftRight") input.boost = false;
-        }
-    });
-}
+//         if (payload.type === "keyup") {
+//             if ((code === "KeyW" || code === "ArrowUp") && input.forward > 0) input.forward = 0;
+//             if ((code === "KeyS" || code === "ArrowDown") && input.forward < 0) input.forward = 0;
+//             if ((code === "KeyA" || code === "ArrowLeft") && input.right < 0) input.right = 0;
+//             if ((code === "KeyD" || code === "ArrowRight") && input.right > 0) input.right = 0;
+//             if (code === "Space") input.jump = false;
+//             if (code === "ShiftLeft" || code === "ShiftRight") input.boost = false;
+//         }
+//     });
+// }
 
 async function requestLevelLoad(engine) {
     const selected = characterConfig[state.selectedCharacter];
@@ -249,7 +249,7 @@ async function startRace() {
         }
         console.log(ENGINE)
 
-        connectPlayerInputBridge(engine);
+        //connectPlayerInputBridge(engine);
         await requestLevelLoad(engine);
 
         if (state.hudIntervalId) {
@@ -276,12 +276,12 @@ function bindUi() {
     byId("btn-carl").addEventListener("click", () => selectCharacter("carl"));
     byId("btn-wally").addEventListener("click", () => selectCharacter("wally"));
     byId("btn-start-race").addEventListener("click", () => {
-        //void startRace();
+        void startRace();
     });
 
     window.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && !state.raceStarted) {
-            //void startRace();
+            void startRace();
         }
     });
 }
