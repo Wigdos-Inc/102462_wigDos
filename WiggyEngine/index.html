@@ -18,8 +18,8 @@
         //     BurtCore = await import('../BurtEngine/core/BurtEngine.js');
         // }
 
-        //BurtCore = BurtCore.BurtCore;
-        const BurtCore = await import('../BurtEngine/core/BurtEngine.js');
+        let BurtCore = await import('../BurtEngine/core/BurtEngine.js');
+        BurtCore = BurtCore.BurtCore;
 
         window.Engine = BurtCore;
         window.Matrix4 = new BurtCore.Mat4;
