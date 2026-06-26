@@ -24,6 +24,8 @@ class GameObjectManager {
             parent: null
         };
 
+        EditorUI.sceneEditor.addGameObject(gameObject);
+
         // Add to current scene
         EditorUI.currentProject.scenes[0].gameObjects.push(gameObject);
         
@@ -134,6 +136,7 @@ class GameObjectManager {
 
             // Remove from scene
             scene.gameObjects.splice(index, 1);
+            EditorUI.sceneEditor.removeGameObject(gameObject);
 
             // Clear selection if this object was selected
             if (this.selectedGameObject && this.selectedGameObject.id === gameObject.id) {

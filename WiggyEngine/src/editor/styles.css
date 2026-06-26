@@ -231,7 +231,7 @@ textarea:focus {
 }
 
 #asset-browser {
-    position: absolute;
+    /*position: absolute;*/
     left: 0;
     right: 0;
     bottom: 0;
@@ -414,6 +414,8 @@ textarea:focus {
 }
 
 .property-input {
+    width: 100%;
+
     flex: 1;
     background: rgba(10, 14, 19, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);

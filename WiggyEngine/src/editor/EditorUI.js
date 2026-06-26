@@ -7,9 +7,24 @@ class EditorUI {
     static sceneEditor = null;
 
     // Initialize the editor UI
-    static initialize() {
+    static async initialize() {
+        const SplashAudio = new Engine.Audio('/WiggyEngine/sounds/intro.mp3');
+        await SplashAudio.init();
+        SplashAudio.pitch = 1.4;
+
+        const editorAudio = new Engine.Audio('/WiggyEngine/sounds/Wiggy Seashore Engine (2).mp3');
+        await editorAudio.init();
+
+        editorAudio.loop = true;
+        editorAudio.pitch = 1.6;
+        editorAudio.volume = 0.1;
+
+        SplashAudio.play();
+
         // Show splash screen first
         this.showSplashScreen(() => {
+            editorAudio.play();
+
             this.setupEventListeners();
             this.setupToolButtons();
             this.initializeSceneEditor();
@@ -257,12 +272,10 @@ class EditorUI {
     static loadSceneIntoEditor() {
         if (!this.sceneEditor || !this.currentProject) return;
         
-        const scene = {
-            objects: this.currentProject.scenes[0].gameObjects || []
-        };
+        const scene = this.currentProject.scenes[0].gameObjects || [];
         
         this.sceneEditor.setScene(scene);
-        console.log('Scene loaded into editor with', scene.objects.length, 'objects');
+        console.log('Scene loaded into editor with', scene.length, 'objects');
     }
 
     // UI updates
@@ -415,88 +428,7 @@ class EditorUI {
     }
     
     static showSplashScreen(onComplete) {
-        const splashHTML = `
-            <div id="splash-screen" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 10000;
-                color: #ffffff;
-                font-family: 'Segoe UI', sans-serif;
-            ">
-                <div style="text-align: center; animation: fadeInUp 1s ease-out;">
-                    <img src="images/logo.png" alt="WiggyEngine" style="
-                        width: 200px;
-                        height: auto;
-                        margin-bottom: 30px;
-                        filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
-                    ">
-                    <h1 style="
-                        font-size: 48px;
-                        font-weight: 300;
-                        margin: 0 0 10px 0;
-                        color: #4CAF50;
-                        text-shadow: 0 0 10px rgba(76,175,80,0.5);
-                    ">WiggyEngine</h1>
-                    <p style="
-                        font-size: 18px;
-                        margin: 0 0 20px 0;
-                        color: #bbb;
-                    ">3D Game Engine & Editor</p>
-                    <div style="
-                        font-size: 14px;
-                        color: #888;
-                        line-height: 1.6;
-                    ">
-                        <p>Version 1.0.0</p>
-                        <p>© 2025 WiggyEngine. All rights reserved.</p>
-                    </div>
-                    <div style="
-                        margin-top: 40px;
-                        width: 200px;
-                        height: 3px;
-                        background: #333;
-                        border-radius: 2px;
-                        overflow: hidden;
-                    ">
-                        <div id="splash-progress" style="
-                            width: 0;
-                            height: 100%;
-                            background: linear-gradient(90deg, #4CAF50, #81C784);
-                            border-radius: 2px;
-                            transition: width 0.3s ease;
-                        "></div>
-                    </div>
-                </div>
-            </div>
-            <style>
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                @keyframes fadeOut {
-                    from {
-                        opacity: 1;
-                    }
-                    to {
-                        opacity: 0;
-                    }
-                }
-            </style>
-        `;
+        const splashHTML = SplashScreen;
         
         document.body.insertAdjacentHTML('beforeend', splashHTML);
 

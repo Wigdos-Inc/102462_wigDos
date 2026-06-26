@@ -706,8 +706,8 @@ class Inspector {
 
     // Notification methods
     static notifyTransformChanged(gameObject) {
-        if (WiggyEngine.renderer) {
-            WiggyEngine.renderer.updateGameObject(gameObject);
+        if (EditorUI.sceneEditor) {
+            EditorUI.sceneEditor.updateGameObject(gameObject);
         }
     }
 
@@ -741,13 +741,12 @@ class Inspector {
         if (container) {
             container.innerHTML = '<p>Selecteer een object om eigenschappen te bekijken</p>';
         }
+        
         this.currentObject = null;
     }
 
     // Refresh inspector
     static refresh() {
-        if (this.currentObject) {
-            this.showGameObject(this.currentObject);
-        }
+        if (this.currentObject) this.showGameObject(this.currentObject);
     }
 }
