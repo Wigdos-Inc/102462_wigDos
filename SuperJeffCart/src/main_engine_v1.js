@@ -1,12 +1,10 @@
 import { buildSuperJeffCartLevelPayload } from "./levelPayload.js";
-import { StartEngine } from 'https://cdn.jsdelivr.net/gh/Wigdos-Inc/SloppyCarlGames@main/engine/v1/Bootup.js';
-StartEngine();
 
 const characterConfig = {
     superjeff: {
         name: "SuperJeff",
         description: "The original champion with blue shirt and distinctive hair!",
-        engineCharacter: "carl",
+        engineCharacter: "jeff",
     },
     carl: {
         name: "Carl",
@@ -16,7 +14,7 @@ const characterConfig = {
     wally: {
         name: "Wally",
         description: "A tough biker with a yellow helmet, big mustache, and muscular build. Ready to dominate!",
-        engineCharacter: "carl",
+        engineCharacter: "wally",
     },
 };
 
@@ -146,6 +144,8 @@ async function requestLevelLoad(engine) {
     const selected = characterConfig[state.selectedCharacter];
     const payload = buildSuperJeffCartLevelPayload({ character: selected.engineCharacter });
 
+    console.log(payload);
+
     if (engine.Log) {
         engine.Log("GAME", `Loading level with character='${selected.engineCharacter}'.`, "log", "Level");
     }
@@ -186,7 +186,6 @@ async function startRace() {
             //engine.Config.DEBUG.SKIP.Intro = true;
         }
 
-        console.log(ENGINE);
         //handlePlayerInput(engine);
 
         if (state.hudIntervalId) {
@@ -200,6 +199,8 @@ async function startRace() {
         updateHud(engine);
 
         await requestLevelLoad(engine);
+
+        console.log(document.getElementById('engine-level-root-canvas'))
     } catch (error) {
         const reason = error && error.message ? error.message : String(error);
         setError(`Kon engine race niet starten. ${reason}`);
@@ -220,9 +221,6 @@ const initialCharacter = urlParams.get("character") || "superjeff";
 //if (Object.prototype.hasOwnProperty.call(characterConfig, initialCharacter)) selectCharacter(initialCharacter);
 //else selectCharacter("superjeff");
 
-window.addEventListener("UI_REQUEST", (event) => {
-    console.log("UI_REQUEST event received:", event);
-    if (urlParams.has("character")) void startRace();
-});
-
 window.addEventListener("USER_INPUT", handleUserInput);
+
+void startRace();

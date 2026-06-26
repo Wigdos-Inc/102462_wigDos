@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SuperJeff Cart Racing</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="assets/images/icon.jpg">
 </head>
 <body>
     <div id="character-select">
@@ -52,7 +53,13 @@
         </div>
     </div>
 
+    <script type="module" src="src/boot.js"></script>
+    
     <script type="module">
+        console.log(ENGINE);
+
+        ENGINE.Config.VOLUME.Music = 0.1;
+
         const characterSelect = document.getElementById('character-select');
         const charDesc = document.getElementById('character-desc');
         const startBtn = document.getElementById('btn-start-race');
@@ -61,10 +68,8 @@
         let selectedCharacter = 'superjeff';
         let selectedEngine = 'legacy';
 
-        const audio = new Audio();
-        audio.src = 'assets/sounds/1. Super Jeffinated.mp3';
-        audio.loop = true;
-        audio.play();
+        const src = new URL("assets/sounds/1. Super Jeffinated.mp3", import.meta.url).href;
+        ENGINE.Audio.PlayMusic("SUPER_JEFF_CART_THEME", src, { loop: true, volume: 0.5 });
 
         const characters = {
             superjeff: {
@@ -121,10 +126,12 @@
             }
         }
 
-        function startGame() {
+        async function startGame() {
             characterSelect.style.display = 'none';
             document.getElementById('ui').style.display = 'block';
-            window.location.href = `game.html?character=${selectedCharacter}&engine=${selectedEngine}`;
+            //window.location.href = `game.html?character=${selectedCharacter}&engine=${selectedEngine}`;
+            //window.location.href += `?character=${selectedCharacter}&engine=${selectedEngine}`;
+            await import("./src/main_engine_v1.js");
         }
 
         document.addEventListener('keypress', (e) => {

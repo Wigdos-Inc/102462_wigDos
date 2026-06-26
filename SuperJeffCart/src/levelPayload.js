@@ -1,3 +1,5 @@
+import character_models from "../assets/model/characters.json" with { type: "json" };
+
 function createRingObstacles(options) {
     const count = options.count;
     const radius = options.radius;
@@ -21,9 +23,12 @@ function createRingObstacles(options) {
             rotation: { x: 0, y: (-angle * 180) / Math.PI, z: 0 },
             scale: { x: 1, y: 1, z: 1 },
             texture: {
-                textureID: "default-grid",
-                color: color,
-                opacity: 1,
+                generated: {
+                    id: "default-grid",
+                    color: color,
+                    opacity: 1,
+                },
+                "custom": []
             },
             detail: {},
         });
@@ -44,9 +49,12 @@ function buildSuperJeffCartLevelPayload(options) {
             rotation: { x: 0, y: 0, z: 0 },
             scale: { x: 1, y: 1, z: 1 },
             texture: {
-                textureID: "grass-soft",
-                color: { r: 0.21, g: 0.42, b: 0.17, a: 1 },
-                opacity: 1,
+                generated: {
+                    id: "grass-soft",
+                    color: { r: 0.21, g: 0.42, b: 0.17, a: 1 },
+                    opacity: 1,
+                },
+                "custom": []
             },
             detail: {},
         },
@@ -58,9 +66,12 @@ function buildSuperJeffCartLevelPayload(options) {
             rotation: { x: 0, y: 0, z: 0 },
             scale: { x: 1, y: 1, z: 1 },
             texture: {
-                textureID: "default-grid",
-                color: { r: 0.18, g: 0.18, b: 0.18, a: 1 },
-                opacity: 1,
+                generated: {
+                    id: "default-grid",
+                    color: { r: 0.18, g: 0.18, b: 0.18, a: 1 },
+                    opacity: 1,
+                },
+                "custom": []
             },
             detail: {},
         },
@@ -121,9 +132,10 @@ function buildSuperJeffCartLevelPayload(options) {
             sensitivity: 0.12,
         },
         player: {
-            character: selectedCharacter,
+            character: 'chara',
             spawnPosition: { x: 51, y: 2, z: 0 },
             scale: { x: 1, y: 1, z: 1 },
+            modelParts: character_models.jeff.model.parts
         },
         music: null,
         meta: {
