@@ -10,15 +10,16 @@
 <body>
     <script src="src/engine/globals.js"></script>
     <script type="module">
-        let BurtCore = null;
+        //let BurtCore = null;
 
-        if (window.location.href.includes('102462_wigDos')) {
-            BurtCore = await fetch(BurtCorePath);
-        } else {
-            BurtCore = await import('../BurtEngine/core/BurtEngine.js');
-        }
+        // if (window.location.href.includes('102462_wigDos')) {
+        //     BurtCore = await fetch(BurtCorePath);
+        // } else {
+        //     BurtCore = await import('../BurtEngine/core/BurtEngine.js');
+        // }
 
-        BurtCore = BurtCore.BurtCore;
+        //BurtCore = BurtCore.BurtCore;
+        const BurtCore = await import('../BurtEngine/core/BurtEngine.js');
 
         window.Engine = BurtCore;
         window.Matrix4 = new BurtCore.Mat4;
