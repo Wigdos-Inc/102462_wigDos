@@ -8,11 +8,11 @@ class EditorUI {
 
     // Initialize the editor UI
     static async initialize() {
-        const SplashAudio = new Engine.Audio('/WiggyEngine/sounds/intro.mp3');
+        const SplashAudio = new Engine.Audio('../../sounds/intro.mp3');
         await SplashAudio.init();
         SplashAudio.pitch = 1.4;
 
-        const editorAudio = new Engine.Audio('/WiggyEngine/sounds/Wiggy Seashore Engine (2).mp3');
+        const editorAudio = new Engine.Audio('../../sounds/Wiggy Seashore Engine (2).mp3');
         await editorAudio.init();
 
         editorAudio.loop = true;
