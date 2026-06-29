@@ -18,7 +18,7 @@
         //     BurtCore = await import('../BurtEngine/core/BurtEngine.js');
         // }
 
-        let BurtCore = await import('../BurtEngine/core/BurtEngine.js');
+        let BurtCore = await import('../BurtEngine/BurtCore.min.js');
         BurtCore = BurtCore.BurtCore;
 
         window.Engine = BurtCore;
@@ -45,7 +45,10 @@
     
     <!-- Frontend Editor Scripts -->
     <script src="src/editor/AssetManager.js"></script>
+
+    <script src="src/builder/jstemplates.js"></script>
     <script src="src/editor/ProjectBuilder.js"></script>
+
     <script src="src/editor/ProjectManager.js"></script>
     <script src="src/editor/EditorUI.js"></script>
     <script src="src/editor/GameObjectManager.js"></script>

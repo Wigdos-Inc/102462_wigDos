@@ -351,6 +351,8 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding-bottom: 2%;
+    padding-top: 2%;
     margin-bottom: 12px;
 }
 

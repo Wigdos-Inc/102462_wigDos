@@ -53,7 +53,8 @@ const projectSettingsModal = `
     </div>
 `;
 
-const SplashScreen = `
+function getSplash(logoImage) {
+    return `
     <div id="splash-screen" style="
         position: fixed;
         top: 0;
@@ -70,7 +71,7 @@ const SplashScreen = `
         font-family: 'Segoe UI', sans-serif;
     ">
         <div style="text-align: center; animation: fadeInUp 1s ease-out;">
-            <img src="images/logo2.png" alt="WiggyEngine" style="
+            <img src="${logoImage}" alt="WiggyEngine" style="
                 width: 200px;
                 height: auto;
                 margin-bottom: 30px;
@@ -135,6 +136,7 @@ const SplashScreen = `
         }
     </style>
 `;
+}
 
 const EditorMainUI = `
     <div id="wiggy-engine">
@@ -148,7 +150,6 @@ const EditorMainUI = `
                 <button class="menu-item" onclick="EditorUI.newProject()">Nieuw Project</button>
                 <button class="menu-item" onclick="EditorUI.openProject()">Project Openen</button>
                 <button class="menu-item" onclick="EditorUI.saveProject()">Opslaan</button>
-                <button class="menu-item menu-item-accent" onclick="EditorUI.exportProject()">RBXL Export</button>
             </div>
             <div class="menu-group">
                 <button class="menu-item" onclick="EditorUI.playProject()">▶ Afspelen</button>
@@ -162,12 +163,12 @@ const EditorMainUI = `
             <div id="hierarchy-panel" class="panel">
                 <h3>Scene Hiërarchie</h3>
                 <div id="scene-tree"></div>
-                <button onclick="GameObjectManager.createGameObject('GameObject')">+ GameObject</button>
+                <!-- <button onclick="GameObjectManager.createGameObject('GameObject')">+ GameObject</button> -->
             </div>
 
             <!-- Viewport -->
             <div id="viewport-container">
-                <canvas id="canvas" width="800" height="600"></canvas>
+                <canvas id="canvas" width="1920" height="1080"></canvas>
                 <div id="viewport-controls">
                     <button id="move-tool" class="tool-btn active">Verplaatsen</button>
                     <button id="rotate-tool" class="tool-btn">Roteren</button>

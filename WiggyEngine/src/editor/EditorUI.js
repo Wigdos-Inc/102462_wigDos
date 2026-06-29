@@ -10,13 +10,13 @@ class EditorUI {
     static async initialize() {
         const SplashAudio = new Engine.Audio('sounds/intro.mp3');
         await SplashAudio.init();
-        SplashAudio.pitch = 1.4;
+        SplashAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
 
         const editorAudio = new Engine.Audio('sounds/Wiggy Seashore Engine (2).mp3');
         await editorAudio.init();
 
         editorAudio.loop = true;
-        editorAudio.pitch = 1.6;
+        editorAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
         editorAudio.volume = 0.1;
 
         SplashAudio.play();
@@ -428,7 +428,7 @@ class EditorUI {
     }
     
     static showSplashScreen(onComplete) {
-        const splashHTML = SplashScreen;
+        const splashHTML = getSplash('images/logo2.png');
         
         document.body.insertAdjacentHTML('beforeend', splashHTML);
 

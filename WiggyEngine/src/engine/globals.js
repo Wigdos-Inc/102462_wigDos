@@ -9,8 +9,8 @@ const UIColorPal = {
     secondary: "#000000"
 };
 
-const BurtCorePath = "https://wigdos-inc.github.io/102462_wigDos/BurtEngine";
-const CarlNetPath = "https://cdn.jsdelivr.net/gh/Wigdos-Inc/SloppyCarlGames@main/engine/v1/Bootup.js";
+const BurtCorePath = "https://wigdos-inc.github.io/102462_wigDos/BurtEngine/BurtCore.min.js";
+const CarlNetPath = "https://wigdos-inc.github.io/SloppyCarlGames/engine/v1/Bootup.js";
 
 const EngineType = "BC";
 

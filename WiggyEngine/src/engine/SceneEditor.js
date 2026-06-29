@@ -111,9 +111,26 @@ class SceneEditor {
         console.log('Selected:', gameObject ? gameObject.name : 'none');
     }
     
-    addGameObject(gameObject) {
+    async addGameObject(gameObject) {
         if (this.scene) {
-            const mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createBox());
+            console.log(gameObject);
+
+            let mesh = null;
+            switch(gameObject.type) {
+                case 'Cube': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createBox());break;
+                case 'Sphere': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createSphere());break;
+                case 'Plane': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createPlane());break;
+                case 'GLB': {
+                    const glbParser = new Engine.GLBParser({gl: this.renderer.gl}, this.camera);
+                    const glb = await glbParser.loadGLB(gameObject.link);
+                    mesh = new Engine.Mesh({gl: this.renderer.gl}, glbParser.ConvertToFlatMesh(glb));
+                    break;
+                }
+                case 'Camera': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createCone());break;
+            }
+
+            if (!mesh) return;
+
             const pos = gameObject.transform.position;
             const rot = gameObject.transform.rotation;
             const scl = gameObject.transform.scale;
@@ -161,7 +178,11 @@ class SceneEditor {
         if (this.scene) {
             const index = gameObject.id;
             if (index !== -1) {
-                this.scene.objects.splice(index, 1);
+                for (const object_index in this.scene.objects) {
+                    if (this.scene.objects[object_index].id == index) {
+                        this.scene.objects.splice(object_index, 1);
+                    }
+                }
             }
         }
     }

@@ -19,7 +19,7 @@ class ScriptEditor {
         this.createCodeEditor();
         
         // Load example programs into dropdown
-        this.setupExamplePrograms();
+        //this.setupExamplePrograms();
         
         console.log('🔧 ScriptEditor initialized with WigLang compiler and syntax highlighting');
     }

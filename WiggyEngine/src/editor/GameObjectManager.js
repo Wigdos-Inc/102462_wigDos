@@ -5,7 +5,7 @@ class GameObjectManager {
     static selectedGameObject = null;
 
     // Create a new GameObject
-    static createGameObject(name = 'GameObject') {
+    static createGameObject(type, name = 'GameObject', link) {
         if (!EditorUI.currentProject || !EditorUI.currentProject.scenes[0]) {
             EditorUI.showNotification('Geen actieve scene', 'warning');
             return;
@@ -14,6 +14,7 @@ class GameObjectManager {
         const gameObject = {
             id: this.generateId(),
             name: this.getUniqueName(name),
+            type: type,
             transform: {
                 position: { x: 0, y: 0, z: 0 },
                 rotation: { x: 0, y: 0, z: 0 },
@@ -23,6 +24,8 @@ class GameObjectManager {
             children: [],
             parent: null
         };
+
+        if (type == 'GLB') gameObject.link = link;
 
         EditorUI.sceneEditor.addGameObject(gameObject);
 
@@ -47,7 +50,7 @@ class GameObjectManager {
 
     // Create specific primitive objects
     static createCube() {
-        const cube = this.createGameObject('Cube');
+        const cube = this.createGameObject('Cube', 'Cube');
         cube.components.push({
             type: 'MeshRenderer',
             mesh: 'cube',
@@ -61,7 +64,7 @@ class GameObjectManager {
     }
 
     static createSphere() {
-        const sphere = this.createGameObject('Sphere');
+        const sphere = this.createGameObject('Sphere', 'Sphere');
         sphere.components.push({
             type: 'MeshRenderer',
             mesh: 'sphere',
@@ -75,7 +78,7 @@ class GameObjectManager {
     }
 
     static createPlane() {
-        const plane = this.createGameObject('Plane');
+        const plane = this.createGameObject('Plane', 'Plane');
         plane.components.push({
             type: 'MeshRenderer',
             mesh: 'plane',
@@ -84,8 +87,58 @@ class GameObjectManager {
         return plane;
     }
 
+    static createGLB() {
+        const glb_input = document.createElement('div');
+        glb_input.innerHTML = `
+            <input 
+                type="url" 
+                id="GLBlinkInput" 
+                placeholder="Enter a link (https://...)" 
+                required
+                style="width: 300px; padding: 8px;"
+            />
+
+            <button onclick="importGLB()">Import GLB</button>
+        `;
+
+        glb_input.style.cssText = `
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 4px 0;
+            z-index: 1000;
+            min-width: 120px;
+        `;
+
+        document.body.appendChild(glb_input);
+
+        window.importGLB = () => {
+            const link = document.getElementById('GLBlinkInput').value;
+            document.body.removeChild(glb_input);
+
+            if (link == '' || link == null) return;
+
+            const GLB = this.createGameObject('GLB', 'GLB', link);
+            GLB.components.push({
+                type: 'MeshRenderer',
+                mesh: 'GLB',
+                material: 'default',
+                link: link
+            });
+            GLB.components.push({
+                type: 'BoxCollider',
+                size: { x: 1, y: 1, z: 1 }
+            });
+
+            return GLB;
+        }
+    }
+
     static createLight() {
-        const light = this.createGameObject('Light');
+        const light = this.createGameObject('Light', 'Light');
         light.components.push({
             type: 'Light',
             lightType: 'directional',
@@ -96,7 +149,7 @@ class GameObjectManager {
     }
 
     static createCamera() {
-        const camera = this.createGameObject('Camera');
+        const camera = this.createGameObject('Camera', 'Camera');
         camera.components.push({
             type: 'Camera',
             fieldOfView: 75,
@@ -285,7 +338,7 @@ class GameObjectManager {
 
     // Setup context menu for hierarchy
     static setupContextMenu() {
-        const hierarchyContainer = document.getElementById('scene-tree');
+        const hierarchyContainer = document.getElementById('hierarchy-panel');
         
         hierarchyContainer.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -336,6 +389,7 @@ class GameObjectManager {
             { label: 'Cube toevoegen', action: () => this.createCube() },
             { label: 'Sphere toevoegen', action: () => this.createSphere() },
             { label: 'Plane toevoegen', action: () => this.createPlane() },
+            { label: 'GLB toevoegen', action: () => this.createGLB() },
             { label: '---', action: null },
             { label: 'Light toevoegen', action: () => this.createLight() },
             { label: 'Camera toevoegen', action: () => this.createCamera() }
