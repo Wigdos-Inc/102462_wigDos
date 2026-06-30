@@ -7,7 +7,7 @@ const engineMode = urlParams.get("engine") === "v1" ? "v1" : "legacy";
 //     await import("./main.js");
 // }
 
-import { StartEngine } from 'https://cdn.jsdelivr.net/gh/Wigdos-Inc/SloppyCarlGames@main/engine/v1/Bootup.js';
+import { StartEngine } from 'https://wigdos-inc.github.io/SloppyCarlGames/engine/v1/Bootup.js';
 StartEngine();
 
 window.addEventListener("UI_REQUEST", (event) => {
