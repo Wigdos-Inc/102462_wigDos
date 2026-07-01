@@ -748,3 +748,16 @@ textarea:focus {
 .error { color: var(--danger); }
 .success { color: var(--success); }
 .warning { color: var(--accent-warm); }
+
+.game-iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 80%;
+    height: 80vh;
+
+    transform: translate(-50%, -50%);
+    border-radius: 2vh;
+    border-style: none;
+}

@@ -10,22 +10,22 @@ class WiggyCompression {
         const lz77Compressed = this.lz77Compress(jsonString);
         
         // Step 2: Huffman encoding for final compression
-        const huffmanCompressed = this.huffmanCompress(lz77Compressed);
+       // const huffmanCompressed = this.huffmanCompress(lz77Compressed);
         
         return {
-            compressed: huffmanCompressed,
+            compressed: lz77Compressed,
             originalSize: jsonString.length,
-            compressedSize: huffmanCompressed.length,
-            ratio: (jsonString.length / huffmanCompressed.length).toFixed(2)
+            compressedSize: lz77Compressed.length,
+            ratio: (jsonString.length / lz77Compressed.length).toFixed(2)
         };
     }
     
     static decompress(compressedData) {
         // Step 1: Huffman decoding
-        const lz77Data = this.huffmanDecompress(compressedData.compressed);
+        //const lz77Data = this.huffmanDecompress(compressedData.compressed);
         
         // Step 2: LZ77 decompression
-        const jsonString = this.lz77Decompress(lz77Data);
+        const jsonString = this.lz77Decompress(compressedData.compressed);
         
         return JSON.parse(jsonString);
     }
@@ -64,6 +64,24 @@ class WiggyCompression {
         }
 
         return result;
+    }
+
+    static lz77Decompress(compressed) {
+        const output = [];
+
+        for (const token of compressed) {
+            if (token.type === "literal") {
+                output.push(token.char);
+            } else if (token.type === "match") {
+                const start = output.length - token.distance;
+
+                for (let i = 0; i < token.length; i++) {
+                    output.push(output[start + i]);
+                }
+            }
+        }
+
+        return output.join("");
     }
 
 }

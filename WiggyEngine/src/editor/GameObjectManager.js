@@ -40,7 +40,7 @@ class GameObjectManager {
         
         // Update 3D scene
         if (EditorUI.sceneEditor) {
-            EditorUI.loadSceneIntoEditor();
+            //EditorUI.loadSceneIntoEditor();
         }
         
         EditorUI.showNotification(`GameObject "${gameObject.name}" aangemaakt`, 'success');
@@ -98,6 +98,8 @@ class GameObjectManager {
                 style="width: 300px; padding: 8px;"
             />
 
+            <input type="file" id="GLBfileInput" accept=".glb">
+
             <button onclick="importGLB()">Import GLB</button>
         `;
 
@@ -116,10 +118,21 @@ class GameObjectManager {
         document.body.appendChild(glb_input);
 
         window.importGLB = () => {
-            const link = document.getElementById('GLBlinkInput').value;
+            let link = document.getElementById('GLBlinkInput').value;
+            const input = document.getElementById("GLBfileInput");
             document.body.removeChild(glb_input);
 
-            if (link == '' || link == null) return;
+            if (link == '' || link == null) {
+                const file = input.files[0];
+
+                if (!file) {
+                    alert("Please select a GLB file first.");
+                    return;
+                }
+
+                const url = URL.createObjectURL(file);
+                link = url;
+            }
 
             const GLB = this.createGameObject('GLB', 'GLB', link);
             GLB.components.push({
@@ -179,13 +192,15 @@ class GameObjectManager {
                 }
             }
 
-            // Remove children references
-            gameObject.children.forEach(childId => {
-                const child = this.findGameObjectById(childId);
-                if (child) {
-                    child.parent = null;
-                }
-            });
+            if (gameObject.children) {
+                // Remove children references
+                gameObject.children.forEach(childId => {
+                    const child = this.findGameObjectById(childId);
+                    if (child) {
+                        child.parent = null;
+                    }
+                });
+            }
 
             // Remove from scene
             scene.gameObjects.splice(index, 1);
@@ -204,7 +219,7 @@ class GameObjectManager {
             
             // Update 3D scene
             if (EditorUI.sceneEditor) {
-                EditorUI.loadSceneIntoEditor();
+                //EditorUI.loadSceneIntoEditor();
             }
             
             EditorUI.showNotification(`GameObject "${gameObject.name}" verwijderd`, 'info');

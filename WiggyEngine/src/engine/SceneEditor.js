@@ -61,6 +61,7 @@ class SceneEditor {
     
     setScene(scene) {
         this.scene = scene;
+        this.loadScene(scene);
         console.log('Scene set with', scene ? scene.length : 0, 'objects');
     }
     
@@ -116,17 +117,18 @@ class SceneEditor {
             console.log(gameObject);
 
             let mesh = null;
-            switch(gameObject.type) {
-                case 'Cube': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createBox());break;
-                case 'Sphere': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createSphere());break;
-                case 'Plane': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createPlane());break;
-                case 'GLB': {
+            switch(gameObject.type.toLowerCase()) {
+                case 'cube': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createBox());break;
+                case 'sphere': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createSphere());break;
+                case 'plane': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createPlane());break;
+                case 'glb': {
                     const glbParser = new Engine.GLBParser({gl: this.renderer.gl}, this.camera);
                     const glb = await glbParser.loadGLB(gameObject.link);
-                    mesh = new Engine.Mesh({gl: this.renderer.gl}, glbParser.ConvertToFlatMesh(glb));
+                    gameObject.glbMeshData = glbParser.ConvertToFlatMesh(glb);
+                    mesh = new Engine.Mesh({gl: this.renderer.gl}, gameObject.glbMeshData);
                     break;
                 }
-                case 'Camera': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createCone());break;
+                case 'camera': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createCone());break;
             }
 
             if (!mesh) return;
@@ -178,9 +180,9 @@ class SceneEditor {
         if (this.scene) {
             const index = gameObject.id;
             if (index !== -1) {
-                for (const object_index in this.scene.objects) {
-                    if (this.scene.objects[object_index].id == index) {
-                        this.scene.objects.splice(object_index, 1);
+                for (let i = 0; i < this.scene.objects.length; i++) {
+                    if (this.scene.objects[i].id == index) {
+                        this.scene.objects.splice(i, 1);
                     }
                 }
             }
@@ -230,5 +232,24 @@ class SceneEditor {
             return this.renderer.getPerformanceInfo ? this.renderer.getPerformanceInfo() : {};
         }
         return {};
+    }
+
+    async loadScene(scene) {
+        for(const object of scene) {
+            for(const component of object.components) {
+                switch (component.type) {
+                    case 'MeshRenderer': {
+                        object.type = component.mesh;
+                        if (component.link) object.link = component.link;
+                        break;
+                    }
+
+                    case 'Camera': object.type = 'Camera';
+                }
+            }
+
+            await this.addGameObject(object);
+            this.updateGameObject(object);
+        }
     }
 }

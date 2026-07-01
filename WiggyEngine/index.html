@@ -18,6 +18,10 @@
         //     BurtCore = await import('../BurtEngine/core/BurtEngine.js');
         // }
 
+        let StinkPiler = await import('../Stinkpiler/Stinkpiler.min.js');
+        window.StinkPiler = StinkPiler.StinkPiler;
+        console.log(StinkPiler)
+
         let BurtCore = await import('../BurtEngine/BurtCore.min.js');
         BurtCore = BurtCore.BurtCore;
 
@@ -28,16 +32,22 @@
         canvas.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
+
+        // Initialize when DOM is loaded or immediately if already loaded
+        if (typeof document !== 'undefined') {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    ScriptEditor.initialize();
+                });
+            } else {
+                // DOM already loaded
+                //ScriptEditor.initialize();
+            }
+        }
     </script>
 
     <!-- Engine Rendering -->
     <script src="src/engine/SceneEditor.js"></script>
-    
-    <!-- WigLang Compiler -->
-    <script src="src/compiler/WigLangLexer.js"></script>
-    <script src="src/compiler/WigLangParser.js"></script>
-    <script src="src/compiler/WASMGenerator.js"></script>
-    <script src="src/compiler/WigLangCompiler.js"></script>
 
     <script src="src/misc/Compress.js"></script>
     <script src="src/misc/loadproject.js"></script>

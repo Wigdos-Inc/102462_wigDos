@@ -635,7 +635,7 @@ class Inspector {
         `;
         
         overlay.addEventListener('click', () => {
-            document.body.removeChild(overlay);
+            //document.body.removeChild(overlay);
         });
         
         overlay.appendChild(menu);

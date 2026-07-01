@@ -1,6 +1,6 @@
 class ProjectBuilder {
     constructor() {
-        this.compiler = new WigLangCompiler();
+        this.compiler = new StinkPiler.WigLangCompiler();
         this.errors = [];
         this.statistics = { totalScripts: 0, compiledScripts: 0, buildTime: 0 };
     }
@@ -32,6 +32,13 @@ class ProjectBuilder {
                 errors: this.errors
             };
         }
+    }
+
+    async getProject(project) {
+        const normalizedProject = this.normalizeProject(project);
+        const compiledScripts = await this.compileProjectScripts(normalizedProject);
+        const processedScenes = this.processScenes(normalizedProject.scenes);
+        return {proj: normalizedProject, buildDat: { scripts: compiledScripts, scenes: processedScenes }};
     }
     
     async compileProjectScripts(project) {

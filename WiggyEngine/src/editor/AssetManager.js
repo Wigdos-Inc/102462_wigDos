@@ -144,7 +144,7 @@ class AssetManager {
         const width = 240;
         const height = actions.length * 38 + 16;
         const left = Math.min(x, Math.max(8, window.innerWidth - width - 8));
-        const top = Math.min(y, Math.max(8, window.innerHeight - height - 8));
+        const top = Math.min(y, Math.max(100, window.innerHeight - height - 100));
 
         this.contextMenu.style.left = `${left}px`;
         this.contextMenu.style.top = `${top}px`;

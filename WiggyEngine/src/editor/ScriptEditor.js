@@ -12,8 +12,8 @@ class ScriptEditor {
         this.compileOutput = document.getElementById('compile-output');
         
         // Initialize WigLang compiler
-        this.compiler = new WigLangCompiler();
-        this.runtime = new WASMRuntime();
+        this.compiler = new StinkPiler.WigLangCompiler();
+        this.runtime = new StinkPiler.WASMRuntime();
         
         // Create syntax highlighted code editor
         this.createCodeEditor();
@@ -87,7 +87,7 @@ class ScriptEditor {
             position: absolute;
             left: 0;
             top: 0;
-            width: 50px;
+            width: 25px;
             height: 100%;
             background: #2d2d30;
             border-right: 1px solid #3e3e42;
@@ -905,17 +905,5 @@ function int factorial(int n) {
         this.codeTextarea.value = newCode;
         
         this.showMessage(`Replaced ${(code.match(new RegExp(find, 'g')) || []).length} occurrences`, 'info');
-    }
-}
-
-// Initialize when DOM is loaded or immediately if already loaded
-if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            ScriptEditor.initialize();
-        });
-    } else {
-        // DOM already loaded
-        ScriptEditor.initialize();
     }
 }

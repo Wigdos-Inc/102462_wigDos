@@ -5,9 +5,11 @@ class EditorUI {
     static currentProject = null;
     static isPlaying = false;
     static sceneEditor = null;
+    static builder = null;
 
     // Initialize the editor UI
     static async initialize() {
+        this.builder = new ProjectBuilder();
         const SplashAudio = new Engine.Audio('sounds/intro.mp3');
         await SplashAudio.init();
         SplashAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
@@ -179,11 +181,10 @@ class EditorUI {
                 this.showNotification('Project wordt gebouwd...', 'info');
                 
                 // Create project builder instance
-                const builder = new ProjectBuilder();
                 const project = typeof ProjectManager !== 'undefined' && ProjectManager.normalizeProject
                     ? ProjectManager.normalizeProject(this.currentProject)
                     : this.currentProject;
-                const buildResult = await builder.buildProject(project);
+                const buildResult = await this.builder.buildProject(project);
                 
                 if (buildResult.success) {
                     // Create downloadable HTML file
@@ -227,6 +228,28 @@ class EditorUI {
             const runtime = window.WiggyEngine || globalThis.WiggyEngine;
             if (runtime && typeof runtime.startPlayMode === 'function') {
                 runtime.startPlayMode();
+
+                const loadProj = async () => {
+                    const project = typeof ProjectManager !== 'undefined' && ProjectManager.normalizeProject
+                    ? ProjectManager.normalizeProject(this.currentProject)
+                    : this.currentProject;
+                    const projectData = await this.builder.getProject(project);
+
+                    //const newWindow = window.open("", "_blank");
+                    //newWindow.document.open();
+                    //newWindow.document.write(getexportHTML(projectData.proj, projectData.buildDat, this.builder));
+                    //newWindow.document.close();
+
+                    this.Gameiframe = document.createElement("iframe");
+                    this.Gameiframe.setAttribute('class', 'game-iframe');
+                    this.Gameiframe.width = "1920";
+                    this.Gameiframe.height = "1080";
+                    this.Gameiframe.srcdoc = getexportHTML(projectData.proj, projectData.buildDat, this.builder);
+
+                    document.body.appendChild(this.Gameiframe);
+                }
+
+                loadProj();
             } else {
                 this.showNotification('Play mode is niet beschikbaar in deze build', 'warning');
             }
@@ -239,6 +262,8 @@ class EditorUI {
             const runtime = window.WiggyEngine || globalThis.WiggyEngine;
             if (runtime && typeof runtime.stopPlayMode === 'function') {
                 runtime.stopPlayMode();
+
+                if(this.Gameiframe) document.body.removeChild(this.Gameiframe);
             }
         }
     }
@@ -265,7 +290,6 @@ class EditorUI {
     static refreshProjectUI() {
         this.updateProjectTitle();
         this.refreshHierarchy();
-        this.loadSceneIntoEditor();
     }
     
     // Load current project scene into 3D editor
@@ -432,15 +456,16 @@ class EditorUI {
         
         document.body.insertAdjacentHTML('beforeend', splashHTML);
 
-window.EditorUI = EditorUI;
-window.WiggyEngine = window.WiggyEngine || {
-    startPlayMode() {
-        console.log('WiggyEngine play mode shim: startPlayMode');
-    },
-    stopPlayMode() {
-        console.log('WiggyEngine play mode shim: stopPlayMode');
-    }
-};
+        window.EditorUI = EditorUI;
+        window.WiggyEngine = window.WiggyEngine || {
+        startPlayMode() {
+            console.log('WiggyEngine play mode shim: startPlayMode');
+        },
+
+        stopPlayMode() {
+            console.log('WiggyEngine play mode shim: stopPlayMode');
+        }
+    };
         
         const progressBar = document.getElementById('splash-progress');
         let progress = 0;

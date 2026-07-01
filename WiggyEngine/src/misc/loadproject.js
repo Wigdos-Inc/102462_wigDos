@@ -42,23 +42,24 @@ async function loadProjectFromFile(file) {
             }
         }
 
-        projectData = this.normalizeProject(projectData);
+        const builder = new ProjectBuilder();
+        projectData = builder.normalizeProject(projectData);
             
         // Validate project structure
-        if (!this.validateProject(projectData)) {
+        if (!ProjectManager.validateProject(projectData)) {
             throw new Error('Invalid project file format - missing required fields');
         }
             
-        this.currentProject = projectData;
-        this.addToProjectHistory(projectData);
+        ProjectManager.currentProject = projectData;
+        ProjectManager.addToProjectHistory(projectData);
             
-        this.hideProjectSelection();
+        ProjectManager.hideProjectSelection();
             
         // Initialize editor with loaded project
         EditorUI.currentProject = projectData;
         EditorUI.initialize();
             
-        console.log('Project loaded successfully:', projectData.name);
+        console.log('Project loaded successfully:', projectData.name, projectData);
         alert('Project "' + projectData.name + '" succesvol geladen!');
             
     } catch (error) {
