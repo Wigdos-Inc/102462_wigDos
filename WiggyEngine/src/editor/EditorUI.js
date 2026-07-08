@@ -14,18 +14,18 @@ class EditorUI {
         await SplashAudio.init();
         SplashAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
 
-        const editorAudio = new Engine.Audio('sounds/Wiggy Seashore Engine (2).mp3');
-        await editorAudio.init();
+        //const editorAudio = new Engine.Audio('sounds/Wiggy Seashore Engine (2).mp3');
+        //await editorAudio.init();
 
-        editorAudio.loop = true;
-        editorAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
-        editorAudio.volume = 0.1;
+        //editorAudio.loop = true;
+        //editorAudio.pitch = Math.random() * (2.0 - 0.5) + 0.5;
+        //editorAudio.volume = 0.1;
 
         SplashAudio.play();
 
         // Show splash screen first
         this.showSplashScreen(() => {
-            editorAudio.play();
+            //editorAudio.play();
 
             this.setupEventListeners();
             this.setupToolButtons();

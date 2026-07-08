@@ -1,7 +1,7 @@
 const projectSelectionContainer = `
     <div class="project-selection-container">
         <div class="project-header">
-            <img src="images/logo.png" alt="WiggyEngine" class="project-logo">
+            <img src="images/SwiffyLogo.jpg" alt="WiggyEngine" class="project-logo">
             <h1>${globalEditorVersion['WGY']} ${globalEditorVersion['ED']}</h1>
             <p>Kies een project om te openen of maak een nieuw project aan</p>
         </div>
@@ -44,6 +44,13 @@ const projectSettingsModal = `
                 <option value="empty">Leeg Project</option>
                 <option value="3d">3D Project</option>
                 <option value="2d">2D Project</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Engine Type:</label>
+            <select id="project-engineType">
+                <option value="burtcore">BurtCore</option>
+                <option value="carlnet">CarlNet</option>
             </select>
         </div>
         <div class="modal-buttons">
@@ -143,7 +150,7 @@ const EditorMainUI = `
         <!-- Main Menu Bar -->
         <div id="menu-bar">
             <div class="menu-brand">
-                <img src="images/logo.png" alt="${globalEditorVersion['WGY']}${globalEditorVersion['ED']}" class="menu-logo">
+                <img src="images/SwiffyLogo.jpg" alt="${globalEditorVersion['WGY']}${globalEditorVersion['ED']}" class="menu-logo">
                 <span class="menu-title">${globalEditorVersion['WGY']} ${globalEditorVersion['ED']}</span>
             </div>
             <div class="menu-group">
@@ -204,6 +211,20 @@ const EditorMainUI = `
                 <button onclick="ScriptEditor.closeEditor()">Sluiten</button>
             </div>
             <div id="compile-output"></div>
+        </div>
+    </div>
+
+    <!-- Material Editor Modal -->
+    <div id="material-editor-modal" class="modal">
+        <div class="modal-content">
+            <h3>Material Editor</h3>
+            <select id="material-editor-texture-selector">
+                <option value="none">None</option>
+            </select>
+            <div class="modal-controls">
+                <button onclick="materialEditor.save()">Opslaan</button>
+                <button onclick="materialEditor.closeEditor()">Sluiten</button>
+            </div>
         </div>
     </div>
 `;

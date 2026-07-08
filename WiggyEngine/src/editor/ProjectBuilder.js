@@ -57,14 +57,13 @@ class ProjectBuilder {
                           }
 
                         this.statistics.totalScripts++;
-                        
-                          const result = this.compiler.compile(code);
+                        const result = this.compiler.compile(code);
                         
                         if (result.success) {
                             compiledScripts.push({
                                 name: component.name || `script_${this.statistics.compiledScripts}`,
                                 wasm: result.wasm,
-                                gameObjectId: gameObject.id
+                                gameObjectId: component.scriptAssetId
                             });
                             this.statistics.compiledScripts++;
                         } else {

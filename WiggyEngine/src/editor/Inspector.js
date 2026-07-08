@@ -166,14 +166,7 @@ class Inspector {
             this.notifyComponentChanged(component, index);
         });
 
-        // Material property
-        this.createSelectProperty(container, 'Material', component.material || 'default',
-            ['default', 'unlit', 'standard', 'custom'], (value) => {
-            component.material = value;
-            this.notifyComponentChanged(component, index);
-        });
-
-          if (typeof AssetManager !== 'undefined') {
+        if (typeof AssetManager !== 'undefined') {
               const modelAssets = AssetManager.getAssetsByType('model');
               const materialAssets = AssetManager.getAssetsByType('material');
 
@@ -183,14 +176,46 @@ class Inspector {
                   this.notifyComponentChanged(component, index);
               });
 
-              this.createAssetSelectProperty(container, 'Material Asset', component.materialAssetId || '', materialAssets, 'Builtin material', (asset) => {
-                  component.materialAssetId = asset ? asset.id : '';
-                  component.materialAssetName = asset ? asset.name : '';
-                  if (asset && asset.content && typeof asset.content === 'object') {
-                      component.materialDefinition = asset.content;
-                  }
-                  this.notifyComponentChanged(component, index);
-              });
+              console.log(component)
+              if (component.lenMeshes) {
+                if (!component.materials) component.materials = [];
+
+                for (let i = 0; i < component.lenMeshes; i++) {
+                    if (!component.materials[i]) {
+                        component.materials[i] = {materialAssetId: '', materialAssetName: '', materialDefinition: ''};
+                    }
+
+                    this.createAssetSelectProperty(container, 'Material Asset', component.materialAssetId || '', materialAssets, 'Builtin material', (asset) => {
+                        component.materials[i].materialAssetId = asset ? asset.id : '';
+                        component.materials[i].materialAssetName = asset ? asset.name : '';
+                        if (asset && asset.content && typeof asset.content === 'object') {
+                            component.materials[i].materialDefinition = asset.content;
+                        }
+                        this.notifyComponentChanged(component, index);
+                    });
+
+                    this.createSelectProperty(container, 'Material Type', component.materials[i].material || 'default',
+                        ['default', 'unlit', 'standard', 'transparent', 'custom'], (value) => {
+                        component.materials[i].material = value;
+                        this.notifyComponentChanged(component, index);
+                    });
+                }
+              } else {
+                    this.createAssetSelectProperty(container, 'Material Asset', component.materialAssetId || '', materialAssets, 'Builtin material', (asset) => {
+                        component.materialAssetId = asset ? asset.id : '';
+                        component.materialAssetName = asset ? asset.name : '';
+                        if (asset && asset.content && typeof asset.content === 'object') {
+                            component.materialDefinition = asset.content;
+                        }
+                        this.notifyComponentChanged(component, index);
+                    });
+
+                    this.createSelectProperty(container, 'Material Type', component.material || 'default',
+                        ['default', 'unlit', 'standard', 'transparent', 'custom'], (value) => {
+                        component.material = component.material ? value:component.material;
+                        this.notifyComponentChanged(component, index);
+                    });
+                }
           }
     }
 
@@ -712,8 +737,8 @@ class Inspector {
     }
 
     static notifyComponentChanged(component, index) {
-        if (WiggyEngine.renderer) {
-            WiggyEngine.renderer.updateComponent(this.currentObject, component, index);
+        if (EditorUI.sceneEditor) {
+            EditorUI.sceneEditor.updateComponent(this.currentObject, component, index);
         }
     }
 

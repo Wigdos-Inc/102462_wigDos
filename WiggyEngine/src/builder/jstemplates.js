@@ -88,8 +88,12 @@ const BurtCoreLoader = `
                             case 'sphere': geometry = Engine.GeometryBuilder.createSphere();break;
                             case 'plane': geometry = Engine.GeometryBuilder.createPlane();break;
                             case 'GLB': {
+                                const file = new Uint8Array(component.glbfile.bytes);
+                                const blob = new Blob([file], { type: component.glbfile.type });
+                                const url = URL.createObjectURL(blob);
+
                                 const glbParser = new Engine.GLBParser(renderer, camera);
-                                const glb = await glbParser.loadGLB(component.link);
+                                const glb = await glbParser.loadGLB(url);
                                 geometry = glbParser.ConvertToFlatMesh(glb);
                                 break;
                             }
@@ -204,15 +208,39 @@ const wasmRuntime = `
                 try {
                     const module = await WebAssembly.compile(wasmBytes);
                     this.modules.set(name, module);
+
+                    this.selfGlobal = new WebAssembly.Global(
+                        {
+                            value: "i32",
+                            mutable: true
+                        },
+                        0
+                    );
                     
                     const instance = await WebAssembly.instantiate(module, {
                         env: {
                             print: (value) => console.log('Script:', value),
                             abort: () => console.error('Script aborted')
+                        },
+                        engine: {
+                            self: this.selfGlobal,
+                            
+                            objectSet: (id, type, value) => {
+                                console.log("objectSet:", id, type, value);
+                            },
+
+                            objectGet: (id, type) => {
+                                console.log("objectGet:", id, type);
+                                return 0;
+                            }
                         }
                     });
                     
                     this.instances.set(name, instance);
+
+                    //selfGlobal.value = 0;
+                    //instance.exports.main();
+
                     console.log('Loaded script:', name);
                     return instance;
                 } catch (error) {

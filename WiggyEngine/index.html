@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiggyEditor - 3D Game Editor</title>
     <link rel="stylesheet" href="src/editor/styles.css">
-    <link rel="icon" href="images/logo.png">
+    <link rel="icon" href="images/SwiffyLogo.jpg">
 </head>
 <body>
     <script src="src/engine/globals.js"></script>
@@ -18,7 +18,7 @@
         //     BurtCore = await import('../BurtEngine/core/BurtEngine.js');
         // }
 
-        let StinkPiler = await import('../Stinkpiler/Stinkpiler.min.js');
+        let StinkPiler = await import('../Stinkpiler/Stinkpiler.js');
         window.StinkPiler = StinkPiler.StinkPiler;
         console.log(StinkPiler)
 
@@ -62,7 +62,10 @@
     <script src="src/editor/ProjectManager.js"></script>
     <script src="src/editor/EditorUI.js"></script>
     <script src="src/editor/GameObjectManager.js"></script>
+    
     <script src="src/editor/ScriptEditor.js"></script>
+    <script src="src/editor/materialEditor.js"></script>
+
     <script src="src/editor/Inspector.js"></script>
 
     <script>

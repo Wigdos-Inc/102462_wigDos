@@ -124,8 +124,28 @@ class SceneEditor {
                 case 'glb': {
                     const glbParser = new Engine.GLBParser({gl: this.renderer.gl}, this.camera);
                     const glb = await glbParser.loadGLB(gameObject.link);
-                    gameObject.glbMeshData = glbParser.ConvertToFlatMesh(glb);
-                    mesh = new Engine.Mesh({gl: this.renderer.gl}, gameObject.glbMeshData);
+                    console.log(glb)
+
+                    const sortedMeshes = [];
+                    for (const mesh of Object.values(glb.meshes)) {
+                        if (!sortedMeshes[mesh[0].materialIndex]) {
+                            sortedMeshes[mesh[0].materialIndex] = {meshes: [], geometries: []};
+                        }
+
+                        sortedMeshes[mesh[0].materialIndex].meshes.push(mesh[0]);
+                    }
+
+                    for (const geometry of Object.values(glb.geometries)) {
+                        sortedMeshes[geometry.materialIndex].geometries.push(geometry);
+                    }
+
+                    console.log("SORTED GLB: ", sortedMeshes);
+
+                    mesh = [];
+                    for (let i = 0; i < sortedMeshes.length; i++) {
+                        const meshData = glbParser.ConvertToFlatMesh(sortedMeshes[i]);
+                        mesh[i] = new Engine.Mesh({gl: this.renderer.gl}, meshData);
+                    }
                     break;
                 }
                 case 'camera': mesh = new Engine.Mesh({gl: this.renderer.gl}, Engine.GeometryBuilder.createCone());break;
@@ -133,20 +153,44 @@ class SceneEditor {
 
             if (!mesh) return;
 
-            const pos = gameObject.transform.position;
-            const rot = gameObject.transform.rotation;
-            const scl = gameObject.transform.scale;
+            if (mesh.length > 1) {
+                for (let i = 0; i < mesh.length; i++) {
+                    const pos = gameObject.transform.position;
+                    const rot = gameObject.transform.rotation;
+                    const scl = gameObject.transform.scale;
                         
-            mesh.position = new Engine.Vec3(pos.x, pos.y, pos.z);
-            mesh.rotation = new Engine.Vec3(rot.x, rot.y, rot.z);
-            mesh.scale = new Engine.Vec3(scl.x, scl.y, scl.z);
-            mesh.id = gameObject.id;
+                    mesh[i].position = new Engine.Vec3(pos.x, pos.y, pos.z);
+                    mesh[i].rotation = new Engine.Vec3(rot.x, rot.y, rot.z);
+                    mesh[i].scale = new Engine.Vec3(scl.x, scl.y, scl.z);
+                    mesh[i].id = gameObject.id;
+                    mesh[i].material_id = i;
 
-            if (this.scene.objects) {
-                this.scene.objects.push(mesh);
-            } else {
-                this.scene.objects = [];
-                this.scene.objects.push(mesh);
+                    if (this.scene.objects) {
+                        this.scene.objects.push(mesh[i]);
+                    } else {
+                        this.scene.objects = [];
+                        this.scene.objects.push(mesh[i]);
+                    }
+                }
+
+                return mesh.length;
+            }
+            else {
+                const pos = gameObject.transform.position;
+                const rot = gameObject.transform.rotation;
+                const scl = gameObject.transform.scale;
+                        
+                mesh.position = new Engine.Vec3(pos.x, pos.y, pos.z);
+                mesh.rotation = new Engine.Vec3(rot.x, rot.y, rot.z);
+                mesh.scale = new Engine.Vec3(scl.x, scl.y, scl.z);
+                mesh.id = gameObject.id;
+
+                if (this.scene.objects) {
+                    this.scene.objects.push(mesh);
+                } else {
+                    this.scene.objects = [];
+                    this.scene.objects.push(mesh);
+                }
             }
         }
     }
@@ -163,13 +207,42 @@ class SceneEditor {
                         const scl = gameObject.transform.scale;
 
                         mesh.position = new Engine.Vec3(pos.x, pos.y, pos.z);
-                        mesh.rotation = new Engine.Vec3(rot.x, rot.y, rot.z);
+                        mesh.rotation = new Engine.Vec3(deg2rad(rot.x), deg2rad(rot.y), deg2rad(rot.z));
                         mesh.scale = new Engine.Vec3(scl.x, scl.y, scl.z);
                         mesh.id = gameObject.id;
 
                         mesh.updateMatrix();
             
                         this.scene.objects[i] = mesh;
+                    }
+                }
+            }
+        }
+    }
+
+    updateComponent(currentObject, component, index) {
+        console.log(currentObject, component, index);
+
+        if (this.scene) {
+            const id = currentObject.id;
+            if (id == -1) return;
+
+            for (let i = 0; i < this.scene.objects.length; i++) {
+                const mesh = this.scene.objects[i];
+                if (this.scene.objects[i].id == id) {
+                    if (component.type == "MeshRenderer") {
+                        if (component.lenMeshes) {
+                            for (let i = 0; i < component.lenMeshes; i++) {
+                                if (AssetManager.getAssetById(component.materials[i].materialDefinition.diffuseTexture) && mesh.material_id == i) {
+                                    mesh.setTexture(AssetManager.getAssetById(component.materials[i].materialDefinition.diffuseTexture).dataUrl, component.materials[i].material == "transparent" ? 1:0);
+                                }
+                            }
+                        }
+                        else {
+                            if (AssetManager.getAssetById(component.materialDefinition.diffuseTexture)) {
+                                mesh.setTexture(AssetManager.getAssetById(component.materialDefinition.diffuseTexture).dataUrl, component.material == "transparent" ? 1:0);
+                            }
+                        }
                     }
                 }
             }
@@ -240,7 +313,13 @@ class SceneEditor {
                 switch (component.type) {
                     case 'MeshRenderer': {
                         object.type = component.mesh;
-                        if (component.link) object.link = component.link;
+                        if (component.glbfile) {
+                            const file = new Uint8Array(component.glbfile.bytes);
+                            const blob = new Blob([file], { type: component.glbfile.type });
+                            const url = URL.createObjectURL(blob);
+
+                            object.link = url;
+                        }
                         break;
                     }
 
@@ -251,5 +330,15 @@ class SceneEditor {
             await this.addGameObject(object);
             this.updateGameObject(object);
         }
+
+        for(const object of scene) {
+            for(const component of object.components) {
+                this.updateComponent(object, component);
+            }
+        }
     }
+}
+
+function deg2rad(x) {
+        return x * (3.14 / 180);
 }

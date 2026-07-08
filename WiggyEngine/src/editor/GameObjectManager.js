@@ -5,7 +5,7 @@ class GameObjectManager {
     static selectedGameObject = null;
 
     // Create a new GameObject
-    static createGameObject(type, name = 'GameObject', link) {
+    static async createGameObject(type, name = 'GameObject', link) {
         if (!EditorUI.currentProject || !EditorUI.currentProject.scenes[0]) {
             EditorUI.showNotification('Geen actieve scene', 'warning');
             return;
@@ -25,9 +25,13 @@ class GameObjectManager {
             parent: null
         };
 
-        if (type == 'GLB') gameObject.link = link;
+        if (type == 'GLB') {
+            gameObject.link = link;
 
-        EditorUI.sceneEditor.addGameObject(gameObject);
+            gameObject.lenMeshes = await EditorUI.sceneEditor.addGameObject(gameObject);
+        } else {
+            EditorUI.sceneEditor.addGameObject(gameObject);
+        }
 
         // Add to current scene
         EditorUI.currentProject.scenes[0].gameObjects.push(gameObject);
@@ -49,8 +53,8 @@ class GameObjectManager {
     }
 
     // Create specific primitive objects
-    static createCube() {
-        const cube = this.createGameObject('Cube', 'Cube');
+    static async createCube() {
+        const cube = await this.createGameObject('Cube', 'Cube');
         cube.components.push({
             type: 'MeshRenderer',
             mesh: 'cube',
@@ -63,8 +67,8 @@ class GameObjectManager {
         return cube;
     }
 
-    static createSphere() {
-        const sphere = this.createGameObject('Sphere', 'Sphere');
+    static async createSphere() {
+        const sphere = await this.createGameObject('Sphere', 'Sphere');
         sphere.components.push({
             type: 'MeshRenderer',
             mesh: 'sphere',
@@ -77,8 +81,8 @@ class GameObjectManager {
         return sphere;
     }
 
-    static createPlane() {
-        const plane = this.createGameObject('Plane', 'Plane');
+    static async createPlane() {
+        const plane = await this.createGameObject('Plane', 'Plane');
         plane.components.push({
             type: 'MeshRenderer',
             mesh: 'plane',
@@ -90,13 +94,13 @@ class GameObjectManager {
     static createGLB() {
         const glb_input = document.createElement('div');
         glb_input.innerHTML = `
-            <input 
+            <!--<input 
                 type="url" 
                 id="GLBlinkInput" 
                 placeholder="Enter a link (https://...)" 
                 required
                 style="width: 300px; padding: 8px;"
-            />
+            />-->
 
             <input type="file" id="GLBfileInput" accept=".glb">
 
@@ -117,10 +121,14 @@ class GameObjectManager {
 
         document.body.appendChild(glb_input);
 
-        window.importGLB = () => {
-            let link = document.getElementById('GLBlinkInput').value;
+        window.importGLB = async () => {
+            //let link = document.getElementById('GLBlinkInput').value;
+            let link = '';
             const input = document.getElementById("GLBfileInput");
             document.body.removeChild(glb_input);
+
+            let fileBytes = null;
+            let fileType = '';
 
             if (link == '' || link == null) {
                 const file = input.files[0];
@@ -130,16 +138,24 @@ class GameObjectManager {
                     return;
                 }
 
+                const buffer = await file.arrayBuffer();
+                fileBytes = Array.from(new Uint8Array(buffer));
+                fileType = file.type;
+
+                //const blob = new Blob([fileBytes], { type: fileType });
+
                 const url = URL.createObjectURL(file);
                 link = url;
             }
 
-            const GLB = this.createGameObject('GLB', 'GLB', link);
+            const GLB = await this.createGameObject('GLB', 'GLB', link);
+
             GLB.components.push({
                 type: 'MeshRenderer',
                 mesh: 'GLB',
                 material: 'default',
-                link: link
+                lenMeshes: GLB.lenMeshes,
+                glbfile: {type: fileType, bytes: fileBytes}
             });
             GLB.components.push({
                 type: 'BoxCollider',
@@ -150,8 +166,8 @@ class GameObjectManager {
         }
     }
 
-    static createLight() {
-        const light = this.createGameObject('Light', 'Light');
+    static async createLight() {
+        const light = await this.createGameObject('Light', 'Light');
         light.components.push({
             type: 'Light',
             lightType: 'directional',
@@ -161,8 +177,8 @@ class GameObjectManager {
         return light;
     }
 
-    static createCamera() {
-        const camera = this.createGameObject('Camera', 'Camera');
+    static async createCamera() {
+        const camera = await this.createGameObject('Camera', 'Camera');
         camera.components.push({
             type: 'Camera',
             fieldOfView: 75,

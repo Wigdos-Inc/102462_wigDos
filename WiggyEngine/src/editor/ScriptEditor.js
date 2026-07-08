@@ -230,9 +230,13 @@ class ScriptEditor {
     }
     
     static applySyntaxHighlighting(code) {
+        return this.escapeHtml(code);
+        
         try {
-            const lexer = new WigLangLexer(code);
+            const lexer = new StinkPiler.WigLangLexer(code);
             const tokens = lexer.tokenize();
+
+            console.log(tokens)
             
             let highlightedCode = '';
             let currentPos = 0;
@@ -250,7 +254,7 @@ class ScriptEditor {
                 
                 if (tokenClass) {
                     highlightedCode += `<span class="${tokenClass}">${tokenText}</span>`;
-                } else {
+                } else if(tokenText !== 'EOF') {
                     highlightedCode += tokenText;
                 }
                 
@@ -442,22 +446,22 @@ class ScriptEditor {
         }
         
         // Create error element
-        const errorSpan = document.createElement('span');
-        errorSpan.style.cssText = `
-            position: absolute;
-            top: ${lineNumber * 18 + 10}px;
-            left: 10px;
-            width: ${lines[lineNumber].length * 8.4}px;
-            height: 18px;
-            border-bottom: 2px wavy #f14c4c;
-            pointer-events: all;
-            cursor: help;
-        `;
+        // const errorSpan = document.createElement('span');
+        // errorSpan.style.cssText = `
+        //     position: absolute;
+        //     top: ${lineNumber * 18 + 10}px;
+        //     left: 10px;
+        //     width: ${lines[lineNumber].length * 8.4}px;
+        //     height: 18px;
+        //     border-bottom: 2px wavy #f14c4c;
+        //     pointer-events: all;
+        //     cursor: help;
+        // `;
         
         errorSpan.title = errorMessage;
-        errorSpan.addEventListener('click', () => {
-            alert(`Error on line ${lineNumber + 1}: ${errorMessage}`);
-        });
+        //errorSpan.addEventListener('click', () => {
+            //alert(`Error on line ${lineNumber + 1}: ${errorMessage}`);
+        //});
         
         this.errorOverlay.appendChild(errorSpan);
     }
@@ -490,14 +494,14 @@ class ScriptEditor {
     }
 
     static openEditor() {
-        if (!this.modal || !this.codeTextarea) {
+        if (!this.modal || !this.codeInput) {
             console.error('Script Editor not initialized');
             return;
         }
 
         this.modal.style.display = 'block';
-        this.codeTextarea.value = this.currentScript.content;
-        this.codeTextarea.focus();
+        this.codeInput.innerHTML = this.currentScript.content;
+        //this.codeTextarea.focus();
         
         // Update modal title
         const title = this.modal.querySelector('h3');
@@ -521,7 +525,7 @@ class ScriptEditor {
     static saveScript() {
         if (!this.currentScript) return;
         
-        this.currentScript.content = this.codeTextarea.value;
+        this.currentScript.content = this.codeInput.innerHTML;
         
         try {
             if (this.currentScript.isNew) {
@@ -557,7 +561,7 @@ class ScriptEditor {
     static compileScript() {
         if (!this.currentScript) return;
         
-        const code = this.codeTextarea.value;
+        const code = this.codeInput.innerHTML;
         
         try {
             console.log('🔨 Compiling WigLang script...');
@@ -829,35 +833,18 @@ class ScriptEditor {
     }
 
     static getDefaultScriptTemplate() {
-        return `// WigLang Script - C-like syntax compiles to WebAssembly
-// Simple example showing basic language features
+        return `// Add your copyright message here.
 
 function int main() {
-    // Entry point - return an integer value
-    var int result = calculate(10, 5);
-    return result;
+    // Add code here that runs at startup.
+    return 0;
 }
 
-function int calculate(int a, int b) {
-    // Simple calculation function
-    var int sum = a + b;
-    var int product = a * b;
-    
-    if (sum > product) {
-        return sum;
-    } else {
-        return product;
-    }
+function int run() {
+    // Add code here that runs every game loop.
+    return 0;
 }
-
-function int factorial(int n) {
-    // Recursive factorial calculation
-    if (n <= 1) {
-        return 1;
-    } else {
-        return n * factorial(n - 1);
-    }
-}`;
+    `;
     }
 
     // Utility method to format code

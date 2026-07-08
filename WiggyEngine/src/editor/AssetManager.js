@@ -6,6 +6,9 @@ class AssetManager {
         if (!this.initialized) {
             this.bindBrowserEvents();
             this.initialized = true;
+
+            window.materialEditor = new MaterialEditor(this);
+            materialEditor.initialize();
         }
 
         this.refreshAssetBrowser();
@@ -36,6 +39,10 @@ class AssetManager {
 
     static getScriptAssets() {
         return this.getAssetsByType('script');
+    }
+
+    static getMaterialAssets() {
+        return this.getAssetsByType('material');
     }
 
     static getAssetById(assetId) {
@@ -95,6 +102,7 @@ class AssetManager {
             { label: 'Import Model', action: () => this.importAssets('model') },
             { label: 'Import Object', action: () => this.importAssets('object') },
             { label: 'Import Script (.wigscripts)', action: () => this.importAssets('script') },
+            { label: 'New Material', action: () => this.createMaterial() },
             { label: 'New Script', action: () => this.createNewScriptAsset() }
         ];
 
@@ -161,13 +169,25 @@ class AssetManager {
             return;
         }
 
-        grid.innerHTML = assets.map(asset => `
-            <div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}">
-                <div class="asset-icon">${this.getAssetIcon(asset.type)}</div>
-                <div class="asset-name">${this.escapeHtml(asset.name || 'Untitled')}</div>
-                <div class="asset-type">${this.escapeHtml(asset.type || 'asset')}</div>
-            </div>
-        `).join('');
+        grid.innerHTML = '';
+        
+        for (const asset of assets) {
+            let out = '';
+
+            if (asset.type == 'texture') {
+                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}" style="background-image: url('${asset.dataUrl}'); background-size: cover">
+                        <div class="asset-name">${this.escapeHtml(asset.name || 'Untitled')}</div>`;
+            }
+            else {
+                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}">
+                        <div class="asset-icon">${this.getAssetIcon(asset.type)}</div>
+                        <div class="asset-name">${this.escapeHtml(asset.name || 'Untitled')}</div>
+                        <div class="asset-type">${this.escapeHtml(asset.type || 'asset')}</div>`
+            }
+
+            out += `</div>`;
+            grid.innerHTML += out;
+        }
 
         grid.querySelectorAll('[data-asset-id]').forEach(item => {
             const assetId = item.dataset.assetId;
@@ -331,6 +351,10 @@ class AssetManager {
         }
     }
 
+    static createMaterial() {
+        materialEditor.createNew();
+    }
+
     static createBlueprintFromObject(gameObject) {
         if (!gameObject) return null;
 
@@ -454,8 +478,11 @@ class AssetManager {
         }
     }
 
-    static openAsset(asset) {
-        if (!asset) return;
+    static openAsset(asset_id) {
+        if (!asset_id) return;
+
+        const asset = this.getAssetById(asset_id);
+        console.log(asset);
 
         if (asset.type === 'script' && typeof ScriptEditor !== 'undefined') {
             ScriptEditor.editScript(asset);
@@ -464,6 +491,11 @@ class AssetManager {
 
         if (asset.type === 'object') {
             this.instantiateObjectAsset(asset);
+            return;
+        }
+
+        if (asset.type === 'material') {
+            materialEditor.edit(asset);
             return;
         }
 
