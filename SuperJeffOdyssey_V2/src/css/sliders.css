@@ -76,6 +76,12 @@ a {
   cursor:pointer;
 }
 
+.health-pie-ui {
+  position:fixed;
+  top:30px;
+  left:30px;
+}
+
 .health-ui{
   color: black;
   position:fixed;

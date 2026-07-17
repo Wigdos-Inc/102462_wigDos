@@ -2,6 +2,15 @@ import { getKingdomtrack, getmusicfiles, playTrack, getAudio, getMusicIndex } fr
 
 let prevMusicForPause;
 
+const sprites_base = '../../assets/sprites/';
+const health_pie = document.getElementById('health_pie');
+const health_sprites = [
+    'Jeff_hp_3.svg',
+    'Jeff_hp_2.svg',
+    'Jeff_hp_1.svg',
+    'Jeff_hp_0.svg'
+]
+
 export function updateHUD(game, kingdomConfigs, player) {
     document.getElementById('moons').textContent = game.moons;
     document.getElementById('totalMoons').textContent = game.totalMoons;
@@ -12,7 +21,10 @@ export function updateHUD(game, kingdomConfigs, player) {
         const hp = Math.max(0, Math.min(maxHp, Number(game.playerHealth) || 0));
         const pct = (hp / maxHp) * 100;
         hpFill.style.width = `${pct}%`;
+    } else {
+        health_pie.src = sprites_base + health_sprites[game.playerHealth];
     }
+    
     const t = Math.max(0, Math.floor(player.soupTimer));
     const soupEl = document.getElementById('soupTimer');
     if (soupEl) soupEl.textContent = t > 0 ? (t + 's') : '0s';
@@ -106,6 +118,32 @@ export function togglePause(game) {
         ov.style.color = '#fff';
         ov.style.fontSize = '3em';
         ov.textContent = 'PAUSED';
+
+        const volume_bar = document.createElement('div');
+        volume_bar.setAttribute('class', 'audio-ui');
+        const volume_label = document.createElement('label');
+        volume_label.setAttribute('for', 'volume');
+        volume_label.innerHTML = '🔊';
+        const volume_input = document.createElement('input');
+        volume_input.id = 'volume';
+        volume_input.type = 'range';
+        volume_input.min = 0;
+        volume_input.max = 100;
+        volume_input.value = localStorage.getItem("volume") || 60;
+
+        //const volumeSlider = document.getElementById("volume");
+        //volumeSlider.value = localStorage.getItem("volume") || 60;
+        const audio = getAudio();
+        audio.volume = volume_input.value / 100;
+
+        volume_input.addEventListener("input", () => {
+            audio.volume = volume_input.value / 100;
+            localStorage.setItem("volume", volume_input.value);
+        });
+
+        volume_bar.appendChild(volume_label);
+        volume_bar.appendChild(volume_input);
+        ov.appendChild(volume_bar);
         document.body.appendChild(ov);
     } else {
         const ov = document.getElementById('pause-overlay');

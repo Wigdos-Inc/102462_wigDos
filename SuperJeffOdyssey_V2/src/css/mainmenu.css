@@ -9,6 +9,7 @@ body {
     background: #000;
     background-image: url("../../assets/images/gamecover.png");
     background-position: center;
+    background-size: cover;
     color: #fff;
     min-height: 100vh;
     display: flex;

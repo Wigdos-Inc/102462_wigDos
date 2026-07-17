@@ -8,10 +8,6 @@
     <link rel="stylesheet" href="../css/sliders.css">
     <link rel="stylesheet" href="../css/main.css">
     <style>
-        * {
-            overflow: hidden;
-        }
-        
         #hud_debug {
             display: none;
             position: absolute;
@@ -75,11 +71,12 @@
         <br>Touch: use on‑screen buttons (left pad = move, right buttons = actions)
     </div>
 
-    <div class="health-ui">
-        <span class="health-label">❤️ HP</span>
+    <div class="health-pie-ui">
+        <img id="health_pie" src="../../assets/sprites/Jeff_hp_0.svg" width="30%" height="30%">
+        <!--<span class="health-label">❤️ HP</span>
         <div class="health-bar">
             <div class="health-fill" id="healthFill"></div>
-        </div>
+        </div>-->
     </div>
 
     <div class="boss-health-ui" id="bossHealthUI" style="display:none;">
@@ -88,11 +85,6 @@
             <div class="boss-health-fill" id="bossHealthFill"></div>
         </div>
         <span class="boss-health-value" id="bossHealthValue">0/0</span>
-    </div>
-
-    <div class="audio-ui">
-        <label for="volume">🔊</label>
-        <input type="range" id="volume" min="0" max="100" value="80">
     </div>
 
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>

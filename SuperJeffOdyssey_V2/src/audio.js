@@ -139,11 +139,4 @@ document.addEventListener('click', () => {
     });
 }
 
-const volumeSlider = document.getElementById("volume");
-volumeSlider.value = localStorage.getItem("volume") || 60;
-audio.volume = volumeSlider.value / 100;
-
-volumeSlider.addEventListener("input", () => {
-    audio.volume = volumeSlider.value / 100;
-    localStorage.setItem("volume", volumeSlider.value);
-});
+audio.volume = (localStorage.getItem("volume") || 60) / 100;

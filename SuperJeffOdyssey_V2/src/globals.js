@@ -77,6 +77,12 @@ async function loadEngine() {
 }
 await loadEngine();
 
+export function resizeCanvas() {
+    const canvas = document.getElementById('gameCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
 export const game = {
     currentKingdom: 'cap',
     moons: 0,

@@ -1,4 +1,4 @@
-import { game, kingdomConfigs, engine, vector } from './globals.js';
+import { game, kingdomConfigs, engine, vector, resizeCanvas } from './globals.js';
 import { drawJeff, player, updatePlayerMovementAndCollision } from './player.js';
 import { drawStructures } from './structures.js';
 import { initInput } from './inputs.js';
@@ -891,8 +891,13 @@ import { playEffect, stopAllEffects, beginbackgroundmusic, musicInit, getKingdom
             player.soupTimer -= dt;
             if (player.soupTimer <= 0) {
                 player.soupTimer = 0;
-                player.speedMultiplier = 1.0;
-                player.jumpMultiplier = 1.0;
+                player.speedMultiplier = 1.5;
+                player.jumpMultiplier = 1.3;
+
+                if (game.playerHealth < 3) {
+                    game.playerHealth++;
+                }
+                updateHUD(game, kingdomConfigs, player);
                 showMessage('Power Soup expired');
             }
         }
@@ -992,6 +997,7 @@ import { playEffect, stopAllEffects, beginbackgroundmusic, musicInit, getKingdom
             return;
         }
 
+        resizeCanvas();
         engine.engineUpdate({x: game.camera.x, y: game.camera.y, z: game.camera.z}, player.pos);
 
         if (game.rtxMode) {
