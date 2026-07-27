@@ -5,60 +5,198 @@
 class WiggyCompression {
     static compress(data) {
         const jsonString = JSON.stringify(data);
-        
-        // Step 1: LZ77 compression with optimized window
-        const lz77Compressed = this.lz77Compress(jsonString);
-        
-        // Step 2: Huffman encoding for final compression
-       // const huffmanCompressed = this.huffmanCompress(lz77Compressed);
-        
+
+        const tokens = this.lz77Compress(jsonString);
+        const packed = this.packTokens(tokens);
+
         return {
-            compressed: lz77Compressed,
+            version: 2,
+            compressed: packed,
             originalSize: jsonString.length,
-            compressedSize: lz77Compressed.length,
-            ratio: (jsonString.length / lz77Compressed.length).toFixed(2)
+            compressedSize: packed.length,
+            ratio: (jsonString.length / packed.length).toFixed(2)
         };
     }
-    
-    static decompress(compressedData) {
-        // Step 1: Huffman decoding
-        //const lz77Data = this.huffmanDecompress(compressedData.compressed);
-        
-        // Step 2: LZ77 decompression
-        const jsonString = this.lz77Decompress(compressedData.compressed);
-        
+
+    static decompress(data) {
+        // Legacy format (array of token objects)
+        if (Array.isArray(data.compressed)) {
+            return this.legacy_decompress(data);
+        }
+
+        // New packed format (string)
+        const tokens = this.unpackTokens(data.compressed);
+        const jsonString = this.lz77Decompress(tokens);
+
         return JSON.parse(jsonString);
+    }
+
+    static packTokens(tokens) {
+        const MATCH = "\u0001";
+        const ESC = "\u0002";
+
+        let out = "";
+
+        for (const token of tokens) {
+            if (token.type === "literal") {
+                if (token.char === MATCH || token.char === ESC)
+                    out += ESC + token.char;
+                else
+                    out += token.char;
+            } else {
+                out += MATCH;
+                out += token.distance;
+                out += ",";
+                out += token.length;
+                out += ";";
+            }
+        }
+        return out;
+    }
+
+    static unpackTokens(data) {
+        const MATCH = "\u0001";
+        const ESC = "\u0002";
+
+        const tokens = [];
+
+        let i = 0;
+
+        while (i < data.length) {
+            const c = data[i++];
+
+            if (c === ESC) {
+                tokens.push({
+                    type: "literal",
+                    char: data[i++]
+                });
+            } else if (c === MATCH) {
+                let distance = "";
+
+                while (data[i] !== ",") distance += data[i++];
+
+                i++;
+
+                let length = "";
+
+                while (data[i] !== ";") length += data[i++];
+
+                i++;
+
+                tokens.push({
+                    type: "match",
+                    distance: Number(distance),
+                    length: Number(length)
+                });
+
+            } else {
+                tokens.push({
+                    type: "literal",
+                    char: c
+                });
+            }
+        }
+        return tokens;
     }
     
     static lz77Compress(input) {
         const windowSize = 4096;
         const lookaheadSize = 18;
+        const minMatch = 3;
+
         const result = [];
+        const hashTable = new Map();
+
         let pos = 0;
-        
-        while (pos < input.length) {
-            let bestMatch = { length: 0, distance: 0 };
-            
-            // Search for matches in sliding window
-            const windowStart = Math.max(0, pos - windowSize);
-            for (let i = windowStart; i < pos; i++) {
-                let matchLength = 0;
-                while (matchLength < lookaheadSize && 
-                       pos + matchLength < input.length &&
-                       input[i + matchLength] === input[pos + matchLength]) {
-                    matchLength++;
-                }
-                
-                if (matchLength > bestMatch.length && matchLength >= 3) {
-                    bestMatch = { length: matchLength, distance: pos - i };
-                }
+        const length = input.length;
+
+        while (pos < length) {
+
+            // Not enough characters left for a match
+            if (pos > length - minMatch) {
+                result.push({ type: "literal", char: input[pos++] });
+                continue;
             }
 
-            if (bestMatch.length >= 3) {
-                result.push({ type: 'match', distance: bestMatch.distance, length: bestMatch.length });
-                pos += bestMatch.length;
+            // Hash the next 3 characters
+            const hash =
+                (input.charCodeAt(pos) << 16) ^
+                (input.charCodeAt(pos + 1) << 8) ^
+                input.charCodeAt(pos + 2);
+
+            let bestLength = 0;
+            let bestDistance = 0;
+
+            const candidates = hashTable.get(hash);
+
+            if (candidates) {
+
+                // Remove positions outside sliding window
+                while (candidates.length && candidates[0] < pos - windowSize) {
+                    candidates.shift();
+                }
+
+                // Check newest candidates first
+                for (let c = candidates.length - 1; c >= 0; c--) {
+                    const i = candidates[c];
+
+                    let matchLength = 3;
+
+                    while (
+                        matchLength < lookaheadSize &&
+                        pos + matchLength < length &&
+                        input[i + matchLength] === input[pos + matchLength]
+                    ) {
+                        matchLength++;
+                    }
+
+                    if (matchLength > bestLength) {
+                        bestLength = matchLength;
+                        bestDistance = pos - i;
+
+                        if (matchLength === lookaheadSize)
+                            break;
+                    }
+                }
+
+                candidates.push(pos);
             } else {
-                result.push({ type: 'literal', char: input[pos] });
+                hashTable.set(hash, [pos]);
+            }
+
+            if (bestLength >= minMatch) {
+                result.push({
+                    type: "match",
+                    distance: bestDistance,
+                    length: bestLength
+                });
+
+                // Add skipped positions into hash table
+                for (let k = 1; k < bestLength; k++) {
+                    if (pos + k > length - minMatch)
+                        break;
+
+                    const h =
+                        (input.charCodeAt(pos + k) << 16) ^
+                        (input.charCodeAt(pos + k + 1) << 8) ^
+                        input.charCodeAt(pos + k + 2);
+
+                    let list = hashTable.get(h);
+                    if (!list) {
+                        list = [];
+                        hashTable.set(h, list);
+                    }
+
+                    list.push(pos + k);
+                }
+
+                pos += bestLength;
+            } else {
+                result.push({
+                    type: "literal",
+                    char: input[pos]
+                });
+
                 pos++;
             }
         }
@@ -84,74 +222,21 @@ class WiggyCompression {
         return output.join("");
     }
 
-}
+    static legacy_compress(data) {
+        const jsonString = JSON.stringify(data);
 
-// Compress data using gzip-like compression
-async function compressData(data) {
-    const stream = new CompressionStream('gzip');
-    const writer = stream.writable.getWriter();
-    const reader = stream.readable.getReader();
-        
-    const encoder = new TextEncoder();
-    const chunks = [];
-        
-    // Start compression
-    const writePromise = writer.write(encoder.encode(data)).then(() => writer.close());
-        
-    // Read compressed chunks
-    const readPromise = (async () => {
-        let done, value;
-        while (!done) {
-            ({ done, value } = await reader.read());
-            if (value) chunks.push(value);
-        }
-    })();
-        
-    await Promise.all([writePromise, readPromise]);
-        
-    // Combine chunks into single ArrayBuffer
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-        result.set(chunk, offset);
-        offset += chunk.length;
+        const lz77Compressed = this.lz77Compress(jsonString);
+
+        return {
+            compressed: lz77Compressed,
+            originalSize: jsonString.length,
+            compressedSize: lz77Compressed.length,
+            ratio: (jsonString.length / lz77Compressed.length).toFixed(2)
+        };
     }
-        
-    return result.buffer;
-}
-    
-// Decompress data
-async function decompressData(compressedData) {
-    const stream = new DecompressionStream('gzip');
-    const writer = stream.writable.getWriter();
-    const reader = stream.readable.getReader();
-        
-    const chunks = [];
-        
-    // Start decompression
-    const writePromise = writer.write(compressedData).then(() => writer.close());
-        
-    // Read decompressed chunks
-    const readPromise = (async () => {
-    let done, value;
-        while (!done) {
-            ({ done, value } = await reader.read());
-            if (value) chunks.push(value);
-        }
-    })();
-        
-    await Promise.all([writePromise, readPromise]);
-        
-    // Combine and decode
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    const combined = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-        combined.set(chunk, offset);
-        offset += chunk.length;
+
+    static legacy_decompress(compressedData) {
+        const jsonString = this.lz77Decompress(compressedData.compressed);
+        return JSON.parse(jsonString);
     }
-        
-    const decoder = new TextDecoder();
-    return decoder.decode(combined);
 }

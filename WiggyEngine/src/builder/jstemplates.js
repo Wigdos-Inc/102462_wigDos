@@ -5,8 +5,15 @@ function getexportHTML(project, buildData, builder) {
         gameObjectId: script.gameObjectId
     }));
 
+    let assets = [];
+    for (let i = 0; i < project.assets.length; i++) {
+        if (project.assets[i].type != 'script') {
+            assets[i] = project.assets[i];
+        }
+    }
+
     const safeName = builder.escapeHtml(project.name);
-    const projectDataJson = JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData }).replace(/</g, '\\u003c');
+    const projectDataJson = JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData, assets: assets }).replace(/</g, '\\u003c');
     const scriptProjectName = JSON.stringify(project.name);
 
     let exportFile = '';
@@ -76,6 +83,12 @@ const BurtCoreLoader = `
     const camera = new Engine.Camera();
     const scene = [];
     let sceneObjs = 0;
+    let objectIDs = 0;
+
+    function deg2rad(x) {
+        return x * (3.14 / 180);
+    }
+
 
     async function FillScene() {
         for(const map of projectData.scenes) {
@@ -94,23 +107,75 @@ const BurtCoreLoader = `
 
                                 const glbParser = new Engine.GLBParser(renderer, camera);
                                 const glb = await glbParser.loadGLB(url);
-                                geometry = glbParser.ConvertToFlatMesh(glb);
+
+                                const sortedMeshes = [];
+                                for (const mesh of Object.values(glb.meshes)) {
+                                    if (!sortedMeshes[mesh[0].materialIndex]) {
+                                        sortedMeshes[mesh[0].materialIndex] = {meshes: [], geometries: []};
+                                    }
+
+                                    sortedMeshes[mesh[0].materialIndex].meshes.push(mesh[0]);
+                                }
+
+                                for (const geometry of Object.values(glb.geometries)) {
+                                    sortedMeshes[geometry.materialIndex].geometries.push(geometry);
+                                }
+
+                                geometry = [];
+                                for (let i = 0; i < sortedMeshes.length; i++) {
+                                    const meshData = glbParser.ConvertToFlatMesh(sortedMeshes[i]);
+                                    geometry[i] = meshData;
+                                }
                                 break;
                             }
                         }
 
                         if(geometry == null) continue;
+                        
+                        if (geometry.length > 1) {
+                            for (let i = 0; i < geometry.length; i++) {
+                                const mesh = new Engine.Mesh(renderer, geometry[i]);
+                                mesh.position = object.transform.position;
+                                mesh.rotation.x = deg2rad(object.transform.rotation.x);
+                                mesh.rotation.y = deg2rad(object.transform.rotation.y);
+                                mesh.rotation.z = deg2rad(object.transform.rotation.z);
+                                mesh.scale = object.transform.scale;
+                                mesh.material_id = i;
+                                mesh.id = objectIDs;
 
-                        const mesh = new Engine.Mesh(renderer, geometry);
-                        mesh.position = object.transform.position;
-                        mesh.rotation = object.transform.rotation;
-                        mesh.scale = object.transform.scale;
+                                if (component.materials) {
+                                    mesh.setTexture(getAssetById(component.materials[i].materialDefinition.diffuseTexture).dataUrl, component.materials[i].material == "transparent" ? 1:0);
+                                }
 
-                        mesh.updateMatrix();
+                                mesh.updateMatrix();
+                                scene[sceneObjs++] = mesh;
+                            }
+                            objectIDs++;
+                        }
+                        else {
+                            const mesh = new Engine.Mesh(renderer, geometry);
+                            mesh.position = object.transform.position;
+                            mesh.rotation.x = deg2rad(object.transform.rotation.x);
+                            mesh.rotation.y = deg2rad(object.transform.rotation.y);
+                            mesh.rotation.z = deg2rad(object.transform.rotation.z);
+                            mesh.scale = object.transform.scale;
+                            mesh.id = objectIDs++;
 
-                        scene[sceneObjs++] = mesh;
+                            if (component.materialDefinition) {
+                                mesh.setTexture(getAssetById(component.materialDefinition.diffuseTexture).dataUrl, component.material == "transparent" ? 1:0);
+                            }
 
-                        console.log(object, mesh);
+                            mesh.updateMatrix();
+                            scene[sceneObjs++] = mesh;
+                        }
+                    }
+
+                    else if (component.type == 'Script') {
+                        const script = getScriptById(component.scriptAssetId);
+                        const wasmBytes = Uint8Array.from(atob(script.wasm), c => c.charCodeAt(0));
+                        await window.wasmRuntime.loadScript(script.name, wasmBytes);
+
+                        if (component.enabled) window.wasmRuntime.executeScript(script.name, 'main');
                     }
 
                     else if(component.type == 'Camera') {
@@ -125,8 +190,31 @@ const BurtCoreLoader = `
         FillScene();
     }
 
+    const FPS = 60;
+    const TIMESTEP = 1000 / FPS;
+    let accumulator = 0;
+    let lastTime = performance.now();
+
     function MainGameLoop() {
-        renderer.render(scene, camera);
+        const currentTime = performance.now();
+
+        let deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        if (deltaTime > 250) deltaTime = 250;
+        accumulator += deltaTime;
+
+        while (accumulator >= TIMESTEP) {
+            for (const [index, instance] of window.wasmRuntime.instances) {
+                window.wasmRuntime.executeScript(index, 'run');
+            }
+
+            renderer.render(scene, camera);
+            accumulator -= TIMESTEP;
+        }
+
+        const alpha = accumulator / TIMESTEP;
+        
         requestAnimationFrame(MainGameLoop);
     }
 `;
@@ -142,8 +230,83 @@ function getGlobalScriptVariables(projectDataJson) {
 <script type="module">
     const projectData = ${projectDataJson};
     console.log(projectData);
+
+    function getAssetById(id) {
+        for (const asset of projectData.assets) {
+            if (id == asset.id) return asset;
+        }
+    }
+
+    function getScriptById(id) {
+        for (const script of projectData.scripts) {
+            if (id == script.gameObjectId) return script;
+        }
+    }
+
+    function updateObjectById(id, type, value) {
+        for (let i = 0; i < sceneObjs; i++) {
+            const mesh = scene[i];
+            if (mesh.id == id) {
+                switch(type) {
+                    case 0: mesh.position.x = value;break;
+                    case 1: mesh.position.y = value;break;
+                    case 2: mesh.position.z = value;break;
+                    case 3: mesh.rotation.x = value;break;
+                    case 4: mesh.rotation.y = value;break;
+                    case 5: mesh.rotation.z = value;break;
+                    case 6: mesh.scale.x = value;break;
+                    case 7: mesh.scale.y = value;break;
+                    case 8: mesh.scale.z = value;break;
+                }
+                mesh.updateMatrix();
+
+                scene[i] = mesh;
+            }
+        }
+    }
+
+    function getObjectById(id, type) {
+        for (let i = 0; i < sceneObjs; i++) {
+            const mesh = scene[i];
+            if (mesh.id == id) {
+                switch(type) {
+                    case 0: return mesh.position.x;
+                    case 1: return mesh.position.y;
+                    case 2: return mesh.position.z;
+                    case 3: return mesh.rotation.x;
+                    case 4: return mesh.rotation.y;
+                    case 5: return mesh.rotation.z;
+                    case 6: return mesh.scale.x;
+                    case 7: return mesh.scale.y;
+                    case 8: return mesh.scale.z;
+                }
+            }
+        }
+    }
+
+    const keys = {};
+    window.addEventListener("keydown", (event) => {
+        keys[event.key.charCodeAt(0)] = 1;
+    });
+
+    window.addEventListener("keyup", (event) => {
+        keys[event.key.charCodeAt(0)] = 0;
+    });
+
+    function isKeyPressed(utf8Code) {
+        return keys[utf8Code] ? 1 : 0;
+    }
     `;
 }
+
+// for (const script of projectData.scripts) {
+//     const wasmBytes = Uint8Array.from(atob(script.wasm), c => c.charCodeAt(0));
+//     await window.wasmRuntime.loadScript(script.name, wasmBytes);
+// }
+
+// for (const script of projectData.scripts) {
+//     window.wasmRuntime.executeScript(script.name, 'main');
+// }
 
 function getBootscript(scriptProjectName) {
     return `
@@ -160,17 +323,8 @@ function getBootscript(scriptProjectName) {
             console.log('Initializing game:', projectData.name);
             
             updateProgress(30);
-            for (const script of projectData.scripts) {
-                const wasmBytes = Uint8Array.from(atob(script.wasm), c => c.charCodeAt(0));
-                await window.wasmRuntime.loadScript(script.name, wasmBytes);
-            }
-            
             updateProgress(60);
-            
             updateProgress(80);
-            for (const script of projectData.scripts) {
-                window.wasmRuntime.executeScript(script.name, 'main');
-            }
             
             updateProgress(100);
             console.log('Game initialized successfully');
@@ -202,6 +356,7 @@ const wasmRuntime = `
             constructor() {
                 this.modules = new Map();
                 this.instances = new Map();
+                this.selfGlobals = new Map();
             }
             
             async loadScript(name, wasmBytes) {
@@ -209,7 +364,7 @@ const wasmRuntime = `
                     const module = await WebAssembly.compile(wasmBytes);
                     this.modules.set(name, module);
 
-                    this.selfGlobal = new WebAssembly.Global(
+                    const selfGlobal = new WebAssembly.Global(
                         {
                             value: "i32",
                             mutable: true
@@ -223,20 +378,24 @@ const wasmRuntime = `
                             abort: () => console.error('Script aborted')
                         },
                         engine: {
-                            self: this.selfGlobal,
+                            self: selfGlobal,
                             
                             objectSet: (id, type, value) => {
-                                console.log("objectSet:", id, type, value);
+                                updateObjectById(id, type, value);
                             },
 
                             objectGet: (id, type) => {
-                                console.log("objectGet:", id, type);
-                                return 0;
-                            }
+                                return getObjectById(id, type);
+                            },
+
+                            getKey: (id) => {
+                                return isKeyPressed(id);
+                            },
                         }
                     });
                     
                     this.instances.set(name, instance);
+                    this.selfGlobals.set(name, selfGlobal);
 
                     //selfGlobal.value = 0;
                     //instance.exports.main();

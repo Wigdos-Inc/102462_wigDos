@@ -114,7 +114,7 @@ class SceneEditor {
     
     async addGameObject(gameObject) {
         if (this.scene) {
-            console.log(gameObject);
+            //console.log(gameObject);
 
             let mesh = null;
             switch(gameObject.type.toLowerCase()) {
@@ -124,7 +124,6 @@ class SceneEditor {
                 case 'glb': {
                     const glbParser = new Engine.GLBParser({gl: this.renderer.gl}, this.camera);
                     const glb = await glbParser.loadGLB(gameObject.link);
-                    console.log(glb)
 
                     const sortedMeshes = [];
                     for (const mesh of Object.values(glb.meshes)) {
@@ -138,8 +137,6 @@ class SceneEditor {
                     for (const geometry of Object.values(glb.geometries)) {
                         sortedMeshes[geometry.materialIndex].geometries.push(geometry);
                     }
-
-                    console.log("SORTED GLB: ", sortedMeshes);
 
                     mesh = [];
                     for (let i = 0; i < sortedMeshes.length; i++) {
@@ -221,7 +218,7 @@ class SceneEditor {
     }
 
     updateComponent(currentObject, component, index) {
-        console.log(currentObject, component, index);
+        //console.log(currentObject, component, index);
 
         if (this.scene) {
             const id = currentObject.id;
@@ -233,15 +230,18 @@ class SceneEditor {
                     if (component.type == "MeshRenderer") {
                         if (component.lenMeshes) {
                             for (let i = 0; i < component.lenMeshes; i++) {
+                                mesh.materialType = component.materials[i].material;
                                 if (AssetManager.getAssetById(component.materials[i].materialDefinition.diffuseTexture) && mesh.material_id == i) {
                                     mesh.setTexture(AssetManager.getAssetById(component.materials[i].materialDefinition.diffuseTexture).dataUrl, component.materials[i].material == "transparent" ? 1:0);
                                 }
                             }
                         }
                         else {
+                            mesh.materialType = component.material;
                             if (AssetManager.getAssetById(component.materialDefinition.diffuseTexture)) {
                                 mesh.setTexture(AssetManager.getAssetById(component.materialDefinition.diffuseTexture).dataUrl, component.material == "transparent" ? 1:0);
                             }
+                            console.log(mesh)
                         }
                     }
                 }

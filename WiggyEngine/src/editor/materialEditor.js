@@ -53,7 +53,9 @@ class MaterialEditor {
 
         if (asset.content.diffuseTexture) {
             const diffuseTexture = this.assetManager.getAssetById(asset.content.diffuseTexture);
-            this.texSelect.value = diffuseTexture.id;
+            if (diffuseTexture) {
+                this.texSelect.value = diffuseTexture.id;
+            }
         }
 
         this.modal.style.display = 'block';

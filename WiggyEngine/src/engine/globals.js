@@ -38,3 +38,10 @@ function extractVersionString(string) {
 }
 
 const globalEditorVersion = extractVersionString(version_code);
+
+function getCorePath() {
+    switch(project.settings.buildSettings.engineCore) {
+        case "BC": return BurtCorePath;
+        case "CN": return CarlNetPath;
+    }
+}

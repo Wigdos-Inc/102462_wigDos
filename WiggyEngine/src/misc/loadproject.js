@@ -32,13 +32,7 @@ async function loadProjectFromFile(file) {
                     throw new Error('Unknown project file format');
                 }
             } catch (parseError) {
-                console.warn('JSON parse failed, trying legacy format:', parseError);
-                try {
-                    const decompressed = await decompressData(arrayBuffer);
-                    projectData = JSON.parse(decompressed);
-                } catch (legacyError) {
-                    throw new Error('Could not parse project file. Format not recognized.');
-                }
+                throw new Error('Could not parse project file. Format not recognized.');
             }
         }
 

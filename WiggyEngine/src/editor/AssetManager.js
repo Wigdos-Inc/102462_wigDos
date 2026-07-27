@@ -53,12 +53,12 @@ class AssetManager {
         const browser = document.getElementById('asset-browser');
         const grid = document.getElementById('asset-grid');
 
-        if (browser) {
-            browser.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                this.showRootMenu(event.clientX, event.clientY);
-            });
-        }
+        // if (browser) {
+        //     browser.addEventListener('contextmenu', (event) => {
+        //         event.preventDefault();
+        //         this.showRootMenu(event.clientX, event.clientY);
+        //     });
+        // }
 
         if (grid) {
             grid.addEventListener('contextmenu', (event) => {
@@ -99,9 +99,10 @@ class AssetManager {
         const actions = [
             { label: 'Import Texture', action: () => this.importAssets('texture') },
             { label: 'Import Material', action: () => this.importAssets('material') },
-            { label: 'Import Model', action: () => this.importAssets('model') },
-            { label: 'Import Object', action: () => this.importAssets('object') },
-            { label: 'Import Script (.wigscripts)', action: () => this.importAssets('script') },
+            { label: 'Import Audio', action: () => this.importAssets('audio') },
+            //{ label: 'Import Model', action: () => this.importAssets('model') },
+            //{ label: 'Import Object', action: () => this.importAssets('object') },
+            //{ label: 'Import Script (.wigscripts)', action: () => this.importAssets('script') },
             { label: 'New Material', action: () => this.createMaterial() },
             { label: 'New Script', action: () => this.createNewScriptAsset() }
         ];
@@ -124,9 +125,12 @@ class AssetManager {
         if (asset.type === 'script') {
             actions.push({ label: 'Open Script', action: () => this.openAsset(asset) });
         }
+
         if (asset.type === 'object') {
             actions.push({ label: 'Instantiate', action: () => this.instantiateObjectAsset(asset) });
         }
+
+        actions.push({ label: 'Rename', action: () => this.renameAsset(asset.id) });
         actions.push({ label: 'Delete', action: () => this.deleteAsset(asset.id) });
 
         this.renderMenu(x, y, actions);
@@ -175,12 +179,13 @@ class AssetManager {
             let out = '';
 
             if (asset.type == 'texture') {
-                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}" style="background-image: url('${asset.dataUrl}'); background-size: cover">
+                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}" style="background-image: url('${asset.dataUrl}'); background-size: contain; background-position: center; background-repeat: no-repeat;">
+                        <div style="height: 90px"></div>
                         <div class="asset-name">${this.escapeHtml(asset.name || 'Untitled')}</div>`;
             }
             else {
-                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}">
-                        <div class="asset-icon">${this.getAssetIcon(asset.type)}</div>
+                out += `<div class="asset-item asset-item-${asset.type}" data-asset-id="${asset.id}" style="background-image: url('${this.getAssetIcon(asset.type)}'); background-size: contain; background-position: center; background-repeat: no-repeat;">
+                        <div style="height: 90px"></div>
                         <div class="asset-name">${this.escapeHtml(asset.name || 'Untitled')}</div>
                         <div class="asset-type">${this.escapeHtml(asset.type || 'asset')}</div>`
             }
@@ -201,12 +206,12 @@ class AssetManager {
 
     static getAssetIcon(type) {
         switch (type) {
-            case 'texture': return '🖼';
-            case 'material': return '🎨';
-            case 'model': return '📦';
-            case 'object': return '🧩';
-            case 'script': return '</>';
-            default: return '📄';
+            case 'material': return 'images/iconMaterial.png';
+            case 'model': return 'images/iconModel.png';
+            case 'object': return 'images/iconObject.png';
+            case 'script': return 'images/iconScript.png';
+            case 'audio': return 'images/iconAudio.png';
+            default: return 'images/iconFile.png';
         }
     }
 
@@ -224,8 +229,9 @@ class AssetManager {
             case 'texture': return '.png,.jpg,.jpeg,.webp,.gif';
             case 'material': return '.json,.material,.mat,.wmat';
             case 'model': return '.obj,.gltf,.glb,.dae,.fbx';
-            case 'object': return '.json,.wigobject,.wigo,.blueprint,.rbxp';
+            case 'object': return '.json,.wigobject,.wigo,.blueprint';
             case 'script': return '.wigscripts,.wigscript,.txt,.c,.cpp,.h';
+            case 'audio': return '.mp3';
             default: return '*/*';
         }
     }
@@ -240,6 +246,7 @@ class AssetManager {
             for (const file of files) {
                 await this.importSingleAsset(type, file);
             }
+
             this.refreshAssetBrowser();
             if (typeof EditorUI !== 'undefined') {
                 EditorUI.showNotification(`${files.length} asset(s) imported`, 'success');
@@ -261,13 +268,16 @@ class AssetManager {
 
         if (type === 'texture') {
             asset.dataUrl = await this.readFileAsDataUrl(file);
-        } else if (type === 'model') {
+        }
+        else if (type === 'model') {
             if (this.isTextModel(file.name)) {
                 asset.content = await this.readFileAsText(file);
             } else {
                 asset.dataUrl = await this.readFileAsDataUrl(file);
             }
-        } else if (type === 'material') {
+
+        }
+        else if (type === 'material') {
             const text = await this.readFileAsText(file);
             try {
                 asset.content = JSON.parse(text);
@@ -276,7 +286,9 @@ class AssetManager {
                 asset.content = text;
                 asset.isJson = false;
             }
-        } else if (type === 'object') {
+
+        }
+        else if (type === 'object') {
             const text = await this.readFileAsText(file);
             try {
                 asset.content = JSON.parse(text);
@@ -285,11 +297,17 @@ class AssetManager {
                 asset.content = { raw: text };
                 asset.isBlueprint = false;
             }
-        } else if (type === 'script') {
+
+        }
+        else if (type === 'script') {
             asset.extension = '.wigscripts';
             asset.language = 'wigscripts';
             asset.content = await this.readFileAsText(file);
-        } else {
+        }
+        else if (type === 'audio') {
+            asset.content = await file.arrayBuffer();
+        }
+        else {
             asset.content = await this.readFileAsText(file);
         }
 
@@ -478,6 +496,25 @@ class AssetManager {
         }
     }
 
+    static renameAsset(assetId) {
+        if (!assetId) return;
+
+        const asset = this.getAssetById(assetId);
+        console.log(asset);
+
+        const newName = prompt("Enter a new name:", asset.fileName);
+
+        if (newName !== null && newName.trim() !== "") {
+            console.log("Renamed to:", newName.trim());
+            asset.fileName = newName.trim();
+            asset.name = newName.trim();
+        } else {
+            console.log("Rename cancelled");
+        }
+
+        this.refreshAssetBrowser();
+    }
+
     static openAsset(asset_id) {
         if (!asset_id) return;
 
@@ -497,6 +534,14 @@ class AssetManager {
         if (asset.type === 'material') {
             materialEditor.edit(asset);
             return;
+        }
+
+        if (asset.type === 'audio') {
+            const blob = new Blob([asset.content], { type: "audio/mpeg" });
+            const url = URL.createObjectURL(blob);
+
+            const audio = new Audio(url);
+            audio.play();
         }
 
         if (typeof EditorUI !== 'undefined') {

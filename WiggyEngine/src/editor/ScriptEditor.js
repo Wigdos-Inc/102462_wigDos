@@ -156,7 +156,7 @@ class ScriptEditor {
         this.setupCodeEditorEvents();
         
         // Initial syntax highlighting
-        this.updateSyntaxHighlighting();
+        //this.updateSyntaxHighlighting();
         this.updateLineNumbers();
     }
     
@@ -165,7 +165,7 @@ class ScriptEditor {
         
         // Handle input changes
         this.codeInput.addEventListener('input', () => {
-            this.updateSyntaxHighlighting();
+            //this.updateSyntaxHighlighting();
             this.updateLineNumbers();
             this.checkForErrors();
             this.syncWithTextarea();
@@ -210,7 +210,7 @@ class ScriptEditor {
         const cursorOffset = range ? range.startOffset : 0;
         
         // Update content
-        this.codeInput.innerHTML = highlightedCode;
+        this.codeInput.textContent = highlightedCode;
         
         // Restore cursor position
         if (range) {
@@ -230,8 +230,6 @@ class ScriptEditor {
     }
     
     static applySyntaxHighlighting(code) {
-        return this.escapeHtml(code);
-        
         try {
             const lexer = new StinkPiler.WigLangLexer(code);
             const tokens = lexer.tokenize();
@@ -500,7 +498,7 @@ class ScriptEditor {
         }
 
         this.modal.style.display = 'block';
-        this.codeInput.innerHTML = this.currentScript.content;
+        this.codeInput.textContent = this.currentScript.content;
         //this.codeTextarea.focus();
         
         // Update modal title
@@ -525,7 +523,7 @@ class ScriptEditor {
     static saveScript() {
         if (!this.currentScript) return;
         
-        this.currentScript.content = this.codeInput.innerHTML;
+        this.currentScript.content = this.codeInput.textContent;
         
         try {
             if (this.currentScript.isNew) {
@@ -561,7 +559,7 @@ class ScriptEditor {
     static compileScript() {
         if (!this.currentScript) return;
         
-        const code = this.codeInput.innerHTML;
+        const code = this.codeInput.textContent;
         
         try {
             console.log('🔨 Compiling WigLang script...');

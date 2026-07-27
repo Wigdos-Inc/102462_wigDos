@@ -166,8 +166,16 @@ class ProjectBuilder {
             wasm: this.arrayBufferToBase64(script.wasm),
             gameObjectId: script.gameObjectId
         }));
+
+        let assets = [];
+        for (let i = 0; i < project.assets.length; i++) {
+            if (project.assets[i].type != 'script') {
+                assets[i] = project.assets[i];
+            }
+        }
+
         const safeName = this.escapeHtml(project.name);
-        const projectDataJson = JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData }).replace(/</g, '\\u003c');
+        const projectDataJson = JSON.stringify({ name: project.name, scenes: buildData.scenes, scripts: wasmData, assets: assets }).replace(/</g, '\\u003c');
         const scriptProjectName = JSON.stringify(project.name);
 
         let exportFile = '';

@@ -176,11 +176,11 @@ const EditorMainUI = `
             <!-- Viewport -->
             <div id="viewport-container">
                 <canvas id="canvas" width="1920" height="1080"></canvas>
-                <div id="viewport-controls">
+                <!-- <div id="viewport-controls">
                     <button id="move-tool" class="tool-btn active">Verplaatsen</button>
                     <button id="rotate-tool" class="tool-btn">Roteren</button>
                     <button id="scale-tool" class="tool-btn">Schalen</button>
-                </div>
+                </div> -->
             </div>
 
             <!-- Inspector Panel -->

@@ -195,7 +195,7 @@ class Inspector {
                     });
 
                     this.createSelectProperty(container, 'Material Type', component.materials[i].material || 'default',
-                        ['default', 'unlit', 'standard', 'transparent', 'custom'], (value) => {
+                        ['solid', 'flat', 'transparent', 'custom'], (value) => {
                         component.materials[i].material = value;
                         this.notifyComponentChanged(component, index);
                     });
@@ -211,7 +211,7 @@ class Inspector {
                     });
 
                     this.createSelectProperty(container, 'Material Type', component.material || 'default',
-                        ['default', 'unlit', 'standard', 'transparent', 'custom'], (value) => {
+                        ['solid', 'flat', 'transparent', 'custom'], (value) => {
                         component.material = component.material ? value:component.material;
                         this.notifyComponentChanged(component, index);
                     });
@@ -307,7 +307,7 @@ class Inspector {
               this.createAssetSelectProperty(container, 'Script Asset', component.scriptAssetId || '', scriptAssets, 'None', (asset) => {
                   component.scriptAssetId = asset ? asset.id : '';
                   component.scriptName = asset ? asset.name : '';
-                  component.code = asset ? (asset.content || '') : '';
+                  //component.code = asset ? (asset.content || '') : '';
                   this.notifyComponentChanged(component, index);
               });
           }

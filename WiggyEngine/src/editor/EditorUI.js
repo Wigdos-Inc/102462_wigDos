@@ -271,19 +271,19 @@ class EditorUI {
     // Tool management
     static setActiveTool(toolName) {
         // Update visual state
-        document.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
+        // document.querySelectorAll('.tool-btn').forEach(btn => {
+        //     btn.classList.remove('active');
+        // });
         
-        const activeBtn = document.getElementById(`${toolName}-tool`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
+        // const activeBtn = document.getElementById(`${toolName}-tool`);
+        // if (activeBtn) {
+        //     activeBtn.classList.add('active');
+        // }
 
-        // Set the tool in the engine
-        console.log('Tool setting not implemented (engine removed)');
+        // // Set the tool in the engine
+        // console.log('Tool setting not implemented (engine removed)');
         
-        this.showNotification(`Tool: ${toolName}`, 'info');
+        // this.showNotification(`Tool: ${toolName}`, 'info');
     }
 
     // Refresh project UI after loading
